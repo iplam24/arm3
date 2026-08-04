@@ -863,7 +863,8 @@ implements IVXLDichVuGame {
         this.guiTin(ms);
     }
 
-    public void guiBatDauLuyenTap(byte maBanDo, short maVuKhi, short[] botX, short[] botY, int[] botHp, short[] botWeapons) throws IOException {
+    public void guiBatDauLuyenTap(byte maBanDo, short maVuKhi, int hpNguoiChoi, int hpToiDaNguoiChoi,
+            short[] botX, short[] botY, int[] botHp, short[] botWeapons) throws IOException {
         VXLTinNhan ms = new VXLTinNhan(20);
         DataOutputStream ds = ms.boGhi();
         ds.writeByte(maBanDo);
@@ -872,14 +873,15 @@ implements IVXLDichVuGame {
             if (i == 0) {
                 ds.writeShort(220);
                 ds.writeShort(300);
-                ds.writeShort(100);
-                ds.writeShort(50);
+                ds.writeShort(gioiHanMauLuyenTap(hpNguoiChoi));
+                ds.writeShort(gioiHanMauLuyenTap(hpToiDaNguoiChoi));
             } else if (i - 1 >= 0 && i - 1 < botX.length) {
                 int botIndex = i - 1;
                 ds.writeShort(botX[botIndex]);
                 ds.writeShort(botY[botIndex]);
-                ds.writeShort(botHp[botIndex]);
-                ds.writeShort(100);
+                int mauBot = botIndex < botHp.length ? botHp[botIndex] : 0;
+                ds.writeShort(gioiHanMauLuyenTap(mauBot));
+                ds.writeShort(gioiHanMauLuyenTap(mauBot));
             } else {
                 ds.writeShort(-1);
             }
@@ -1009,20 +1011,24 @@ implements IVXLDichVuGame {
     }
 
     public void guiCapNhatMauLuyenTap(byte chiSo, int hp, byte trangThaiChet) throws IOException {
-        if (hp < 0) {
-            hp = 0;
-        }
-        if (hp > 65535) {
-            hp = 65535;
-        }
+        guiCapNhatMauLuyenTap(chiSo, hp, 100, trangThaiChet);
+    }
+
+    public void guiCapNhatMauLuyenTap(byte chiSo, int hp, int hpToiDa, byte trangThaiChet) throws IOException {
+        int mau = gioiHanMauLuyenTap(hp);
+        int mauToiDa = Math.max(1, gioiHanMauLuyenTap(hpToiDa));
         VXLTinNhan ms = new VXLTinNhan(51);
         DataOutputStream ds = ms.boGhi();
         ds.writeByte(chiSo);
-        ds.writeShort(hp);
-        ds.writeByte((byte)(hp * 25 / 100));
+        ds.writeShort(mau);
+        ds.writeByte((byte)Math.max(0, Math.min(100, mau * 100L / mauToiDa)));
         ds.writeByte(trangThaiChet);
         ds.flush();
         this.guiTin(ms);
+    }
+
+    private static int gioiHanMauLuyenTap(int hp) {
+        return Math.max(0, Math.min(65535, hp));
     }
 
     public void guiLuotLuyenTapTiep(byte whoNext, short x, short y) throws IOException {

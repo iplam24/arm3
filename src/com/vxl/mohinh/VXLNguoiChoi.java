@@ -3,12 +3,15 @@ package com.vxl.mohinh;
 // Vũ Xuân Lâm đẹp trai VCL
 import com.vxl.loi.VXLCoSoDuLieu;
 import com.vxl.loi.VXLQuanLyMayChu;
+import com.vxl.luyentap.VXLQuanLyLuyenTap;
+import com.vxl.vatpham.VXLDichVuNangCapVatPham;
 import com.vxl.vatpham.VXLVatPham;
 import com.vxl.vatpham.VXLThuocTinhVatPham;
 import com.vxl.vatpham.VXLMauVatPham;
 import com.vxl.mang.VXLDichVuGame;
 import com.vxl.mang.VXLTinNhan;
 import com.vxl.nhapvai.VXLBanDoRPG;
+import com.vxl.nhiemvu.VXLNhiemVu;
 import com.vxl.nhapvai.VXLKhu;
 import com.vxl.phong.VXLQuanLyPhong;
 import com.vxl.cuahang.VXLTrang;
@@ -25,25 +28,11 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Vector;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ScheduledFuture;
-import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class VXLNguoiChoi {
-    private static final int TRAINING_BOT_COUNT = 5;
-    private static final String[] TRAINING_BOT_NAMES = new String[]{"Iron Bot", "Hulk Bot", "Thor Bot", "Captain Bot", "Ultron Bot"};
-    private static final byte[] TRAINING_BOT_AVENGERS = new byte[]{1, 2, 3, 5, 8};
-    private static final short[] TRAINING_BOT_WEAPONS = new short[]{5, 27, 54, 55, 58};
-    private static final short[] TRAINING_BOT_SPAWN_X = new short[]{600, 720, 840, 500, 960};
-    private static final short[] TRAINING_BOT_SPAWN_Y = new short[]{300, 280, 320, 260, 300};
-    private static final ScheduledExecutorService TRAINING_BOT_EXECUTOR = Executors.newSingleThreadScheduledExecutor(r -> {
-        Thread thread = new Thread(r, "training-bot");
-        thread.setDaemon(true);
-        return thread;
-    });
+
     public static HashMap<Integer, VXLNguoiChoi> players_id = new HashMap();
     public int ma;
     public String ten;
@@ -59,29 +48,6 @@ public class VXLNguoiChoi {
     public byte trainingSuccess;
     public boolean inTraining;
     public int trainingHits;
-    private int trainingDummyHp = 100;
-    private int trainingPlayerHp = 100;
-    private short trainingPlayerX = 220;
-    private short trainingPlayerY = 300;
-    private short trainingDummyX = 600;
-    private short trainingDummyY = 300;
-    private int[] trainingBotHp = new int[TRAINING_BOT_COUNT];
-    private short[] trainingBotX = new short[TRAINING_BOT_COUNT];
-    private short[] trainingBotY = new short[TRAINING_BOT_COUNT];
-    private boolean[] trainingBotDead = new boolean[TRAINING_BOT_COUNT];
-    private int trainingPendingHitBot = -1;
-    private int trainingBotTurn = -1;
-    private long lastTrainingFire;
-    private boolean trainingWaitingShotEnd;
-    private boolean trainingPendingHitDummy;
-    private boolean trainingFirstTurnSent;
-    private boolean trainingBotAnimating;
-    private boolean trainingBossShield;
-    private boolean trainingBossPowerShot;
-    private int trainingBotTurnCount;
-    private ScheduledFuture<?> trainingBotTask;
-    private ScheduledFuture<?> trainingBotReturnTask;
-    private ScheduledFuture<?> trainingPlayerResolveTask;
     public short[] pointAdd;
     public short point;
     public byte zoneId = (byte)-1;
@@ -98,6 +64,12 @@ public class VXLNguoiChoi {
     public VXLVatPham[] itemBody = new VXLVatPham[6];
     public int[] itemBalo = new int[0];
     public VXLVatPham[] itemBox = new VXLVatPham[20];
+
+    private static void kiemTraChiSo(int chiSo, int doDai, String tenMang) {
+        if (chiSo < 0 || chiSo >= doDai) {
+            throw new IllegalArgumentException("Chỉ số " + tenMang + " không hợp lệ: " + chiSo);
+        }
+    }
     public boolean isReady;
     public byte pointSeat;
     public int chiSo = -1;
@@ -105,14 +77,62 @@ public class VXLNguoiChoi {
     public int kill = 1;
     public int chet;
     public int assist;
+    public final VXLNhiemVu nhiemVu;
+    private final VXLQuanLyLuyenTap luyenTap;
     public byte powerAvenger;
     public byte avenger;
     private VXLCuaHang store;
 
     public VXLNguoiChoi(VXLDichVuGame dichVu) {
         this.dichVu = dichVu;
+        this.nhiemVu = new VXLNhiemVu(this);
+        this.luyenTap = new VXLQuanLyLuyenTap(this);
     }
 
+    public void taiTienTrinhGame(JSONObject duLieu) {
+        this.nhiemVu.tai(duLieu);
+        this.luyenTap.tai(duLieu);
+    }
+
+    public int congKinhNghiem(int soKinhNghiem) {
+        return this.nhiemVu.congKinhNghiem(soKinhNghiem);
+    }
+
+    public boolean kichHoatNhanDoiKinhNghiem() {
+        return this.nhiemVu.kichHoatNhanDoiKinhNghiem();
+    }
+
+    public void ghiNhanThangPvp() {
+        this.nhiemVu.ghiNhanThangPvp();
+    }
+
+    public void ghiNhanHaCamTu(int soLuong) {
+        this.nhiemVu.ghiNhanHaCamTu(soLuong);
+    }
+
+    public void ghiNhanHaBoss(int soLuong) {
+        this.nhiemVu.ghiNhanHaBoss(soLuong);
+    }
+
+    public void ghiNhanSatThuongPvp(int satThuong) {
+        this.nhiemVu.ghiNhanSatThuongPvp(satThuong);
+    }
+
+    public String tomTatNhiemVu() {
+        return this.nhiemVu.tomTat();
+    }
+
+    public boolean daHoanThanhThanhTichPvp() {
+        return this.nhiemVu.daHoanThanhPvp();
+    }
+
+    public boolean daHoanThanhThanhTichCamTu() {
+        return this.nhiemVu.daHoanThanhCamTu();
+    }
+
+    public boolean daHoanThanhThanhTichBoss() {
+        return this.nhiemVu.daHoanThanhBoss();
+    }
     public float layKD() {
         return (float)this.kill / (float)this.chet;
     }
@@ -137,42 +157,8 @@ public class VXLNguoiChoi {
     }
 
     public void nangCapNhanVat(VXLTinNhan ms) throws IOException {
-        byte loai = ms.boDoc().readByte();
-        if (loai == 0) {
-            int i;
-            byte[] tiso = new byte[]{10, 1, 1, 1, 1, 1};
-            VXLTinNhan msg = new VXLTinNhan(-46);
-            DataOutputStream ds = msg.boGhi();
-            ds.writeByte(0);
-            ds.writeShort(this.point);
-            for (i = 0; i < 6; ++i) {
-                ds.writeByte(tiso[i]);
-            }
-            for (i = 0; i < 6; ++i) {
-                ds.writeShort(this.pointAdd[i]);
-            }
-            ds.flush();
-            this.dichVu.guiTin(msg);
-        } else {
-            byte chiSo = ms.boDoc().readByte();
-            if (this.point > 0) {
-                if (chiSo < 0 || chiSo > 5) {
-                    this.moHopThoaiOK("Có lỗi xảy ra.");
-                } else {
-                    if (chiSo == 0) {
-                        this.pointAdd[0] = (short)(this.pointAdd[0] + 10);
-                    } else {
-                        byte by = chiSo;
-                        this.pointAdd[by] = (short)(this.pointAdd[by] + 1);
-                    }
-                    this.point = (short)(this.point - 1);
-                }
-            } else {
-                this.moHopThoaiOK("Không đủ điểm cộng.");
-            }
-        }
+        VXLDichVuNangCapVatPham.xuLy(this, ms);
     }
-
     public void banDoRPG(VXLTinNhan ms) throws IOException {
         byte b = ms.boDoc().readByte();
         switch (b) {
@@ -259,6 +245,7 @@ public class VXLNguoiChoi {
         int ma = ms.boDoc().readInt();
         if (ma >= 11000) {
             int chiSo = ma - 11000;
+            kiemTraChiSo(chiSo, this.itemBag.length, "tui do");
             VXLVatPham vatPham = this.itemBag[chiSo];
             if (vatPham != null) {
                 int vang = 0;
@@ -276,6 +263,7 @@ public class VXLNguoiChoi {
 
     public void yeuCauBanVatPham(VXLTinNhan ms) throws IOException {
         byte chiSo = ms.boDoc().readByte();
+        kiemTraChiSo(chiSo, this.itemBag.length, "tui do");
         VXLVatPham vatPham = this.itemBag[chiSo];
         if (vatPham != null) {
             if (this.vatPhamCoTrongBalo(vatPham)) {
@@ -326,8 +314,7 @@ public class VXLNguoiChoi {
             return;
         }
         VXLVatPham add = new VXLVatPham(ma);
-        add.HP = 100;
-        add.itemOptions = vatPham.thuocTinhs;
+        add.thayMau(vatPham);
         this.themVatPhamVaoTui(add);
         this.moHopThoaiOK("Bạn mua thành công " + vatPham.ten);
     }
@@ -434,6 +421,7 @@ public class VXLNguoiChoi {
         if (ms.boDoc().available() > 0) {
             byte loai = ms.boDoc().readByte();
             if (loai == 1) {
+                kiemTraChiSo(chiSo, this.itemBag.length, "tui do");
                 VXLVatPham vatPham = this.itemBag[chiSo];
                 if (vatPham != null && vatPham.soLuong > 0) {
                     byte t = vatPham.mau.loai;
@@ -464,6 +452,11 @@ public class VXLNguoiChoi {
                         this.pointAdd[5] = 0;
                         this.removeItem(chiSo, 1);
                         this.startOKDlg2("Tẩy điểm thành công.");
+                    } else if (ma == 257) {
+                        if (this.kichHoatNhanDoiKinhNghiem()) {
+                            this.removeItem(chiSo, 1);
+                            this.flushCache();
+                        }
                     } else if (vatPham.mau.loai == 11) {
                         this.startOKDlg2("Không thể sử dụng.");
                     } else {
@@ -473,6 +466,7 @@ public class VXLNguoiChoi {
                     this.startOKDlg2("Không tìm thấy vật phẩm này. Vui lòng đăng nhập lại để kiểm tra.");
                 }
             } else {
+                kiemTraChiSo(chiSo, this.itemBody.length, "trang bi");
                 VXLVatPham vatPham = this.itemBody[chiSo];
                 if (vatPham != null) {
                     Vector<String> vector = new Vector<String>();
@@ -503,6 +497,7 @@ public class VXLNguoiChoi {
         byte chiSo = ms.boDoc().readByte();
         System.out.println("type: " + loai);
         if (loai == 4) {
+            kiemTraChiSo(chiSo, this.itemBag.length, "tui do");
             VXLVatPham item2 = this.itemBag[chiSo];
             if (item2 == null) return;
             if (this.vatPhamCoTrongBalo(item2)) {
@@ -569,6 +564,7 @@ public class VXLNguoiChoi {
         }
         if (loai == 5) {
             int param2;
+            kiemTraChiSo(chiSo, this.itemBody.length, "trang bi");
             VXLVatPham item4 = this.itemBody[chiSo];
             if (item4 == null) return;
             byte t = item4.mau.loai;
@@ -610,6 +606,7 @@ public class VXLNguoiChoi {
             return;
         }
         if (loai == 1) {
+            kiemTraChiSo(chiSo, this.itemBag.length, "tui do");
             VXLVatPham item5 = this.itemBag[chiSo];
             if (item5 == null) return;
             if (this.vatPhamCoTrongBalo(item5)) {
@@ -627,6 +624,7 @@ public class VXLNguoiChoi {
             return;
         }
         if (loai == 6) {
+            kiemTraChiSo(chiSo, this.itemBag.length, "tui do");
             vatPham = this.itemBag[chiSo];
             if (vatPham == null) return;
             byte t = vatPham.mau.loai;
@@ -642,10 +640,12 @@ public class VXLNguoiChoi {
         } else {
             if (loai != 0) {
                 if (loai != 7) return;
+                kiemTraChiSo(chiSo, this.itemBalo.length, "balo");
                 this.itemBalo[chiSo] = -1;
                 this.dichVu.guiBalo();
                 return;
             }
+            kiemTraChiSo(chiSo, this.itemBox.length, "ruong do");
             VXLVatPham item6 = this.itemBox[chiSo];
             if (item6 == null) return;
             byte t = item6.mau.loai;
@@ -745,7 +745,7 @@ public class VXLNguoiChoi {
     }
 
     public void chat(VXLTinNhan ms) throws IOException {
-        String noiDung = ms.boDoc().readUTF();
+        String noiDung = ms.docUTF(200, "nội dung chat");
         VXLTinNhan mss = new VXLTinNhan(-98);
         DataOutputStream ds = mss.boGhi();
         ds.writeByte(3);
@@ -797,6 +797,28 @@ public class VXLNguoiChoi {
         }
     }
 
+    public synchronized void tieuThuVatPhamTrongBalo(int chiSoBalo) throws IOException {
+        kiemTraChiSo(chiSoBalo, this.itemBalo.length, "balo");
+        int chiSoTui = this.itemBalo[chiSoBalo];
+        kiemTraChiSo(chiSoTui, this.itemBag.length, "túi đồ");
+        VXLVatPham vatPham = this.itemBag[chiSoTui];
+        if (vatPham == null || vatPham.soLuong <= 0) {
+            this.itemBalo[chiSoBalo] = -1;
+            this.dichVu.guiBalo();
+            return;
+        }
+        vatPham.soLuong--;
+        if (vatPham.soLuong <= 0) {
+            this.itemBag[chiSoTui] = null;
+            this.itemBalo[chiSoBalo] = -1;
+            this.dichVu.capNhatTuiDo(chiSoTui, 0);
+            this.dichVu.guiBalo();
+        } else {
+            this.dichVu.capNhatTuiDo(chiSoTui, vatPham.soLuong);
+            this.dichVu.guiBalo();
+        }
+    }
+
     public void updateGold(int vang) {
         this.vang += vang;
         this.dichVu.capNhat();
@@ -814,7 +836,7 @@ public class VXLNguoiChoi {
         byte chiSo = ms.boDoc().readByte();
         byte page = ms.boDoc().readByte();
         if (chiSo < 0 || page < 0 || chiSo >= this.store.tabs.size() || page >= this.store.tabs.get(chiSo).size()) {
-            this.moHopThoaiOK("Co loi xay ra.");
+            this.moHopThoaiOK("Có lỗi xảy ra.");
             return;
         }
         ms = new VXLTinNhan(-43);
@@ -880,7 +902,7 @@ public class VXLNguoiChoi {
 
     public void chatTo(VXLTinNhan ms) throws IOException {
         int ma = ms.boDoc().readInt();
-        String noiDung = ms.boDoc().readUTF();
+        String noiDung = ms.docUTF(200, "nội dung chat");
         if (ma == -1) {
             if (this.ngoc < 10) {
                 this.moHopThoaiOK("Bạn không đủ ngọc để chat thế giới.");
@@ -924,578 +946,120 @@ public class VXLNguoiChoi {
         }
     }
 
-    public void flushCache() {
-        try (java.sql.Connection conn = VXLCoSoDuLieu.getConnection()) {
-            try (java.sql.PreparedStatement stmt = conn.prepareStatement("UPDATE `players` SET `gold` = ?, `cup` = ?, `gem` = ? WHERE `id` = ? LIMIT 1;")) {
-                stmt.setInt(1, this.vang);
-                stmt.setInt(2, this.cup);
-                stmt.setInt(3, this.ngoc);
-                stmt.setInt(4, this.ma);
-                stmt.execute();
-            }
-            JSONObject duLieu = new JSONObject();
-            duLieu.put("power", this.power);
-            duLieu.put("avenger", this.powerAvenger);
-            duLieu.put("kill", this.kill);
-            duLieu.put("dead", this.chet);
-            duLieu.put("assist", this.assist);
-            duLieu.put("trainingSuccess", this.trainingSuccess);
-            duLieu.put("busyHammer", this.busyHammer);
-            duLieu.put("nHammer", this.nHammer);
-            duLieu.put("exp", this.kinhNghiem);
-            duLieu.put("point", this.point);
-            JSONArray pointAdds = new JSONArray();
-            for (short s : this.pointAdd) {
-                pointAdds.add(s);
-            }
-            duLieu.put("pointAdd", pointAdds);
-            try (java.sql.PreparedStatement stmt = conn.prepareStatement("UPDATE `players` SET `stats_json` = ? WHERE `id` = ? LIMIT 1;")) {
-                stmt.setString(1, duLieu.toJSONString());
-                stmt.setInt(2, this.ma);
-                stmt.execute();
-            }
-            JSONArray body = new JSONArray();
-            for (VXLVatPham vatPham : this.itemBody) {
-                if (vatPham != null) {
-                    body.add(vatPham.toJSONObject());
-                }
-            }
-            try (java.sql.PreparedStatement stmt = conn.prepareStatement("UPDATE `players` SET `equipped_json` = ? WHERE `id` = ? LIMIT 1;")) {
-                stmt.setString(1, body.toJSONString());
-                stmt.setInt(2, this.ma);
-                stmt.execute();
-            }
-            JSONArray bag = new JSONArray();
-            for (VXLVatPham vatPham : this.itemBag) {
-                if (vatPham != null) {
-                    bag.add(vatPham.toJSONObject());
-                }
-            }
-            try (java.sql.PreparedStatement stmt = conn.prepareStatement("UPDATE `players` SET `inventory_json` = ? WHERE `id` = ? LIMIT 1;")) {
-                stmt.setString(1, bag.toJSONString());
-                stmt.setInt(2, this.ma);
-                stmt.execute();
-            }
-            JSONArray balo = new JSONArray();
-            for (int chiSo : this.itemBalo) {
-                balo.add(chiSo);
-            }
-            try (java.sql.PreparedStatement stmt = conn.prepareStatement("UPDATE `players` SET `pocket_json` = ? WHERE `id` = ? LIMIT 1;")) {
-                stmt.setString(1, balo.toJSONString());
-                stmt.setInt(2, this.ma);
-                stmt.execute();
-            }
-            JSONArray box = new JSONArray();
-            for (VXLVatPham vatPham : this.itemBox) {
-                if (vatPham != null) {
-                    box.add(vatPham.toJSONObject());
-                }
-            }
-            try (java.sql.PreparedStatement stmt = conn.prepareStatement("UPDATE `players` SET `storage_json` = ? WHERE `id` = ? LIMIT 1;")) {
-                stmt.setString(1, box.toJSONString());
-                stmt.setInt(2, this.ma);
-                stmt.execute();
+    public synchronized void flushCache() {
+        JSONObject duLieu = new JSONObject();
+        duLieu.put("power", this.power);
+        duLieu.put("avenger", this.powerAvenger);
+        duLieu.put("kill", this.kill);
+        duLieu.put("dead", this.chet);
+        duLieu.put("assist", this.assist);
+        duLieu.put("trainingSuccess", this.trainingSuccess);
+        duLieu.put("busyHammer", this.busyHammer);
+        duLieu.put("nHammer", this.nHammer);
+        duLieu.put("exp", this.kinhNghiem);
+        duLieu.put("point", this.point);
+        this.nhiemVu.ghiVao(duLieu);
+        this.luyenTap.ghiVao(duLieu);
+        JSONArray pointAdds = new JSONArray();
+        for (short pointValue : this.pointAdd) {
+            pointAdds.add(pointValue);
+        }
+        duLieu.put("pointAdd", pointAdds);
+
+        JSONArray body = new JSONArray();
+        for (VXLVatPham vatPham : this.itemBody) {
+            if (vatPham != null) {
+                body.add(vatPham.toJSONObject());
             }
         }
-        catch (SQLException ex) {
+        JSONArray bag = new JSONArray();
+        for (VXLVatPham vatPham : this.itemBag) {
+            if (vatPham != null) {
+                bag.add(vatPham.toJSONObject());
+            }
+        }
+        JSONArray balo = new JSONArray();
+        for (int chiSo : this.itemBalo) {
+            balo.add(chiSo);
+        }
+        JSONArray box = new JSONArray();
+        for (VXLVatPham vatPham : this.itemBox) {
+            if (vatPham != null) {
+                box.add(vatPham.toJSONObject());
+            }
+        }
+
+        String statsJson = duLieu.toJSONString();
+        String equippedJson = body.toJSONString();
+        String inventoryJson = bag.toJSONString();
+        String pocketJson = balo.toJSONString();
+        String storageJson = box.toJSONString();
+        try {
+            VXLCoSoDuLieu.withTransaction(conn -> {
+                String sql = "UPDATE `players` SET `gold` = ?, `cup` = ?, `gem` = ?, `stats_json` = ?, `equipped_json` = ?, `inventory_json` = ?, `pocket_json` = ?, `storage_json` = ? WHERE `id` = ? LIMIT 1;";
+                try (java.sql.PreparedStatement stmt = conn.prepareStatement(sql)) {
+                    stmt.setInt(1, this.vang);
+                    stmt.setInt(2, this.cup);
+                    stmt.setInt(3, this.ngoc);
+                    stmt.setString(4, statsJson);
+                    stmt.setString(5, equippedJson);
+                    stmt.setString(6, inventoryJson);
+                    stmt.setString(7, pocketJson);
+                    stmt.setString(8, storageJson);
+                    stmt.setInt(9, this.ma);
+                    if (stmt.executeUpdate() != 1) {
+                        throw new SQLException("Không tìm thấy người chơi có mã=" + this.ma + " để lưu.");
+                    }
+                }
+            });
+        }
+        catch (SQLException | RuntimeException ex) {
             Logger.getLogger(VXLNguoiChoi.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
 
     public void close() {
-        this.dungVongBotLuyenTap();
-        this.inTraining = false;
-        VXLQuanLyPhong.roiBanCho(this);
-        VXLBanDoRPG.roi(this);
-        VXLNguoiChoi.xoa(this.ma);
-        this.flushCache();
-    }
-
-    public void vaoLuyenTap() {
+        this.luyenTap.dong();
         try {
-            this.trainingSuccess = 1;
-            this.isReady = true;
-            this.chiSo = 0;
-            this.pointSeat = 0;
-            this.inTraining = true;
-            this.trainingDummyHp = 100;
-            this.trainingPlayerHp = 100;
-            this.trainingWaitingShotEnd = false;
-            this.trainingPendingHitDummy = false;
-            this.trainingFirstTurnSent = false;
-            this.trainingBotAnimating = false;
-            this.trainingBossShield = false;
-            this.trainingBossPowerShot = false;
-            this.trainingBotTurnCount = 0;
-            this.dungVongBotLuyenTap();
-            this.trainingPlayerX = 220;
-            this.trainingPlayerY = 300;
-            this.trainingDummyX = 600;
-            this.trainingDummyY = 300;
-            this.trainingPendingHitBot = -1;
-            this.trainingBotTurn = -1;
-            for (int i = 0; i < TRAINING_BOT_COUNT; i++) {
-                this.trainingBotHp[i] = 100;
-                this.trainingBotX[i] = TRAINING_BOT_SPAWN_X[i];
-                this.trainingBotY[i] = TRAINING_BOT_SPAWN_Y[i];
-                this.trainingBotDead[i] = false;
-            }
-            byte maBanDo = 1;
-            short trainingWeapon = this.wp;
-            if (trainingWeapon <= 0) {
-                trainingWeapon = 5;
-            }
-            this.wp = trainingWeapon;
-            this.dichVu.guiThongTinLuyenTap();
-            this.dichVu.guiChonBanDoLuyenTap(maBanDo);
-            this.dichVu.guiNguoiChoiLuyenTap((byte)0, this.ma, this.ten, this.head, this.leg, this.body,
-                    this.hat, this.wing, trainingWeapon, this.avenger, this.ma);
-            for (int i = 0; i < TRAINING_BOT_COUNT; i++) {
-                this.dichVu.guiNguoiChoiLuyenTap((byte)(i + 1), -9999 - i, TRAINING_BOT_NAMES[i], this.head, this.leg, this.body,
-                        this.hat, this.wing, TRAINING_BOT_WEAPONS[i], TRAINING_BOT_AVENGERS[i], this.ma);
-            }
-            this.dichVu.guiBatDauLuyenTap(maBanDo, trainingWeapon, this.trainingBotX, this.trainingBotY, this.trainingBotHp, TRAINING_BOT_WEAPONS);
+            VXLQuanLyPhong.roiBanCho(this);
         }
         catch (Exception ex) {
-            Logger.getLogger(VXLNguoiChoi.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(VXLNguoiChoi.class.getName()).log(Level.WARNING, "Lỗi rời phòng khi đóng người chơi " + this.ma, ex);
         }
+        try {
+            VXLBanDoRPG.roi(this);
+        }
+        catch (Exception ex) {
+            Logger.getLogger(VXLNguoiChoi.class.getName()).log(Level.WARNING, "Lỗi rời bản đồ khi đóng người chơi " + this.ma, ex);
+        }
+        try {
+            this.flushCache();
+        }
+        finally {
+            VXLNguoiChoi.xoa(this.ma);
+        }
+    }
+    public void vaoLuyenTap() {
+        this.luyenTap.vao();
     }
 
     public void handleTrainingMove(VXLTinNhan ms) throws IOException {
-        short moveX = ms.boDoc().readShort();
-        short moveY = ms.boDoc().readShort();
-        if (!this.inTraining) {
-            return;
-        }
-        this.trainingPlayerX = this.kepShort(moveX, 0, 1200);
-        this.trainingPlayerY = this.kepShort(moveY, 0, 700);
-        this.dichVu.guiCapNhatXYLuyenTap((byte)0, this.trainingPlayerX, this.trainingPlayerY);
+        this.luyenTap.diChuyen(ms);
     }
 
     public void xuLyBanLuyenTap(VXLTinNhan ms) throws IOException {
-        if (!this.inTraining) {
-            System.out.println("[Training] Ignore player fire: not in training player=" + this.ten);
-            return;
-        }
-        if (this.trainingBotAnimating) {
-            System.out.println("[Training] Ignore player fire: bot animating player=" + this.ten);
-            return;
-        }
-        this.cancelTrainingBotTask();
-        long now = System.currentTimeMillis();
-        if (now - this.lastTrainingFire < 250L) {
-            System.out.println("[Training] Ignore player fire: too fast player=" + this.ten);
-            return;
-        }
-        this.lastTrainingFire = now;
-        byte loaiDan = ms.boDoc().readByte();
-        short fireX = ms.boDoc().readShort();
-        short fireY = ms.boDoc().readShort();
-        short goc = ms.boDoc().readShort();
-        byte luc = ms.boDoc().readByte();
-        if (this.isDoubleTrainingBullet(loaiDan)) {
-            ms.boDoc().readByte();
-        }
-        ms.boDoc().readByte();
-        if (luc <= 0) {
-            luc = 10;
-        }
-        if (luc > 30) {
-            luc = 30;
-        }
-        System.out.println("[Training] Player fire name=" + this.ten + " bullet=" + loaiDan + " x=" + fireX + " y=" + fireY + " angle=" + goc + " force=" + luc);
-        this.trainingPlayerX = this.kepShort(fireX, 0, 1200);
-        this.trainingPlayerY = this.kepShort(fireY, 0, 700);
-        short[][] duongDan = this.taoDuongDanLuyenTap(this.trainingPlayerX, this.trainingPlayerY, goc, luc);
-        short[] duongX = duongDan[0];
-        short[] duongY = duongDan[1];
-        this.trainingPendingHitBot = this.layBotTrungDuongLuyenTap(duongX, duongY);
-        this.trainingPendingHitDummy = this.trainingPendingHitBot >= 0;
-        this.trainingWaitingShotEnd = true;
-        this.dichVu.guiKetQuaBanLuyenTap((byte)0, this.layLoaiDanLuyenTapAnToan(loaiDan), this.trainingPlayerX, this.trainingPlayerY, goc, luc, duongX, duongY);
-        this.scheduleTrainingPlayerResolve(this.trainingPendingHitDummy, 1500L);
+        this.luyenTap.ban(ms);
     }
 
     public void xuLyVaChamLuyenTap(VXLTinNhan ms) throws IOException {
-        boolean hitDummyByClientExplosion = false;
-        int validExplodeCount = 0;
-        try {
-            byte n = ms.boDoc().readByte();
-            for (int i = 0; i < n; ++i) {
-                int boomX = ms.boDoc().readInt();
-                int boomY = ms.boDoc().readInt();
-                if (boomX >= 0 && boomY >= 0) {
-                    ++validExplodeCount;
-                    if (this.diemLuyenTapTrungBia(boomX, boomY)) {
-                        hitDummyByClientExplosion = true;
-                    }
-                }
-            }
-        }
-        catch (Exception ignored) {
-        }
-        if (!this.inTraining || !this.trainingWaitingShotEnd) {
-            return;
-        }
-        boolean hit = hitDummyByClientExplosion;
-        if (!hit && validExplodeCount == 0) {
-            hit = this.trainingPendingHitDummy;
-        }
-        System.out.println("[Training] Player cross name=" + this.ten + " hit=" + hit + " explosions=" + validExplodeCount);
-        this.xuLyPhatBanNguoiChoiLuyenTap(hit);
-    }
-
-    private synchronized void scheduleTrainingPlayerResolve(boolean hit, long delayMs) {
-        if (this.trainingPlayerResolveTask != null) {
-            this.trainingPlayerResolveTask.cancel(false);
-        }
-        this.trainingPlayerResolveTask = TRAINING_BOT_EXECUTOR.schedule(() -> {
-            try {
-                System.out.println("[Training] Fallback resolve player fire name=" + this.ten + " hit=" + hit);
-                this.xuLyPhatBanNguoiChoiLuyenTap(hit);
-            }
-            catch (Exception ex) {
-                Logger.getLogger(VXLNguoiChoi.class.getName()).log(Level.SEVERE, null, ex);
-            }
-        }, delayMs, TimeUnit.MILLISECONDS);
-    }
-
-    private synchronized void xuLyPhatBanNguoiChoiLuyenTap(boolean hit) throws IOException {
-        if (!this.inTraining || !this.trainingWaitingShotEnd) {
-            return;
-        }
-        if (this.trainingPlayerResolveTask != null) {
-            this.trainingPlayerResolveTask.cancel(false);
-            this.trainingPlayerResolveTask = null;
-        } else {
-            System.out.println("[Training] Resolve player fire by fallback name=" + this.ten + " hit=" + hit);
-        }
-        if (hit) {
-            int satThuong = this.trainingBossShield ? 8 : 20;
-            this.trainingBossShield = false;
-            int botIndex = this.trainingPendingHitBot >= 0 ? this.trainingPendingHitBot : this.layBotLuyenTapSongGanNhat();
-            if (botIndex >= 0) {
-                this.trainingBotHp[botIndex] -= satThuong;
-                if (this.trainingBotHp[botIndex] <= 0) {
-                    this.trainingBotHp[botIndex] = 0;
-                    this.trainingBotDead[botIndex] = true;
-                }
-                this.dichVu.guiCapNhatMauLuyenTap((byte)(botIndex + 1), this.trainingBotHp[botIndex], this.trainingBotDead[botIndex] ? (byte)2 : (byte)0);
-            }
-        }
-        this.trainingWaitingShotEnd = false;
-        this.trainingPendingHitDummy = false;
-        this.trainingPendingHitBot = -1;
-        this.scheduleTrainingBotShot(700L);
+        this.luyenTap.xuLyVaCham(ms);
     }
 
     public void handleTrainingHoleRequest(VXLTinNhan ms) throws IOException {
-        if (this.inTraining) {
-            this.dichVu.guiDatLaiHoLuyenTap();
-        }
+        this.luyenTap.yeuCauDatLaiHo();
     }
 
     public void handleTrainingClientReady() throws IOException {
-        this.dichVu.guiHienManHinhGameLuyenTap();
-        if (this.inTraining && !this.trainingFirstTurnSent) {
-            this.trainingFirstTurnSent = true;
-            this.dichVu.guiLuotLuyenTapTiep((byte)0, this.trainingPlayerX, this.trainingPlayerY);
-        }
-    }
-
-    private short kepShort(short giaTri, int nhoNhat, int lonNhat) {
-        int v = giaTri;
-        if (v < nhoNhat) {
-            v = nhoNhat;
-        }
-        if (v > lonNhat) {
-            v = lonNhat;
-        }
-        return (short)v;
-    }
-
-    private boolean isDoubleTrainingBullet(byte loaiDan) {
-        return loaiDan == 17 || loaiDan == 19;
-    }
-
-    private byte layLoaiDanLuyenTapAnToan(byte loaiDan) {
-        switch (loaiDan) {
-            case 0:
-            case 7:
-            case 8:
-            case 13:
-            case 21:
-            case 22:
-            case 25:
-            case 30:
-            case 34:
-            case 35:
-            case 42:
-            case 45:
-            case 50:
-            case 51:
-            case 52:
-            case 54:
-            case 55:
-            case 57:
-            case 58:
-                return loaiDan;
-            default:
-                return 0;
-        }
-    }
-
-    private short[][] taoDuongDanLuyenTap(short batDauX, short batDauY, short goc, byte luc) {
-        final int maxPoints = 36;
-        short[] xs = new short[maxPoints];
-        short[] ys = new short[maxPoints];
-        double rad = Math.toRadians(goc);
-        double speed = Math.max(8, luc) * 0.85D;
-        double gravity = 0.33D;
-        int len = 0;
-        for (int i = 0; i < maxPoints; ++i) {
-            double t = i;
-            int px = (int)Math.round(batDauX + Math.cos(rad) * speed * t);
-            int py = (int)Math.round(batDauY - Math.sin(rad) * speed * t + gravity * t * t);
-            boolean outOfBounds = px < 0 || px > 1200 || py < 0 || py > 700;
-            px = Math.max(0, Math.min(1200, px));
-            py = Math.max(0, Math.min(700, py));
-            xs[i] = (short)px;
-            ys[i] = (short)py;
-            len = i + 1;
-            if (outOfBounds || this.diemLuyenTapTrungBia(px, py)) {
-                break;
-            }
-        }
-        return this.trimTrainingPath(xs, ys, len);
-    }
-
-    private short[][] taoDuongDanThangLuyenTap(short batDauX, short batDauY, short targetX, short targetY) {
-        int dx = targetX - batDauX;
-        int dy = targetY - batDauY;
-        int steps = Math.max(8, Math.min(24, Math.max(Math.abs(dx), Math.abs(dy)) / 24));
-        short[] xs = new short[steps];
-        short[] ys = new short[steps];
-        for (int i = 0; i < steps; i++) {
-            double t = (double)i / (double)(steps - 1);
-            xs[i] = (short)Math.round(batDauX + dx * t);
-            ys[i] = (short)Math.round(batDauY + dy * t);
-        }
-        return new short[][]{xs, ys};
-    }
-
-    private short[][] trimTrainingPath(short[] xs, short[] ys, int len) {
-        len = Math.max(1, Math.min(len, xs.length));
-        short[] trimX = new short[len];
-        short[] trimY = new short[len];
-        System.arraycopy(xs, 0, trimX, 0, len);
-        System.arraycopy(ys, 0, trimY, 0, len);
-        return new short[][]{trimX, trimY};
-    }
-
-    private boolean duongLuyenTapTrungBia(short[] xs, short[] ys) {
-        return this.layBotTrungDuongLuyenTap(xs, ys) >= 0;
-    }
-
-    private int layBotTrungDuongLuyenTap(short[] xs, short[] ys) {
-        for (int i = 0; i < xs.length; ++i) {
-            int bot = this.layBotTrungDiemLuyenTap(xs[i], ys[i]);
-            if (bot >= 0) {
-                return bot;
-            }
-        }
-        return -1;
-    }
-
-    private boolean diemLuyenTapTrungBia(int pointX, int pointY) {
-        return this.layBotTrungDiemLuyenTap(pointX, pointY) >= 0;
-    }
-
-    private int layBotTrungDiemLuyenTap(int pointX, int pointY) {
-        for (int i = 0; i < TRAINING_BOT_COUNT; i++) {
-            if (this.trainingBotDead[i]) {
-                continue;
-            }
-            int dx = pointX - this.trainingBotX[i];
-            int dy = pointY - this.trainingBotY[i];
-            if (dx * dx + dy * dy <= 42 * 42) {
-                return i;
-            }
-        }
-        return -1;
-    }
-
-    private int layBotLuyenTapSongGanNhat() {
-        int best = -1;
-        int bestDistance = Integer.MAX_VALUE;
-        for (int i = 0; i < TRAINING_BOT_COUNT; i++) {
-            if (this.trainingBotDead[i]) {
-                continue;
-            }
-            int dx = this.trainingBotX[i] - this.trainingPlayerX;
-            int dy = this.trainingBotY[i] - this.trainingPlayerY;
-            int distance = dx * dx + dy * dy;
-            if (distance < bestDistance) {
-                bestDistance = distance;
-                best = i;
-            }
-        }
-        return best;
-    }
-
-    private synchronized void scheduleTrainingBotShot(long delayMs) {
-        if (!this.inTraining) {
-            return;
-        }
-        this.cancelTrainingBotTask();
-        this.trainingBotTask = TRAINING_BOT_EXECUTOR.schedule(this::runTrainingBotShot, delayMs, TimeUnit.MILLISECONDS);
-    }
-
-    private synchronized void cancelTrainingBotTask() {
-        if (this.trainingBotTask != null) {
-            this.trainingBotTask.cancel(false);
-            this.trainingBotTask = null;
-        }
-    }
-
-    private synchronized void dungVongBotLuyenTap() {
-        this.cancelTrainingBotTask();
-        if (this.trainingBotReturnTask != null) {
-            this.trainingBotReturnTask.cancel(false);
-            this.trainingBotReturnTask = null;
-        }
-        if (this.trainingPlayerResolveTask != null) {
-            this.trainingPlayerResolveTask.cancel(false);
-            this.trainingPlayerResolveTask = null;
-        }
-        this.trainingBotAnimating = false;
-    }
-
-    private void runTrainingBotShot() {
-        try {
-            synchronized (this) {
-                this.trainingBotTask = null;
-                if (!this.inTraining || this.trainingWaitingShotEnd || this.trainingBotAnimating) {
-                    return;
-                }
-                this.trainingBotAnimating = true;
-                this.botLuyenTapBanTra();
-                if (this.trainingBotReturnTask != null) {
-                    this.trainingBotReturnTask.cancel(false);
-                }
-                this.trainingBotReturnTask = TRAINING_BOT_EXECUTOR.schedule(this::finishTrainingBotShot, 1100L, TimeUnit.MILLISECONDS);
-            }
-        }
-        catch (Exception ex) {
-            Logger.getLogger(VXLNguoiChoi.class.getName()).log(Level.SEVERE, null, ex);
-        }
-    }
-
-    private void finishTrainingBotShot() {
-        try {
-            synchronized (this) {
-                this.trainingBotReturnTask = null;
-                if (!this.inTraining) {
-                    this.trainingBotAnimating = false;
-                    return;
-                }
-                this.trainingBotAnimating = false;
-                this.dichVu.guiLuotLuyenTapTiep((byte)0, this.trainingPlayerX, this.trainingPlayerY);
-            }
-        }
-        catch (Exception ex) {
-            Logger.getLogger(VXLNguoiChoi.class.getName()).log(Level.SEVERE, null, ex);
-        }
-    }
-
-    private void botLuyenTapBanTra() throws IOException {
-        int botIndex = this.botLuyenTapTiep();
-        if (botIndex < 0) {
-            this.datLaiBotLuyenTap();
-            botIndex = this.botLuyenTapTiep();
-            if (botIndex < 0) {
-                return;
-            }
-        }
-        this.diChuyenBotLuyenTap(botIndex);
-        this.bossLuyenTapDungVatPhamNeuCan(botIndex);
-        byte loaiDan = 0;
-        byte luc = 18;
-        short goc = this.gocToiMucTieu(this.trainingBotX[botIndex], this.trainingBotY[botIndex], this.trainingPlayerX, this.trainingPlayerY);
-        short[][] duongDan = this.taoDuongDanThangLuyenTap(this.trainingBotX[botIndex], this.trainingBotY[botIndex], this.trainingPlayerX, this.trainingPlayerY);
-        this.dichVu.guiKetQuaBanLuyenTap((byte)(botIndex + 1), loaiDan, this.trainingBotX[botIndex], this.trainingBotY[botIndex], goc, luc, duongDan[0], duongDan[1]);
-        if (this.duongLuyenTapTrungNguoiChoi(duongDan[0], duongDan[1])) {
-            int satThuong = this.trainingBossPowerShot ? 18 : 10;
-            this.trainingBossPowerShot = false;
-            this.trainingPlayerHp -= satThuong;
-            if (this.trainingPlayerHp <= 0) {
-                this.trainingPlayerHp = 100;
-            }
-            this.dichVu.guiCapNhatMauLuyenTap((byte)0, this.trainingPlayerHp, (byte)0);
-        }
-    }
-
-    private int botLuyenTapTiep() {
-        for (int step = 1; step <= TRAINING_BOT_COUNT; step++) {
-            int chiSo = (this.trainingBotTurn + step + TRAINING_BOT_COUNT) % TRAINING_BOT_COUNT;
-            if (!this.trainingBotDead[chiSo]) {
-                this.trainingBotTurn = chiSo;
-                return chiSo;
-            }
-        }
-        return -1;
-    }
-
-    private void datLaiBotLuyenTap() throws IOException {
-        for (int i = 0; i < TRAINING_BOT_COUNT; i++) {
-            this.trainingBotHp[i] = 100;
-            this.trainingBotDead[i] = false;
-            this.dichVu.guiCapNhatMauLuyenTap((byte)(i + 1), this.trainingBotHp[i], (byte)0);
-        }
-    }
-
-    private void diChuyenBotLuyenTap(int botIndex) throws IOException {
-        int shift = botIndex % 2 == 0 ? 22 : -22;
-        this.trainingBotX[botIndex] = this.kepShort((short)(this.trainingBotX[botIndex] + shift), 80, 1120);
-        this.dichVu.guiCapNhatXYLuyenTap((byte)(botIndex + 1), this.trainingBotX[botIndex], this.trainingBotY[botIndex]);
-    }
-
-    private void bossLuyenTapDungVatPhamNeuCan(int botIndex) throws IOException {
-        this.trainingBotTurnCount++;
-        if (this.trainingBotHp[botIndex] <= 60 && this.trainingBotTurnCount % 2 == 1) {
-            this.trainingBotHp[botIndex] = Math.min(100, this.trainingBotHp[botIndex] + 25);
-            this.dichVu.guiDungVatPhamLuyenTap((byte)(botIndex + 1), (byte)10, (short)0);
-            this.dichVu.guiCapNhatMauLuyenTap((byte)(botIndex + 1), this.trainingBotHp[botIndex], (byte)0);
-            return;
-        }
-        if (this.trainingBotTurnCount % 3 == 0) {
-            this.trainingBossShield = true;
-            this.dichVu.guiDungVatPhamLuyenTap((byte)(botIndex + 1), (byte)0, (short)0);
-            return;
-        }
-        if (this.trainingBotTurnCount % 2 == 0) {
-            this.trainingBossPowerShot = true;
-            this.dichVu.guiDungVatPhamLuyenTap((byte)(botIndex + 1), (byte)5, (short)0);
-        }
-    }
-
-    private short gocToiMucTieu(short batDauX, short batDauY, short targetX, short targetY) {
-        double radians = Math.atan2(batDauY - targetY, targetX - batDauX);
-        int degrees = (int)Math.round(Math.toDegrees(radians));
-        if (degrees < 0) {
-            degrees += 360;
-        }
-        return (short)degrees;
-    }
-
-    private boolean duongLuyenTapTrungNguoiChoi(short[] xs, short[] ys) {
-        for (int i = 0; i < xs.length; ++i) {
-            int dx = xs[i] - this.trainingPlayerX;
-            int dy = ys[i] - this.trainingPlayerY;
-            if (dx * dx + dy * dy <= 42 * 42) {
-                return true;
-            }
-        }
-        return false;
+        this.luyenTap.sanSang();
     }
 }

@@ -1,0 +1,40 @@
+# Gradle / Java build
+.gradle/
+build/
+out/
+*.class
+
+# Node.js
+node_modules/
+
+# IDE
+.idea/
+*.iml
+.vscode/
+.classpath
+.project
+.settings/
+
+# Logs and runtime files
+*.log
+logs/
+*.pid
+hs_err_pid*
+replay_pid*
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+*.bak
+*~
+
+# Local environment files
+.env
+.env.*
+!.env.example
+
+# Operating system files
+.DS_Store
+Thumbs.db
+Desktop.ini

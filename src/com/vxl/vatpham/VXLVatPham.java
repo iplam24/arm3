@@ -86,10 +86,58 @@ public class VXLVatPham {
     public int getParamById(int ma) {
         for (int i = 0; i < this.itemOptions.size(); ++i) {
             VXLThuocTinhVatPham o = (VXLThuocTinhVatPham)this.itemOptions.get(i);
-            if (o.optionTemplate.ma != ma) continue;
+            if (o.optionTemplate == null || o.optionTemplate.ma != ma) continue;
             return o.thamSo;
         }
         return -1;
+    }
+
+    public int tongThamSoTheoMa(int ma) {
+        int tong = 0;
+        for (int i = 0; i < this.itemOptions.size(); ++i) {
+            VXLThuocTinhVatPham thuocTinh = (VXLThuocTinhVatPham)this.itemOptions.get(i);
+            if (thuocTinh.optionTemplate != null && thuocTinh.optionTemplate.ma == ma) {
+                tong += thuocTinh.thamSo;
+            }
+        }
+        return tong;
+    }
+
+    public void datThamSoTheoMa(int ma, int thamSo) {
+        for (int i = 0; i < this.itemOptions.size(); ++i) {
+            VXLThuocTinhVatPham thuocTinh = (VXLThuocTinhVatPham)this.itemOptions.get(i);
+            if (thuocTinh.optionTemplate != null && thuocTinh.optionTemplate.ma == ma) {
+                thuocTinh.thamSo = thamSo;
+                return;
+            }
+        }
+        this.itemOptions.add(new VXLThuocTinhVatPham(ma, thamSo));
+    }
+
+    public void thayMau(VXLMauVatPham mauMoi) {
+        Vector thuocTinhBaoLuu = new Vector();
+        for (int i = 0; i < this.itemOptions.size(); ++i) {
+            VXLThuocTinhVatPham thuocTinh = (VXLThuocTinhVatPham)this.itemOptions.get(i);
+            if (thuocTinh.optionTemplate == null) {
+                continue;
+            }
+            int maThuocTinh = thuocTinh.optionTemplate.ma;
+            if (maThuocTinh == 15 || maThuocTinh == 16 || maThuocTinh == 17 || maThuocTinh == 19 || maThuocTinh == 20) {
+                thuocTinhBaoLuu.add(new VXLThuocTinhVatPham(maThuocTinh, thuocTinh.thamSo));
+            }
+        }
+        Vector thuocTinhMoi = new Vector();
+        for (int i = 0; i < mauMoi.thuocTinhs.size(); ++i) {
+            VXLThuocTinhVatPham thuocTinh = (VXLThuocTinhVatPham)mauMoi.thuocTinhs.get(i);
+            if (thuocTinh.optionTemplate != null) {
+                thuocTinhMoi.add(new VXLThuocTinhVatPham(thuocTinh.optionTemplate.ma, thuocTinh.thamSo));
+            }
+        }
+        thuocTinhMoi.addAll(thuocTinhBaoLuu);
+        this.ma = mauMoi.ma;
+        this.mau = mauMoi;
+        this.itemOptions = thuocTinhMoi;
+        this.HP = 100;
     }
 }
 

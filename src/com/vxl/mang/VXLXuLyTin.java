@@ -18,7 +18,11 @@ implements IVXLXuLyTin {
     public void khiCoTin(VXLTinNhan mss) {
         if (mss != null) {
             try {
-                switch (mss.layLenh()) {
+                byte lenh = mss.layLenh();
+                if (!this.laLenhTruocDangNhap(lenh) && !this.khach.daDangNhap()) {
+                    throw new IllegalStateException("Lenh " + lenh + " yêu cầu đăng nhập.");
+                }
+                switch (lenh) {
                     case 1:
                         this.khach.dangNhap(mss);
                         break;
@@ -109,7 +113,9 @@ implements IVXLXuLyTin {
                         this.khach.user.nguoiChoi.yeuCauMuaVatPham(mss);
                         break;
                     case 26:
-                        this.khach.user.nguoiChoi.dungVatPham(mss);
+                        if (!VXLQuanLyPhong.dungVatPhamTrongTran(this.khach.user.nguoiChoi, mss)) {
+                            this.khach.user.nguoiChoi.dungVatPham(mss);
+                        }
                         break;
                     case -44:
                         this.khach.user.nguoiChoi.chuyenVatPham(mss);
@@ -181,9 +187,15 @@ implements IVXLXuLyTin {
                 }
             }
             catch (Exception ex) {
-                Logger.getLogger(VXLXuLyTin.class.getName()).log(Level.SEVERE, null, ex);
+                Logger.getLogger(VXLXuLyTin.class.getName()).log(Level.WARNING, "Gói tin không hợp lệ, lệnh=" + mss.layLenh() + " từ " + this.khach.moTa(), ex);
+                this.khach.dongTin();
             }
         }
+    }
+
+    private boolean laLenhTruocDangNhap(byte lenh) {
+        return lenh == 1 || lenh == 2 || lenh == -4 || lenh == -58 || lenh == -71
+                || lenh == 58 || lenh == 114 || lenh == -102 || lenh == -60;
     }
 
     @Override

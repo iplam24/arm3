@@ -14,18 +14,22 @@ import com.vxl.mang.VXLXuLyTin;
 import com.vxl.nhapvai.VXLBanDoRPG;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.Channel;
+import io.netty.handler.codec.CorruptedFrameException;
 import io.netty.util.concurrent.ScheduledFuture;
 import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 public class VXLPhien
 implements IVXLPhien {
+    private static final int MAX_PACKET_SIZE = 32 * 1024;
     private final byte[] khoa = new byte[]{0};
     public Channel kenh;
     public int ma;
@@ -45,7 +49,8 @@ implements IVXLPhien {
     protected int svSended_clReceived;
     protected List<VXLTinNhan> vResendMessage = new ArrayList<VXLTinNhan>();
     public long timeConnected;
-    public static final HashMap<String, Count> sessions = new HashMap();
+    private static final long SESSION_TTL_MILLIS = TimeUnit.MINUTES.toMillis(5L);
+    public static final ConcurrentMap<String, Count> sessions = new ConcurrentHashMap<>();
     private String maPhien;
     private volatile boolean kichHoat = true;
     private ScheduledFuture<?> tacVuGiuKetNoi;
@@ -58,36 +63,30 @@ implements IVXLPhien {
     }
 
     public VXLTinNhan thuGiaiMaTin(ByteBuf in) {
-        if (!in.isReadable()) {
+        if (in.readableBytes() < 3) {
             return null;
         }
         in.markReaderIndex();
+        byte oldCurR = this.curR;
         try {
-            int kichThuoc;
-            if (!in.isReadable()) {
-                return null;
-            }
             byte cmd = in.readByte();
             if (this.daKetNoi) {
                 cmd = this.docKhoa(cmd);
             }
+            int kichThuoc;
             if (this.daKetNoi) {
-                if (in.readableBytes() < 2) {
-                    in.resetReaderIndex();
-                    return null;
-                }
                 byte b1 = in.readByte();
                 byte b2 = in.readByte();
                 kichThuoc = (this.docKhoa(b1) & 0xFF) << 8 | this.docKhoa(b2) & 0xFF;
             } else {
-                if (in.readableBytes() < 2) {
-                    in.resetReaderIndex();
-                    return null;
-                }
                 kichThuoc = in.readUnsignedShort();
+            }
+            if (kichThuoc > MAX_PACKET_SIZE) {
+                throw new CorruptedFrameException("Gói tin vượt quá " + MAX_PACKET_SIZE + " byte.");
             }
             if (in.readableBytes() < kichThuoc) {
                 in.resetReaderIndex();
+                this.curR = oldCurR;
                 return null;
             }
             byte[] duLieu = new byte[kichThuoc];
@@ -99,9 +98,12 @@ implements IVXLPhien {
             }
             return new VXLTinNhan(cmd, duLieu);
         }
-        catch (Exception e) {
-            in.resetReaderIndex();
-            return null;
+        catch (CorruptedFrameException ex) {
+            throw ex;
+        }
+        catch (Exception ex) {
+            this.curR = oldCurR;
+            throw new CorruptedFrameException("Không thể giải mã gói tin.", ex);
         }
     }
 
@@ -190,19 +192,20 @@ implements IVXLPhien {
     private void dongBo(VXLTinNhan ms) throws IOException {
         byte loai = ms.boDoc().readByte();
         if (loai == 0) {
-            String oldSessionId = ms.boDoc().readUTF();
+            String oldSessionId = ms.docUTF(64, "mã phiên");
             int clSended = ms.boDoc().readInt();
             int clReceived = ms.boDoc().readInt();
-            Count c = sessions.get(oldSessionId);
-            if (c == null) {
+            if (clSended < 0 || clReceived < 0) {
+                throw new IllegalArgumentException("Bộ đếm đồng bộ không hợp lệ.");
+            }
+            Count count = sessions.remove(oldSessionId);
+            if (count == null || count.hetHan()) {
                 this.guiMaPhien(0);
                 return;
             }
-            System.out.println(c.svReceived_clSended);
-            this.svReceived_clSended = c.svReceived_clSended;
-            this.svSended_clReceived = c.svSended_clReceived;
-            this.vResendMessage = new ArrayList<VXLTinNhan>(c.vResendMessage);
-            sessions.remove(this.maPhien);
+            this.svReceived_clSended = count.svReceived_clSended;
+            this.svSended_clReceived = count.svSended_clReceived;
+            this.vResendMessage = new ArrayList<VXLTinNhan>(count.vResendMessage);
             this.guiMaPhien(1);
             if (clReceived != this.svSended_clReceived) {
                 int num3 = this.vResendMessage.size() - (this.svReceived_clSended - clReceived);
@@ -223,7 +226,7 @@ implements IVXLPhien {
         this.loaiKhach = mss.boDoc().readByte();
         this.mucPhong = mss.boDoc().readByte();
         System.out.println(mucPhong);
-        this.phienBan = mss.boDoc().readUTF();
+        this.phienBan = mss.docUTF(32, "phien ban");
         ((VXLDichVuGame)this.dichVu).hienTaiXuong();
     }
 
@@ -328,22 +331,33 @@ implements IVXLPhien {
             return;
         }
         this.kichHoat = false;
-        Count c = new Count();
-        c.svReceived_clSended = this.svReceived_clSended;
-        c.svSended_clReceived = this.svSended_clReceived;
-        c.vResendMessage = new ArrayList<VXLTinNhan>(this.vResendMessage);
+        Count count = new Count();
+        count.svReceived_clSended = this.svReceived_clSended;
+        count.svSended_clReceived = this.svSended_clReceived;
+        count.vResendMessage = new ArrayList<VXLTinNhan>(this.vResendMessage);
         if (this.maPhien != null) {
-            sessions.put(this.maPhien, c);
+            String closedSessionId = this.maPhien;
+            sessions.put(closedSessionId, count);
+            if (this.kenh != null && this.kenh.eventLoop() != null) {
+                this.kenh.eventLoop().schedule(() -> sessions.remove(closedSessionId, count), SESSION_TTL_MILLIS, TimeUnit.MILLISECONDS);
+            }
         }
         try {
             if (this.user != null) {
                 this.user.close();
             }
-            VXLQuanLyMayChu.disconnect(this);
-            this.donMang();
         }
-        catch (Exception e) {
-            e.printStackTrace();
+        catch (Exception ex) {
+            VXLQuanLyMayChu.log("Lỗi đóng người dùng " + this.moTa() + ": " + ex.getMessage());
+        }
+        try {
+            VXLQuanLyMayChu.disconnect(this);
+        }
+        catch (Exception ex) {
+            VXLQuanLyMayChu.log("Lỗi gỡ phiên " + this.moTa() + ": " + ex.getMessage());
+        }
+        finally {
+            this.donMang();
         }
     }
 
@@ -401,7 +415,7 @@ implements IVXLPhien {
     }
 
     public void guiKhoa() throws IOException {
-        this.maPhien = "nvn_" + System.currentTimeMillis();
+        this.maPhien = "vxl_" + UUID.randomUUID();
         VXLTinNhan ms = new VXLTinNhan(-27);
         DataOutputStream ds = ms.boGhi();
         ds.writeByte(this.khoa.length);
@@ -450,10 +464,10 @@ implements IVXLPhien {
     }
 
     public void dangKy(VXLTinNhan ms) throws IOException {
-        String tenDangNhap = ms.boDoc().readUTF();
-        String matKhau = ms.boDoc().readUTF();
-        String usernameAo = ms.boDoc().readUTF();
-        System.out.println("username: " + tenDangNhap + " password: " + matKhau + " usernameAo: " + usernameAo);
+        String tenDangNhap = ms.docUTF(32, "tên đăng nhập");
+        ms.docUTF(72, "mật khẩu");
+        String usernameAo = ms.docUTF(32, "tên đăng nhập ảo");
+        System.out.println("Yêu cầu đăng ký tài khoản=" + tenDangNhap + " tài khoản ảo=" + usernameAo);
     }
 
     public void guiLaiTinTu(int chiSo) {
@@ -498,18 +512,29 @@ implements IVXLPhien {
         if (this.dangNhap) {
             return;
         }
-        String tenDangNhap = ms.boDoc().readUTF();
-        VXLNguoiDung us = VXLNguoiDung.dangNhap(this, tenDangNhap, matKhau = ms.boDoc().readUTF(), phienBan = ms.boDoc().readUTF(), loai = ms.boDoc().readByte());
+        String tenDangNhap = ms.docUTF(32, "tên đăng nhập");
+        if (tenDangNhap.isBlank()) {
+            throw new IllegalArgumentException("Tên đăng nhập rỗng.");
+        }
+        matKhau = ms.docUTF(72, "mật khẩu");
+        phienBan = ms.docUTF(32, "phien ban");
+        loai = ms.boDoc().readByte();
+        VXLNguoiDung us = VXLNguoiDung.dangNhap(this, tenDangNhap, matKhau, phienBan, loai);
         if (us != null) {
             this.user = us;
+            this.dangNhap = true;
             this.user.taiDuLieuNguoiChoi();
             this.user.dichVu.guiPhienBan();
         }
     }
 
     public void dangNhap2(VXLTinNhan ms) throws IOException {
-        String tenDangNhap = ms.boDoc().readUTF();
+        String tenDangNhap = ms.docUTF(32, "tên đăng nhập");
         VXLNguoiDung.dangNhap2(this, tenDangNhap);
+    }
+
+    public boolean daDangNhap() {
+        return this.dangNhap && this.user != null;
     }
 
     public void dangXuat() {
@@ -529,9 +554,11 @@ implements IVXLPhien {
     private static class Count {
         protected int svReceived_clSended;
         protected int svSended_clReceived;
+        private final long taoLuc = System.currentTimeMillis();
         private List<VXLTinNhan> vResendMessage = new ArrayList<VXLTinNhan>();
 
-        private Count() {
+        private boolean hetHan() {
+            return System.currentTimeMillis() - this.taoLuc > SESSION_TTL_MILLIS;
         }
     }
 }

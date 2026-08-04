@@ -5,30 +5,39 @@ import com.vxl.mohinh.VXLNguoiChoi;
 import com.vxl.mang.VXLTinNhan;
 import com.vxl.phong.VXLChoDau;
 import java.io.IOException;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ScheduledFuture;
-import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class VXLQuanLyChien {
-    private static final ScheduledExecutorService BOT_EXECUTOR = Executors.newSingleThreadScheduledExecutor(r -> {
-        Thread thread = new Thread(r, "lo-chien-bot");
-        thread.setDaemon(true);
-        return thread;
-    });
+    public static final byte MA_BAN_DO_HAI_TOA_THAP = 51;
+    private static final byte KET_QUA_THUA = 0;
+    private static final byte KET_QUA_THANG = 1;
+    private static final byte KET_QUA_HOA = 2;
     private static final int MAX_FIGHTERS = 8;
     private static final int TURN_SECONDS = 8;
     private final VXLChoDau wait;
     private final VXLChienBinh[] chienBinhs = new VXLChienBinh[MAX_FIGHTERS];
     private final VXLQuanLyBanDo map;
+    private final boolean cheDoCamTu;
+    private final VXLXuLyVatPhamTrongTran xuLyVatPham;
+    private final VXLXuLyKetThucTranDau xuLyKetThuc;
+    private final VXLTinhDuongDan tinhDuongDan;
+    private final VXLPhatTinTranDau phatTin;
+    private final VXLDieuKhienBotTranDau dieuKhienBot;
     private byte luotHienTai = -1;
     private boolean daKetThuc;
-    private ScheduledFuture<?> tacVuBot;
+    private boolean daYeuCauDonTran;
     private long hanLuot;
 
     public VXLQuanLyChien(VXLChoDau wait, VXLNguoiChoi[] nguoiChois, byte maBanDo) {
         this.wait = wait;
         this.map = new VXLQuanLyBanDo(maBanDo);
+        this.cheDoCamTu = maBanDo == MA_BAN_DO_HAI_TOA_THAP;
+        this.xuLyVatPham = new VXLXuLyVatPhamTrongTran(this);
+        this.xuLyKetThuc = new VXLXuLyKetThucTranDau(this.cheDoCamTu, this.chienBinhs);
+        this.tinhDuongDan = new VXLTinhDuongDan(this.map, this.chienBinhs);
+        this.phatTin = new VXLPhatTinTranDau(this.chienBinhs);
+        this.dieuKhienBot = new VXLDieuKhienBotTranDau(this, this.chienBinhs, this.map, this.tinhDuongDan);
         for (int i = 0; i < nguoiChois.length && i < this.chienBinhs.length; i++) {
             VXLNguoiChoi nguoiChoi = nguoiChois[i];
             if (nguoiChoi == null) {
@@ -40,290 +49,382 @@ public class VXLQuanLyChien {
         }
     }
 
-    public void themBot(byte chiSo, String ten, short maVuKhi, byte avenger) {
-        if (chiSo < 0 || chiSo >= this.chienBinhs.length || this.chienBinhs[chiSo] != null) {
+    public synchronized void themBot(byte chiSo, String ten, short maVuKhi, byte avenger) {
+        if (!this.chiSoHopLe(chiSo) || this.chienBinhs[chiSo] != null) {
             return;
         }
         this.chienBinhs[chiSo] = new VXLChienBinh(chiSo, this.map.laySinhX(chiSo), this.map.laySinhY(chiSo), ten, maVuKhi, avenger);
     }
 
-    public void batDau() throws IOException {
-        for (VXLChienBinh chienBinh : this.chienBinhs) {
-            if (chienBinh != null && chienBinh.coPhien()) {
-                chienBinh.nguoiChoi.dichVu.guiBatDauDau(this.map.layMaBanDo(), this.chienBinhs, this.map.layMaNen());
-            }
-        }
-        for (VXLChienBinh chienBinh : this.chienBinhs) {
-            if (chienBinh != null && chienBinh.coPhien()) {
-                chienBinh.nguoiChoi.dichVu.guiHienManHinhGameLuyenTap();
-            }
-        }
-        this.luotHienTai = this.nguoiSongTiepTu((byte)-1);
-        this.sendNextTurn();
-        this.lapLichBotBan();
-    }
-
-    public void diChuyen(VXLNguoiChoi nguoiChoi, VXLTinNhan ms) throws IOException {
-        VXLChienBinh chienBinh = this.layChienBinh(nguoiChoi);
-        if (chienBinh == null || chienBinh.chet || chienBinh.chiSo != this.luotHienTai || this.daKetThuc) {
+    public synchronized void themCamTu(byte chiSo, String ten, short maVuKhi, byte avenger) {
+        if (!this.chiSoHopLe(chiSo) || this.chienBinhs[chiSo] != null) {
             return;
         }
-        short x = ms.boDoc().readShort();
-        short y = ms.boDoc().readShort();
-        chienBinh.x = this.kepShort(x, 0, this.map.getWidth());
-        chienBinh.y = this.kepShort(y, 0, this.map.getHeight());
+        this.chienBinhs[chiSo] = new VXLChienBinh(chiSo, this.map.laySinhX(chiSo), this.map.laySinhY(chiSo), ten, maVuKhi, avenger, true);
+    }
+
+    public synchronized boolean laCheDoCamTu() {
+        return this.cheDoCamTu;
+    }
+
+    public synchronized void batDau() throws IOException {
+        if (this.daKetThuc) {
+            return;
+        }
+        this.phatTin.guiBatDau(this.map.layMaBanDo(), this.map.layMaNen());
+        this.phatTin.guiManHinhChienDau();
+        if (this.kiemTraKetThuc()) {
+            return;
+        }
+        this.chuanBiLuotTiepTheo((byte)-1);
+        this.dieuKhienBot.batDau();
+    }
+
+    public synchronized void diChuyen(VXLNguoiChoi nguoiChoi, VXLTinNhan ms) throws IOException {
+        VXLChienBinh chienBinh = this.layChienBinh(nguoiChoi);
+        if (!this.coTheHanhDong(chienBinh) || chienBinh.luotDongBang > 0) {
+            return;
+        }
+        short xYeuCau = ms.boDoc().readShort();
+        short yYeuCau = ms.boDoc().readShort();
+        int tamDiChuyen = 180 * Math.max(100, chienBinh.heSoDiChuyen) / 100;
+        short[] toaDo = this.tinhDuongDan.gioiHanDiChuyen(chienBinh.x, chienBinh.y, xYeuCau, yYeuCau, tamDiChuyen);
+        chienBinh.x = toaDo[0];
+        chienBinh.y = toaDo[1];
+        chienBinh.heSoDiChuyen = 100;
         this.phatDiChuyen(chienBinh);
     }
 
-    public void capNhatXY(VXLNguoiChoi nguoiChoi, VXLTinNhan ms) throws IOException {
+    public synchronized void capNhatXY(VXLNguoiChoi nguoiChoi, VXLTinNhan ms) throws IOException {
         VXLChienBinh chienBinh = this.layChienBinh(nguoiChoi);
-        if (chienBinh == null || this.daKetThuc) {
+        if (!this.coTheHanhDong(chienBinh) || chienBinh.luotDongBang > 0) {
             return;
         }
-        chienBinh.x = this.kepShort(ms.boDoc().readShort(), 0, this.map.getWidth());
-        chienBinh.y = this.kepShort(ms.boDoc().readShort(), 0, this.map.getHeight());
+        short xYeuCau = ms.boDoc().readShort();
+        short yYeuCau = ms.boDoc().readShort();
+        short[] toaDo = this.tinhDuongDan.gioiHanDiChuyen(chienBinh.x, chienBinh.y, xYeuCau, yYeuCau, 220);
+        chienBinh.x = toaDo[0];
+        chienBinh.y = toaDo[1];
         this.phatCapNhatXY(chienBinh);
     }
 
-    public void ban(VXLNguoiChoi nguoiChoi, VXLTinNhan ms) throws IOException {
-        VXLChienBinh shooter = this.layChienBinh(nguoiChoi);
-        if (shooter == null || shooter.chet || shooter.chiSo != this.luotHienTai || this.daKetThuc) {
+    public synchronized void ban(VXLNguoiChoi nguoiChoi, VXLTinNhan ms) throws IOException {
+        VXLChienBinh nguoiBan = this.layChienBinh(nguoiChoi);
+        if (!this.coTheHanhDong(nguoiBan)) {
             return;
         }
-        byte loaiDan = ms.boDoc().readByte();
+        byte loaiDanKhachGui = ms.boDoc().readByte();
         short x = ms.boDoc().readShort();
         short y = ms.boDoc().readShort();
         short goc = ms.boDoc().readShort();
         byte luc = ms.boDoc().readByte();
-        if (loaiDan == 17 || loaiDan == 19) {
+        if (loaiDanKhachGui == 17 || loaiDanKhachGui == 19) {
             ms.boDoc().readByte();
         }
-        byte numShoot = ms.boDoc().readByte();
-        if (luc <= 0) {
-            luc = 10;
+        int soPhat = Byte.toUnsignedInt(ms.boDoc().readByte());
+        soPhat = Math.max(1, Math.min(4, soPhat));
+        luc = (byte)Math.max(10, Math.min(30, luc));
+        short[] viTriBan = this.tinhDuongDan.gioiHanDiChuyen(nguoiBan.x, nguoiBan.y, x, y, 120);
+        nguoiBan.x = viTriBan[0];
+        nguoiBan.y = viTriBan[1];
+
+        int maVatPhamDan = nguoiBan.vatPhamDanDacBiet;
+        nguoiBan.vatPhamDanDacBiet = -1;
+        byte loaiDan = VXLCauHinhVatPhamChienDau.layLoaiDan(maVatPhamDan, loaiDanKhachGui);
+        if (nguoiBan.luotMu > 0) {
+            nguoiBan.luotMu--;
+            goc = (short)((goc + 14 + nguoiBan.chiSo * 3) % 360);
         }
-        if (luc > 30) {
-            luc = 30;
-        }
-        shooter.x = this.kepShort(x, 0, this.map.getWidth());
-        shooter.y = this.kepShort(y, 0, this.map.getHeight());
-        VXLKetQuaDan ketQua = this.xuLyPhatBan(shooter, this.layLoaiDanAnToan(loaiDan), goc, luc);
-        this.phatBan(shooter, ketQua, numShoot);
+
+        VXLKetQuaDan ketQua = this.xuLyPhatBan(nguoiBan, loaiDan, goc, luc, maVatPhamDan);
+        this.phatBan(nguoiBan, ketQua, (byte)soPhat);
+        int satThuongThucTe = 0;
         if (ketQua.mucTieu != null && ketQua.satThuong > 0) {
-            this.satThuong(ketQua.mucTieu, ketQua.satThuong);
+            satThuongThucTe = this.satThuong(nguoiBan, ketQua.mucTieu, ketQua.satThuong, false, false, false);
+            if (satThuongThucTe > 0) {
+                this.apDungHieuUngDan(nguoiBan, ketQua.mucTieu, maVatPhamDan);
+                this.apDungSatThuongDienRong(nguoiBan, ketQua.mucTieu, maVatPhamDan, ketQua.satThuong);
+            }
         }
-        if (!this.daKetThuc) {
+        if (satThuongThucTe > 0 && nguoiBan.luotMaCaRong > 0) {
+            int hoiMau = nguoiBan.hoiMau(Math.max(1, satThuongThucTe * 40 / 100));
+            if (hoiMau > 0) {
+                this.phatCapNhatMau(nguoiBan);
+            }
+        }
+        if (nguoiBan.luotMaCaRong > 0) {
+            nguoiBan.luotMaCaRong--;
+        }
+        nguoiBan.heSoPhatBan = 100;
+        if (!this.kiemTraKetThuc()) {
             this.sangLuot();
         }
     }
 
-    public void kiemTraVaCham(VXLNguoiChoi nguoiChoi, VXLTinNhan ms) throws IOException {
+    public synchronized boolean dungVatPham(VXLNguoiChoi nguoiChoi, VXLTinNhan ms) throws IOException {
+        return this.xuLyVatPham.xuLy(nguoiChoi, ms);
+    }
+    public synchronized void kiemTraVaCham(VXLNguoiChoi nguoiChoi, VXLTinNhan ms) throws IOException {
         while (ms.boDoc().available() > 0) {
             ms.boDoc().readByte();
         }
     }
 
-    public void boLuot(VXLNguoiChoi nguoiChoi) throws IOException {
+    public synchronized void boLuot(VXLNguoiChoi nguoiChoi) throws IOException {
         VXLChienBinh chienBinh = this.layChienBinh(nguoiChoi);
-        if (chienBinh != null && !chienBinh.chet && chienBinh.chiSo == this.luotHienTai && !this.daKetThuc) {
+        if (this.coTheHanhDong(chienBinh)) {
             this.sangLuot();
         }
     }
 
-    public void khiNguoiChoiRoi(VXLNguoiChoi nguoiChoi) {
+    public synchronized void khiNguoiChoiRoi(VXLNguoiChoi nguoiChoi) {
         VXLChienBinh chienBinh = this.layChienBinh(nguoiChoi);
-        if (chienBinh != null) {
+        if (chienBinh == null || chienBinh.daRoiTran) {
+            return;
+        }
+        chienBinh.daRoiTran = true;
+        if (!chienBinh.chet) {
             chienBinh.chet = true;
             chienBinh.hp = 0;
+            nguoiChoi.chet++;
         }
-    }
+        this.phatCapNhatMau(chienBinh);
 
-    public void dungBot() {
-        if (this.tacVuBot != null) {
-            this.tacVuBot.cancel(false);
-            this.tacVuBot = null;
-        }
-    }
-
-    private VXLKetQuaDan xuLyPhatBan(VXLChienBinh shooter, byte loaiDan, short goc, byte luc) {
-        short[][] duongDan = this.taoDuongDan(shooter.x, shooter.y, goc, luc);
-        VXLChienBinh mucTieu = this.timMucTieuTrung(shooter, duongDan[0], duongDan[1]);
-        int satThuong = mucTieu != null ? Math.max(15, 20 + luc / 2) : 0;
-        return new VXLKetQuaDan(loaiDan, shooter.x, shooter.y, goc, luc, duongDan[0], duongDan[1], mucTieu, satThuong);
-    }
-
-    private byte layLoaiDanAnToan(byte loaiDan) {
-        switch (loaiDan) {
-            case 0:
-            case 7:
-            case 8:
-            case 13:
-            case 21:
-            case 22:
-            case 25:
-            case 30:
-            case 34:
-            case 35:
-            case 42:
-            case 45:
-            case 50:
-            case 51:
-            case 52:
-            case 54:
-            case 55:
-            case 57:
-            case 58:
-                return loaiDan;
-            default:
-                return 0;
-        }
-    }
-
-    private void lapLichBotBan() {
-        this.dungBot();
-        this.tacVuBot = BOT_EXECUTOR.scheduleWithFixedDelay(() -> {
-            try {
-                this.nhipBot();
-            } catch (Exception ex) {
-                ex.printStackTrace();
-            }
-        }, 700L, 700L, TimeUnit.MILLISECONDS);
-    }
-
-    private synchronized void nhipBot() throws IOException {
-        if (this.daKetThuc) {
-            this.dungBot();
-            return;
-        }
-        VXLChienBinh turn = this.luotHienTai >= 0 && this.luotHienTai < this.chienBinhs.length ? this.chienBinhs[this.luotHienTai] : null;
-        if (turn == null || turn.chet) {
-            this.sangLuot();
-            return;
-        }
-        if (turn.bot) {
-            this.diChuyenBotTruocKhiBan(turn);
-            VXLChienBinh mucTieu = this.timMucTieuGanNhat(turn);
-            if (mucTieu != null) {
-                short goc = this.gocToiMucTieu(turn, mucTieu);
-                VXLKetQuaDan ketQua = this.xuLyPhatBan(turn, (byte)0, goc, (byte)18);
-                this.phatBan(turn, ketQua, (byte)1);
-                if (ketQua.mucTieu != null && ketQua.satThuong > 0) {
-                    this.satThuong(ketQua.mucTieu, ketQua.satThuong);
-                }
-            }
-            if (!this.daKetThuc) {
+        this.xuLyKetThuc.quyetToanRoiTran(chienBinh);
+        try {
+            this.kiemTraKetThuc();
+            if (!this.daKetThuc && this.luotHienTai == chienBinh.chiSo) {
                 this.sangLuot();
             }
-        } else if (System.currentTimeMillis() > this.hanLuot) {
-            this.sangLuot();
+        }
+        catch (IOException ex) {
+            Logger.getLogger(VXLQuanLyChien.class.getName()).log(Level.WARNING, "Lỗi xử lý sau khi người chơi rời trận.", ex);
         }
     }
 
-    private void diChuyenBotTruocKhiBan(VXLChienBinh bot) throws IOException {
-        int shift = bot.chiSo % 2 == 0 ? 28 : -28;
-        bot.x = this.kepShort((short)(bot.x + shift), 40, this.map.getWidth() - 40);
-        this.phatDiChuyen(bot);
+    public synchronized void dungBot() {
+        this.dieuKhienBot.dung();
     }
 
-    private VXLChienBinh timMucTieuGanNhat(VXLChienBinh shooter) {
-        VXLChienBinh best = null;
-        int bestDistance = Integer.MAX_VALUE;
+    boolean coTheHanhDong(VXLChienBinh chienBinh) {
+        return chienBinh != null && !chienBinh.chet && !this.daKetThuc && chienBinh.chiSo == this.luotHienTai;
+    }
+    VXLKetQuaDan xuLyPhatBan(VXLChienBinh nguoiBan, byte loaiDan, short goc, byte luc, int maVatPhamDan) {
+        short[][] duongDan = this.tinhDuongDan.tao(nguoiBan.x, nguoiBan.y, goc, luc);
+        VXLChienBinh mucTieu = this.tinhDuongDan.timMucTieuTrung(nguoiBan, duongDan[0], duongDan[1]);
+        int satThuong = 0;
+        if (mucTieu != null) {
+            int heSoDan = VXLCauHinhVatPhamChienDau.layHeSoSatThuong(maVatPhamDan);
+            int heSoTong = heSoDan * Math.max(100, nguoiBan.heSoPhatBan) / 100;
+            satThuong = VXLTinhSatThuong.tinhPhatBan(nguoiBan.tanCong, luc, heSoTong);
+        }
+        return new VXLKetQuaDan(loaiDan, nguoiBan.x, nguoiBan.y, goc, luc, duongDan[0], duongDan[1], mucTieu, satThuong);
+    }
+
+    int satThuong(VXLChienBinh nguon, VXLChienBinh mucTieu, int satThuongGoc, boolean boQuaGiap, boolean boQuaVoHinh, boolean kiemTraNgay) throws IOException {
+        if (mucTieu == null || mucTieu.chet || satThuongGoc <= 0) {
+            return 0;
+        }
+        if (!boQuaVoHinh && mucTieu.luotVoHinh > 0) {
+            mucTieu.luotVoHinh = 0;
+            if (mucTieu.coPhien()) {
+                mucTieu.nguoiChoi.startOKDlg2("Vô hình đã giúp bạn né phát bắn.");
+            }
+            return 0;
+        }
+        int satThuong = boQuaGiap ? satThuongGoc : VXLTinhSatThuong.tinhSauGiap(satThuongGoc, mucTieu.giap);
+        if (mucTieu.khien > 0) {
+            int hapThu = Math.min(mucTieu.khien, satThuong);
+            mucTieu.khien -= hapThu;
+            satThuong -= hapThu;
+        }
+        if (satThuong <= 0) {
+            return 0;
+        }
+        int mauTruoc = mucTieu.hp;
+        mucTieu.hp = Math.max(0, mucTieu.hp - satThuong);
+        int satThuongThucTe = mauTruoc - mucTieu.hp;
+        if (nguon != null && nguon != mucTieu) {
+            nguon.tongSatThuong += satThuongThucTe;
+            mucTieu.nguoiGaySatThuongCuoi = nguon;
+            if (!nguon.bot && !mucTieu.bot) {
+                nguon.nguoiChoi.ghiNhanSatThuongPvp(satThuongThucTe);
+            }
+        }
+        if (mucTieu.hp == 0) {
+            this.danhDauChet(nguon, mucTieu);
+        }
+        this.phatCapNhatMau(mucTieu);
+        if (kiemTraNgay) {
+            this.kiemTraKetThuc();
+        }
+        return satThuongThucTe;
+    }
+
+    private void danhDauChet(VXLChienBinh nguon, VXLChienBinh mucTieu) {
+        if (mucTieu.chet) {
+            return;
+        }
+        mucTieu.chet = true;
+        if (!mucTieu.bot) {
+            mucTieu.nguoiChoi.chet++;
+        }
+        if (nguon == null || nguon == mucTieu) {
+            return;
+        }
+        nguon.haGucTrongTran++;
+        if (!nguon.bot && !mucTieu.bot) {
+            nguon.nguoiChoi.kill++;
+        }
+        if (!nguon.bot && mucTieu.camTu) {
+            nguon.haCamTuTrongTran++;
+        }
+    }
+
+    private void apDungHieuUngDan(VXLChienBinh nguoiBan, VXLChienBinh mucTieu, int maVatPhamDan) {
+        switch (maVatPhamDan) {
+            case 243:
+            case 248:
+                mucTieu.luotDoc = Math.max(mucTieu.luotDoc, 3);
+                mucTieu.satThuongDoc = Math.max(mucTieu.satThuongDoc, Math.max(6, mucTieu.mauToiDa * 7 / 100));
+                mucTieu.nguonDoc = nguoiBan;
+                break;
+            case 244:
+                mucTieu.luotMu = Math.max(mucTieu.luotMu, 3);
+                break;
+            case 247:
+                mucTieu.luotDongBang = Math.max(mucTieu.luotDongBang, 1);
+                break;
+            default:
+                break;
+        }
+    }
+
+    private void apDungSatThuongDienRong(VXLChienBinh nguoiBan, VXLChienBinh mucTieuChinh, int maVatPhamDan, int satThuongGoc) throws IOException {
+        if (maVatPhamDan != 228 && maVatPhamDan != 238 && maVatPhamDan != 240 && maVatPhamDan != 241) {
+            return;
+        }
         for (VXLChienBinh mucTieu : this.chienBinhs) {
-            if (mucTieu == null || mucTieu == shooter || mucTieu.chet || shooter.bot && mucTieu.bot) {
+            if (mucTieu == null || mucTieu == mucTieuChinh || mucTieu == nguoiBan || mucTieu.chet) {
                 continue;
             }
-            int dx = mucTieu.x - shooter.x;
-            int dy = mucTieu.y - shooter.y;
-            int distance = dx * dx + dy * dy;
-            if (distance < bestDistance) {
-                bestDistance = distance;
-                best = mucTieu;
+            int dx = mucTieu.x - mucTieuChinh.x;
+            int dy = mucTieu.y - mucTieuChinh.y;
+            if (dx * dx + dy * dy <= 130 * 130) {
+                this.satThuong(nguoiBan, mucTieu, Math.max(1, satThuongGoc / 2), false, false, false);
             }
         }
-        return best;
     }
 
-    private short gocToiMucTieu(VXLChienBinh shooter, VXLChienBinh mucTieu) {
-        double radians = Math.atan2(shooter.y - mucTieu.y, mucTieu.x - shooter.x);
-        int degrees = (int)Math.round(Math.toDegrees(radians));
-        if (degrees < 0) {
-            degrees += 360;
+    boolean kiemTraKetThuc() throws IOException {
+        if (this.daKetThuc) {
+            return true;
         }
-        return (short)degrees;
-    }
-
-    private VXLChienBinh timMucTieuTrung(VXLChienBinh shooter, short[] xs, short[] ys) {
-        VXLChienBinh best = null;
-        int bestDistance = Integer.MAX_VALUE;
-        for (VXLChienBinh mucTieu : this.chienBinhs) {
-            if (mucTieu == null || mucTieu == shooter || mucTieu.chet) {
-                continue;
+        if (this.cheDoCamTu) {
+            int nguoiSong = 0;
+            int camTuSong = 0;
+            for (VXLChienBinh chienBinh : this.chienBinhs) {
+                if (chienBinh == null || chienBinh.chet) {
+                    continue;
+                }
+                if (chienBinh.camTu) {
+                    camTuSong++;
+                } else if (!chienBinh.bot) {
+                    nguoiSong++;
+                }
             }
-            for (int i = 0; i < xs.length; i++) {
-                int dx = xs[i] - mucTieu.x;
-                int dy = ys[i] - mucTieu.y;
-                int distance = dx * dx + dy * dy;
-                if (distance < bestDistance) {
-                    bestDistance = distance;
-                    best = mucTieu;
+            if (nguoiSong > 0 && camTuSong > 0) {
+                return false;
+            }
+            byte ketQuaDoi = nguoiSong > 0 ? KET_QUA_THANG : (camTuSong > 0 ? KET_QUA_THUA : KET_QUA_HOA);
+            this.ketThucTran(null, ketQuaDoi);
+            return true;
+        }
+
+        int conSong = 0;
+        int nguoiChoiSong = 0;
+        VXLChienBinh nguoiThang = null;
+        for (VXLChienBinh chienBinh : this.chienBinhs) {
+            if (chienBinh != null && !chienBinh.chet) {
+                conSong++;
+                nguoiThang = chienBinh;
+                if (!chienBinh.bot) {
+                    nguoiChoiSong++;
                 }
             }
         }
-        return bestDistance <= 60 * 60 ? best : null;
+        if (nguoiChoiSong == 0) {
+            this.ketThucTran(nguoiThang, conSong == 0 ? KET_QUA_HOA : KET_QUA_THANG);
+            return true;
+        }
+        if (conSong > 1) {
+            return false;
+        }
+        this.ketThucTran(nguoiThang, conSong == 0 ? KET_QUA_HOA : KET_QUA_THANG);
+        return true;
     }
 
-    private void satThuong(VXLChienBinh mucTieu, int satThuong) throws IOException {
-        mucTieu.hp -= satThuong;
-        if (mucTieu.hp <= 0) {
-            mucTieu.hp = 0;
-            mucTieu.chet = true;
-        }
-        for (VXLChienBinh chienBinh : this.chienBinhs) {
-            if (chienBinh != null && chienBinh.coPhien()) {
-                chienBinh.nguoiChoi.dichVu.guiCapNhatMauDau(mucTieu.chiSo, mucTieu.hp, mucTieu.phanTramMau(), mucTieu.chet ? (byte)2 : (byte)0);
-            }
-        }
-        this.kiemTraThang();
-    }
-
-    private void kiemTraThang() throws IOException {
-        int alive = 0;
-        byte pheThang = 0;
-        for (VXLChienBinh chienBinh : this.chienBinhs) {
-            if (chienBinh != null && !chienBinh.chet) {
-                alive++;
-                pheThang = (byte)(chienBinh.chiSo % 2);
-            }
-        }
-        if (alive > 1) {
+    private void ketThucTran(VXLChienBinh nguoiThang, byte ketQuaDoi) {
+        if (this.daKetThuc) {
             return;
         }
         this.daKetThuc = true;
         this.dungBot();
-        for (VXLChienBinh chienBinh : this.chienBinhs) {
-            if (chienBinh != null && chienBinh.coPhien()) {
-                if (!chienBinh.chet) {
-                    chienBinh.nguoiChoi.kill++;
-                    chienBinh.nguoiChoi.cup += 1;
-                } else {
-                    chienBinh.nguoiChoi.chet++;
-                }
-                chienBinh.nguoiChoi.dichVu.guiKetThucDau(pheThang, 10, 100, 0);
-                chienBinh.nguoiChoi.dichVu.capNhatCup((byte)0, chienBinh.nguoiChoi.cup);
-                chienBinh.nguoiChoi.dichVu.capNhatKDVaKDA();
-            }
+        this.xuLyKetThuc.quyetToanTatCa(nguoiThang, ketQuaDoi);
+        this.yeuCauDonTran();
+    }
+    private void yeuCauDonTran() {
+        if (this.daYeuCauDonTran) {
+            return;
         }
-        this.wait.ketThucDau();
+        this.daYeuCauDonTran = true;
+        this.dieuKhienBot.thucHienBatDongBo(this.wait::ketThucDau);
     }
 
-    private void sangLuot() throws IOException {
-        this.luotHienTai = this.nguoiSongTiepTu(this.luotHienTai);
-        this.sendNextTurn();
+    void sangLuot() throws IOException {
+        this.chuanBiLuotTiepTheo(this.luotHienTai);
+    }
+
+    private void chuanBiLuotTiepTheo(byte batDauTu) throws IOException {
+        byte viTri = batDauTu;
+        for (int lan = 0; lan < this.chienBinhs.length * 2 && !this.daKetThuc; lan++) {
+            viTri = this.nguoiSongTiepTu(viTri);
+            this.luotHienTai = viTri;
+            if (viTri < 0) {
+                this.kiemTraKetThuc();
+                return;
+            }
+            VXLChienBinh chienBinh = this.chienBinhs[viTri];
+            chienBinh.daDungVatPhamTrongLuot = false;
+            if (chienBinh.luotVoHinh > 0) {
+                chienBinh.luotVoHinh--;
+            }
+            if (chienBinh.luotDoc > 0) {
+                chienBinh.luotDoc--;
+                this.satThuong(chienBinh.nguonDoc, chienBinh, chienBinh.satThuongDoc, true, true, false);
+                if (this.kiemTraKetThuc()) {
+                    return;
+                }
+                if (chienBinh.chet) {
+                    continue;
+                }
+            }
+            if (chienBinh.luotDongBang > 0) {
+                chienBinh.luotDongBang--;
+                if (chienBinh.coPhien()) {
+                    chienBinh.nguoiChoi.startOKDlg2("Bạn đang bị đóng băng và mất lượt.");
+                }
+                continue;
+            }
+            this.guiLuotTiepTheo();
+            return;
+        }
+        this.kiemTraKetThuc();
     }
 
     private byte nguoiSongTiepTu(byte from) {
-        for (int step = 1; step <= this.chienBinhs.length; step++) {
-            int chiSo = (from + step + this.chienBinhs.length) % this.chienBinhs.length;
+        for (int buoc = 1; buoc <= this.chienBinhs.length; buoc++) {
+            int chiSo = (from + buoc + this.chienBinhs.length) % this.chienBinhs.length;
             VXLChienBinh chienBinh = this.chienBinhs[chiSo];
             if (chienBinh != null && !chienBinh.chet) {
                 return (byte)chiSo;
@@ -331,49 +432,36 @@ public class VXLQuanLyChien {
         }
         return -1;
     }
-
-    private void sendNextTurn() throws IOException {
-        if (this.daKetThuc || this.luotHienTai < 0) {
+    private void guiLuotTiepTheo() throws IOException {
+        if (this.daKetThuc || !this.chiSoHopLe(this.luotHienTai)) {
             return;
         }
-        VXLChienBinh next = this.chienBinhs[this.luotHienTai];
+        VXLChienBinh tiepTheo = this.chienBinhs[this.luotHienTai];
         this.hanLuot = System.currentTimeMillis() + TURN_SECONDS * 1000L;
-        for (VXLChienBinh chienBinh : this.chienBinhs) {
-            if (chienBinh != null && chienBinh.coPhien()) {
-                chienBinh.nguoiChoi.dichVu.guiLuotDauTiep(this.luotHienTai, next.x, next.y, this.chienBinhConSong(), (byte)TURN_SECONDS);
-            }
-        }
+        this.phatTin.guiLuotTiepTheo(this.luotHienTai, tiepTheo.x, tiepTheo.y, (byte)TURN_SECONDS);
+
     }
 
-    private VXLChienBinh[] chienBinhConSong() {
-        return this.chienBinhs;
+    void phatDiChuyen(VXLChienBinh daDiChuyen) {
+        this.phatTin.guiDiChuyen(daDiChuyen);
     }
 
-    private void phatDiChuyen(VXLChienBinh moved) throws IOException {
-        for (VXLChienBinh chienBinh : this.chienBinhs) {
-            if (chienBinh != null && chienBinh.coPhien()) {
-                chienBinh.nguoiChoi.dichVu.guiDiChuyenDau(moved.chiSo, moved.x, moved.y);
-            }
-        }
+    private void phatCapNhatXY(VXLChienBinh daDiChuyen) {
+        this.phatTin.guiCapNhatXY(daDiChuyen);
     }
 
-    private void phatCapNhatXY(VXLChienBinh moved) throws IOException {
-        for (VXLChienBinh chienBinh : this.chienBinhs) {
-            if (chienBinh != null && chienBinh.coPhien()) {
-                chienBinh.nguoiChoi.dichVu.guiCapNhatXYLuyenTap(moved.chiSo, moved.x, moved.y);
-            }
-        }
+    void phatBan(VXLChienBinh nguoiBan, VXLKetQuaDan ketQua, byte soPhat) {
+        this.phatTin.guiPhatBan(nguoiBan, ketQua, soPhat);
     }
 
-    private void phatBan(VXLChienBinh shooter, VXLKetQuaDan ketQua, byte numShoot) throws IOException {
-        for (VXLChienBinh chienBinh : this.chienBinhs) {
-            if (chienBinh != null && chienBinh.coPhien()) {
-                chienBinh.nguoiChoi.dichVu.guiKetQuaBanDau(shooter.chiSo, ketQua, numShoot);
-            }
-        }
+    void phatCapNhatMau(VXLChienBinh mucTieu) {
+        this.phatTin.guiMau(mucTieu);
     }
 
-    private VXLChienBinh layChienBinh(VXLNguoiChoi nguoiChoi) {
+    void phatDungVatPham(VXLChienBinh nguoiDung, byte maHieuUng, short icon) {
+        this.phatTin.guiDungVatPham(nguoiDung, maHieuUng, icon);
+    }
+    VXLChienBinh layChienBinh(VXLNguoiChoi nguoiChoi) {
         if (nguoiChoi == null) {
             return null;
         }
@@ -385,43 +473,27 @@ public class VXLQuanLyChien {
         return null;
     }
 
-    private short[][] taoDuongDan(short batDauX, short batDauY, short goc, byte luc) {
-        final int maxPoints = 36;
-        short[] xs = new short[maxPoints];
-        short[] ys = new short[maxPoints];
-        double rad = Math.toRadians(goc);
-        double speed = Math.max(8, luc) * 0.85D;
-        double gravity = 0.33D;
-        int len = 0;
-        for (int i = 0; i < maxPoints; i++) {
-            int px = (int)Math.round(batDauX + Math.cos(rad) * speed * i);
-            int py = (int)Math.round(batDauY - Math.sin(rad) * speed * i + gravity * i * i);
-            boolean outOfBounds = px < 0 || px > this.map.getWidth() || py < 0 || py > this.map.getHeight();
-            px = Math.max(0, Math.min(this.map.getWidth(), px));
-            py = Math.max(0, Math.min(this.map.getHeight(), py));
-            xs[i] = (short)px;
-            ys[i] = (short)py;
-            len = i + 1;
-            if (outOfBounds || this.map.coVaCham(xs[i], ys[i])) {
-                break;
-            }
-        }
-        len = Math.max(1, Math.min(len, xs.length));
-        short[] trimX = new short[len];
-        short[] trimY = new short[len];
-        System.arraycopy(xs, 0, trimX, 0, len);
-        System.arraycopy(ys, 0, trimY, 0, len);
-        return new short[][]{trimX, trimY};
+    VXLChienBinh[] layDanhSachChienBinh() {
+        return this.chienBinhs;
     }
 
-    private short kepShort(short giaTri, int nhoNhat, int lonNhat) {
-        int v = giaTri;
-        if (v < nhoNhat) {
-            v = nhoNhat;
-        }
-        if (v > lonNhat) {
-            v = lonNhat;
-        }
-        return (short)v;
+    int layChieuRongBanDo() {
+        return this.map.getWidth();
+    }
+
+    private boolean chiSoHopLe(byte chiSo) {
+        return chiSo >= 0 && chiSo < this.chienBinhs.length;
+    }
+
+    boolean daKetThuc() {
+        return this.daKetThuc;
+    }
+
+    byte layLuotHienTai() {
+        return this.luotHienTai;
+    }
+
+    long layHanLuot() {
+        return this.hanLuot;
     }
 }

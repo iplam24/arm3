@@ -123,7 +123,7 @@ public class VXLQuanLyPhong {
     public static void vaoBan(VXLNguoiChoi nguoiChoi, VXLTinNhan ms) throws IOException {
         byte maPhong = ms.boDoc().readByte();
         byte maBan = ms.boDoc().readByte();
-        String matKhau = ms.boDoc().readUTF();
+        String matKhau = ms.docUTF(32, "mật khẩu phòng");
         VXLPhong phong = layPhong(maPhong);
         if (phong == null || maBan < 0 || maBan >= phong.banChos.length) {
             nguoiChoi.startOKDlg2("Khu vực không tồn tại.");
@@ -186,6 +186,15 @@ public class VXLQuanLyPhong {
         if (fight != null) {
             fight.boLuot(nguoiChoi);
         }
+    }
+
+    public static boolean dungVatPhamTrongTran(VXLNguoiChoi nguoiChoi, VXLTinNhan ms) throws IOException {
+        VXLQuanLyChien fight = layTranDau(nguoiChoi);
+        if (fight == null) {
+            return false;
+        }
+        fight.dungVatPham(nguoiChoi, ms);
+        return true;
     }
 
     private static VXLQuanLyChien layTranDau(VXLNguoiChoi nguoiChoi) {

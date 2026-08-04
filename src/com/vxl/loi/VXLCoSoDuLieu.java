@@ -29,7 +29,7 @@ public final class VXLCoSoDuLieu {
         config.addDataSourceProperty("cachePrepStmts", "true");
         config.addDataSourceProperty("prepStmtCacheSize", "250");
         dataSource = new HikariDataSource(config);
-        System.out.println("VXLCoSoDuLieu pool ready: " + config.getJdbcUrl());
+        System.out.println("Nhóm kết nối cơ sở dữ liệu đã sẵn sàng: " + config.getJdbcUrl());
     }
 
     public static Connection getConnection() throws SQLException {
@@ -39,6 +39,25 @@ public final class VXLCoSoDuLieu {
     public static void withConnection(SqlWork work) throws SQLException {
         try (Connection conn = getConnection()) {
             work.run(conn);
+        }
+    }
+
+    public static void withTransaction(SqlWork work) throws SQLException {
+        try (Connection conn = getConnection()) {
+            conn.setAutoCommit(false);
+            try {
+                work.run(conn);
+                conn.commit();
+            }
+            catch (SQLException | RuntimeException ex) {
+                try {
+                    conn.rollback();
+                }
+                catch (SQLException rollbackEx) {
+                    ex.addSuppressed(rollbackEx);
+                }
+                throw ex;
+            }
         }
     }
 

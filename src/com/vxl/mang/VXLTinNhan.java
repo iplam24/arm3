@@ -55,6 +55,14 @@ public class VXLTinNhan {
         return this.dis;
     }
 
+    public String docUTF(int doDaiToiDa, String tenTruong) throws IOException {
+        String giaTri = this.dis.readUTF();
+        if (giaTri.length() > doDaiToiDa) {
+            throw new IllegalArgumentException(tenTruong + " vượt quá " + doDaiToiDa + " ký tự.");
+        }
+        return giaTri;
+    }
+
     public DataOutputStream boGhi() {
         return this.dos;
     }

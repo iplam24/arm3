@@ -1,6 +1,6 @@
 package com.vxl.mohinh;
 
-// Vũ Xuân Lâm đẹp trai VCL
+// Code by Lọ Thánh Chí Tôn
 import com.vxl.loi.VXLCoSoDuLieu;
 import com.vxl.loi.VXLQuanLyMayChu;
 import com.vxl.vatpham.VXLVatPham;
@@ -15,16 +15,19 @@ import com.alibaba.fastjson2.JSON;
 import com.alibaba.fastjson2.JSONArray;
 import com.alibaba.fastjson2.JSONObject;
 import java.io.DataOutputStream;
+import java.io.IOException;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.HashMap;
+import java.util.Locale;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class VXLNguoiDung {
-    public static HashMap<String, VXLNguoiDung> users = new HashMap();
+    public static final ConcurrentMap<String, VXLNguoiDung> users = new ConcurrentHashMap<>();
     private VXLPhien khach;
     public VXLDichVuGame dichVu;
     private int user_id;
@@ -38,15 +41,30 @@ public class VXLNguoiDung {
     private static final int[] ID_TEMPLATE_WEAPON = new int[]{110, 120, 130, 140, 150, 160, 190, 200};
     private static final int[] ID_TEMPLATE_HEAD = new int[]{0, 1, 2, 3, 4};
     private static final int[] ID_TEMPLATE_HAT = new int[]{60, 65, 70, 75, 80};
-    private static final String DEFAULT_STATS_JSON = "{\"power\":100,\"avenger\":100,\"kill\":0,\"dead\":1,\"assist\":0,\"trainingSuccess\":1,\"busyHammer\":0,\"nHammer\":2,\"exp\":1000,\"point\":0,\"pointAdd\":[1000,0,0,0,0,0]}";
+
+    private static boolean laPartHopLe(int[] templateIds, short part) {
+        for (int templateId : templateIds) {
+            VXLMauVatPham template = VXLQuanLyMayChu.itemTemplates.get(templateId);
+            if (template != null && template.part == part) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private static final String DEFAULT_STATS_JSON = "{\"power\":100,\"avenger\":100,\"kill\":0,\"dead\":1,\"assist\":0,\"trainingSuccess\":1,\"trainingRebelDefeated\":0,\"busyHammer\":0,\"nHammer\":2,\"exp\":1000,\"point\":0,\"pointAdd\":[1000,0,0,0,0,0],\"pvpWins\":0,\"kamikazeKills\":0,\"bossKills\":0,\"pvpDamage\":0,\"dailyDate\":\"\",\"dailyPvpWins\":0,\"dailyKamikazeKills\":0,\"dailyBossKills\":0,\"dailyPvpClaimed\":false,\"dailyKamikazeClaimed\":false,\"dailyBossClaimed\":false,\"achievementPvpClaimed\":false,\"achievementKamikazeClaimed\":false,\"achievementBossClaimed\":false,\"doubleExpUntil\":0}";
 
     public VXLNguoiDung(VXLPhien khach, VXLDichVuGame dichVu) {
         this.khach = khach;
         this.dichVu = dichVu;
     }
 
+    private static String khoaNguoiDung(String ten) {
+        return ten.toLowerCase(Locale.ROOT);
+    }
+
     public static VXLNguoiDung timNguoiDungTheoTen(String ten) {
-        return users.get(ten);
+        return users.get(khoaNguoiDung(ten));
     }
 
     public static VXLNguoiDung dangNhap(VXLPhien s, String tenDangNhap, String matKhau, String phienBan, byte loai) {
@@ -61,35 +79,34 @@ public class VXLNguoiDung {
                 stmt.setString(2, matKhau);
                 ResultSet res = stmt.executeQuery();
                 if (res != null && res.next()) {
-                    VXLNguoiDung user = VXLNguoiDung.timNguoiDungTheoTen(tenDangNhap);
-                    if (user != null) {
-                        us.dichVu.moHopThoaiOK("Tai khoan nay co nguoi su dung.");
-                        user.khach.guiMaPhien(0);
-                        res.close();
-                        return null;
-                    }
                     us.user_id = res.getInt("id");
                     us.ban = res.getBoolean("is_banned");
                     if (us.ban) {
-                        us.dichVu.moHopThoaiOK("Tai khoan da bi khoa.");
+                        us.dichVu.moHopThoaiOK("Tài khoản đã bị khóa.");
                         res.close();
                         return null;
                     }
                     us.tenDangNhap = res.getString("username");
                     us.matKhau = res.getString("password");
                     res.close();
-                    users.put(us.tenDangNhap, us);
+                    String userKey = khoaNguoiDung(us.tenDangNhap);
+                    VXLNguoiDung user = users.putIfAbsent(userKey, us);
+                    if (user != null) {
+                        us.dichVu.moHopThoaiOK("Tài khoản này đang được đăng nhập ở nơi khác.");
+                        user.khach.guiMaPhien(0);
+                        return null;
+                    }
                     return us;
                 }
                 if (res != null) {
                     res.close();
                 }
             }
-            us.dichVu.moHopThoaiOK("Tai khoan hoac mat khau khong chinh xac.");
+            us.dichVu.moHopThoaiOK("Tài khoản hoặc mật khẩu không chính xác.");
         }
         catch (Exception ex) {
             try {
-                us.dichVu.moHopThoaiOK("Loi dang nhap.");
+                us.dichVu.moHopThoaiOK("Lỗi đăng nhập.");
             }
             catch (Exception exception) {
                 // empty catch block
@@ -117,9 +134,9 @@ public class VXLNguoiDung {
         }
     }
 
-    public void taoNhanVat(VXLTinNhan ms) {
+    public void taoNhanVat(VXLTinNhan ms) throws IOException {
         try {
-            String ten = ms.boDoc().readUTF();
+            String ten = ms.docUTF(20, "tên nhân vật").trim();
             short head = ms.boDoc().readShort();
             short leg = ms.boDoc().readShort();
             short body = ms.boDoc().readShort();
@@ -132,8 +149,17 @@ public class VXLNguoiDung {
             System.out.println("wing: " + wing);
             System.out.println("wp: " + weapon);
             System.out.println("hat: " + hat);
-            if (ten.equals("")) {
+            if (ten.isEmpty()) {
                 this.dichVu.moHopThoaiOK("Tên không hợp lệ!");
+                return;
+            }
+            if (!laPartHopLe(ID_TEMPLATE_HEAD, head)
+                    || !laPartHopLe(ID_TEMPLATE_LEG, leg)
+                    || !laPartHopLe(ID_TEMPLATE_BODY, body)
+                    || !laPartHopLe(ID_TEMPLATE_BALO, wing)
+                    || !laPartHopLe(ID_TEMPLATE_WEAPON, weapon)
+                    || !laPartHopLe(ID_TEMPLATE_HAT, hat)) {
+                this.dichVu.moHopThoaiOK("Dữ liệu tạo nhân vật không hợp lệ.");
                 return;
             }
             try (java.sql.Connection conn = VXLCoSoDuLieu.getConnection();
@@ -194,6 +220,7 @@ public class VXLNguoiDung {
                             for (int i = 0; i < 6; ++i) {
                                 this.nguoiChoi.pointAdd[i] = Short.parseShort(jArr.get(i).toString());
                             }
+                            this.nguoiChoi.taiTienTrinhGame(stats);
                             int headId = -1;
                             int legId = -1;
                             int bodyId = -1;
@@ -280,6 +307,12 @@ public class VXLNguoiDung {
                 }
             }
         }
+        catch (IOException ex) {
+            throw ex;
+        }
+        catch (IllegalArgumentException ex) {
+            throw ex;
+        }
         catch (Exception ex) {
             Logger.getLogger(VXLNguoiDung.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -305,7 +338,8 @@ public class VXLNguoiDung {
                 this.nguoiChoi.body = (short)-1;
                 this.nguoiChoi.wing = (short)-1;
                 this.nguoiChoi.wp = (short)-1;
-                VXLDuLieuJson p = new VXLDuLieuJson((JSONObject)JSON.parse(res.getString("stats_json")));
+                JSONObject stats = (JSONObject)JSON.parse(res.getString("stats_json"));
+                VXLDuLieuJson p = new VXLDuLieuJson(stats);
                 this.nguoiChoi.kinhNghiem = p.getInt("exp");
                 this.nguoiChoi.cap = VXLTienIch.layCap(this.nguoiChoi.kinhNghiem);
                 this.nguoiChoi.point = p.getShort("point");
@@ -317,40 +351,87 @@ public class VXLNguoiDung {
                 this.nguoiChoi.assist = p.getInt("assist");
                 this.nguoiChoi.powerAvenger = p.getByte("avenger");
                 this.nguoiChoi.power = p.getByte("power");
-                JSONArray jArr = p.getJSONArray("pointAdd");
-                this.nguoiChoi.pointAdd = new short[6];
-                for (int i = 0; i < 6; ++i) {
-                    this.nguoiChoi.pointAdd[i] = Short.parseShort(jArr.get(i).toString());
-                }
-                JSONArray bags = (JSONArray)JSON.parse(res.getString("inventory_json"));
-                for (int i = 0; i < bags.size(); ++i) {
-                    VXLVatPham vatPham = new VXLVatPham((JSONObject)bags.get(i));
-                    this.nguoiChoi.itemBag[vatPham.chiSo] = vatPham;
-                }
-                JSONArray bodys = (JSONArray)JSON.parse(res.getString("equipped_json"));
-                for (int i = 0; i < bodys.size(); ++i) {
-                    VXLVatPham vatPham = new VXLVatPham((JSONObject)bodys.get(i));
-                    this.nguoiChoi.itemBody[vatPham.chiSo] = vatPham;
-                    this.nguoiChoi.datTrangBiChoNhanVat(vatPham);
-                    if (vatPham.mau.loai == 4) {
-                        int thamSo = vatPham.getParamById(13);
-                        this.nguoiChoi.itemBalo = new int[thamSo];
-                        for (int a = 0; a < thamSo; ++a) {
-                            this.nguoiChoi.itemBalo[a] = -1;
+                JSONArray pointAdds = p.getJSONArray("pointAdd");
+                this.nguoiChoi.pointAdd = new short[]{1000, 0, 0, 0, 0, 0};
+                if (pointAdds != null) {
+                    for (int i = 0; i < Math.min(this.nguoiChoi.pointAdd.length, pointAdds.size()); ++i) {
+                        try {
+                            this.nguoiChoi.pointAdd[i] = Short.parseShort(pointAdds.get(i).toString());
+                        }
+                        catch (RuntimeException valueEx) {
+                            Logger.getLogger(VXLNguoiDung.class.getName()).log(Level.WARNING, "Bỏ qua pointAdd bị lỗi tại vị trí " + i, valueEx);
                         }
                     }
                 }
+                this.nguoiChoi.taiTienTrinhGame(stats);
+                JSONArray bags = (JSONArray)JSON.parse(res.getString("inventory_json"));
+                for (int i = 0; bags != null && i < bags.size(); ++i) {
+                    try {
+                        VXLVatPham vatPham = new VXLVatPham((JSONObject)bags.get(i));
+                        if (vatPham.chiSo >= 0 && vatPham.chiSo < this.nguoiChoi.itemBag.length) {
+                            this.nguoiChoi.itemBag[vatPham.chiSo] = vatPham;
+                        } else {
+                            Logger.getLogger(VXLNguoiDung.class.getName()).warning("Bỏ qua vật phẩm trong túi có chỉ số lỗi: " + vatPham.chiSo);
+                        }
+                    }
+                    catch (RuntimeException itemEx) {
+                        Logger.getLogger(VXLNguoiDung.class.getName()).log(Level.WARNING, "Bỏ qua vật phẩm trong túi bị lỗi.", itemEx);
+                    }
+                }
+                JSONArray bodys = (JSONArray)JSON.parse(res.getString("equipped_json"));
+                for (int i = 0; bodys != null && i < bodys.size(); ++i) {
+                    try {
+                        VXLVatPham vatPham = new VXLVatPham((JSONObject)bodys.get(i));
+                        if (vatPham.chiSo < 0 || vatPham.chiSo >= this.nguoiChoi.itemBody.length) {
+                            Logger.getLogger(VXLNguoiDung.class.getName()).warning("Bỏ qua trang bị có chỉ số lỗi: " + vatPham.chiSo);
+                            continue;
+                        }
+                        int soOBalo = -1;
+                        if (vatPham.mau.loai == 4) {
+                            soOBalo = vatPham.getParamById(13);
+                            if (soOBalo < 0 || soOBalo > this.nguoiChoi.itemBag.length) {
+                                throw new IllegalArgumentException("Số ô ba lô không hợp lệ: " + soOBalo);
+                            }
+                        }
+                        this.nguoiChoi.itemBody[vatPham.chiSo] = vatPham;
+                        this.nguoiChoi.datTrangBiChoNhanVat(vatPham);
+                        if (soOBalo >= 0) {
+                            this.nguoiChoi.itemBalo = new int[soOBalo];
+                            for (int slot = 0; slot < soOBalo; ++slot) {
+                                this.nguoiChoi.itemBalo[slot] = -1;
+                            }
+                        }
+                    }
+                    catch (RuntimeException itemEx) {
+                        Logger.getLogger(VXLNguoiDung.class.getName()).log(Level.WARNING, "Bỏ qua trang bị bị lỗi.", itemEx);
+                    }
+                }
                 JSONArray balos = (JSONArray)JSON.parse(res.getString("pocket_json"));
-                for (int i = 0; i < balos.size(); ++i) {
-                    int chiSo = Integer.parseInt(balos.get(i).toString());
-                    if (chiSo != -1 && this.nguoiChoi.itemBag[chiSo] != null) {
-                        this.nguoiChoi.itemBalo[i] = chiSo;
+                int soOCanTai = balos == null ? 0 : Math.min(balos.size(), this.nguoiChoi.itemBalo.length);
+                for (int i = 0; i < soOCanTai; ++i) {
+                    try {
+                        int chiSo = Integer.parseInt(balos.get(i).toString());
+                        if (chiSo >= 0 && chiSo < this.nguoiChoi.itemBag.length && this.nguoiChoi.itemBag[chiSo] != null) {
+                            this.nguoiChoi.itemBalo[i] = chiSo;
+                        }
+                    }
+                    catch (RuntimeException valueEx) {
+                        Logger.getLogger(VXLNguoiDung.class.getName()).log(Level.WARNING, "Bỏ qua ô ba lô bị lỗi tại vị trí " + i, valueEx);
                     }
                 }
                 JSONArray box = (JSONArray)JSON.parse(res.getString("storage_json"));
-                for (int i = 0; i < box.size(); ++i) {
-                    VXLVatPham vatPham = new VXLVatPham((JSONObject)box.get(i));
-                    this.nguoiChoi.itemBox[vatPham.chiSo] = vatPham;
+                for (int i = 0; box != null && i < box.size(); ++i) {
+                    try {
+                        VXLVatPham vatPham = new VXLVatPham((JSONObject)box.get(i));
+                        if (vatPham.chiSo >= 0 && vatPham.chiSo < this.nguoiChoi.itemBox.length) {
+                            this.nguoiChoi.itemBox[vatPham.chiSo] = vatPham;
+                        } else {
+                            Logger.getLogger(VXLNguoiDung.class.getName()).warning("Bỏ qua vật phẩm trong rương có chỉ số lỗi: " + vatPham.chiSo);
+                        }
+                    }
+                    catch (RuntimeException itemEx) {
+                        Logger.getLogger(VXLNguoiDung.class.getName()).log(Level.WARNING, "Bỏ qua vật phẩm trong rương bị lỗi.", itemEx);
+                    }
                 }
                 res.close();
                 this.nguoiChoi.dichVu.datNguoiChoi(this.nguoiChoi);
@@ -358,41 +439,27 @@ public class VXLNguoiDung {
             }
             res.close();
         }
-        catch (SQLException ex) {
-            Logger.getLogger(VXLNguoiDung.class.getName()).log(Level.SEVERE, null, ex);
+        catch (Exception ex) {
+            this.nguoiChoi = null;
+            Logger.getLogger(VXLNguoiDung.class.getName()).log(Level.SEVERE, "Không thể tải dữ liệu người chơi.", ex);
+            throw new IllegalStateException("Không thể tải dữ liệu người chơi.", ex);
         }
     }
 
     public void thanhTich(VXLTinNhan mss) {
         try {
-            System.out.println("📥 Player yêu cầu xem thành tích");
-            VXLTinNhan ms = new VXLTinNhan(88);
-            DataOutputStream ds = ms.boGhi();
-            ds.writeByte(0);
-            ds.writeUTF("🎖 BẢNG THÀNH TÍCH CÁ NHÂN");
-            ds.writeInt(1);
-            ds.writeInt(1);
-            ds.writeInt(1);
-            ds.writeInt(1);
-            ds.writeByte(3);
-            ds.writeByte(1);
-            ds.writeBoolean(false);
-            ds.writeByte(2);
-            ds.writeBoolean(true);
-            ds.writeByte(3);
-            ds.writeBoolean(false);
-            ds.flush();
-            this.dichVu.guiTin(ms);
-            System.out.println("📤 Đã gửi bảng thành tích  ");
+            if (this.nguoiChoi != null) {
+                this.nguoiChoi.nhiemVu.guiThanhTich();
+            }
         }
-        catch (Exception e) {
-            System.out.println("❌ Lỗi gửi thành tích ");
-            e.printStackTrace();
+        catch (IOException ex) {
+            Logger.getLogger(VXLNguoiDung.class.getName()).log(Level.WARNING, "Không thể gửi bảng thành tích.", ex);
         }
     }
-
     public void close() {
-        users.remove(this.tenDangNhap);
+        if (this.tenDangNhap != null) {
+            users.remove(khoaNguoiDung(this.tenDangNhap), this);
+        }
         if (this.nguoiChoi != null) {
             this.nguoiChoi.close();
         }
