@@ -34,10 +34,8 @@ public record VXLHoSoDan(String ten, byte loaiClient, KieuBan kieuBan,
             double tocDoXoayDoMoiGiay, int banKinhThuVe) {
     }
 
-    public record Tarzan(double tamBayTruocNgoatCoBan, double tamBayTruocNgoatTheoLuc,
-            double tocDoXoayXuoiDoMoiGiay, double tongGocXoayXuoi,
-            double tocDoXoayNguocDoMoiGiay, double tongGocXoayNguoc,
-            int banKinhAnToanChu) {
+    public record Tarzan(double giaTocNgoatBanDau, double giaTocNgoatLienTuc,
+            int leNgoaiBanDo) {
     }
 
     public enum KieuBan {

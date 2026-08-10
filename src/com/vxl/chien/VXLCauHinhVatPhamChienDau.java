@@ -15,6 +15,7 @@ public final class VXLCauHinhVatPhamChienDau {
     private static final VXLHoSoDan.VatLy VAT_LY_LIEN_THANH = vatLy(0.55D, 1D, 1D);
     private static final VXLHoSoDan.VatLy VAT_LY_SINH_VAT = vatLy(1.20D, 0.90D, 0.65D);
     private static final VXLHoSoDan.VatLy VAT_LY_QUAY_VE = vatLy(0.95D, 0.20D, 0.06D);
+    private static final VXLHoSoDan.VatLy VAT_LY_TARZAN = vatLy(0.72D, 0.90D, 0.10D);
     private static final VXLHoSoDan.VatLy VAT_LY_DAN_TACH = vatLy(0.95D, 1D, 1D);
     private static final VXLHoSoDan.VatLy VAT_LY_TUC_THOI = vatLy(0D, 0D, 0D);
     private static final VXLHoSoDan.VatLy VAT_LY_NANG_PARABOL_NHE = vatLy(1.80D, 0.70D, 0.15D);
@@ -23,8 +24,7 @@ public final class VXLCauHinhVatPhamChienDau {
     private static final VXLHoSoDan.VatLy VAT_LY_QUAY_VE_IT_GIO = vatLy(1.60D, 0.20D, 0.25D);
     private static final VXLHoSoDan.VatLy VAT_LY_XUYEN_NANG = vatLy(2D, 0.65D, 0.25D);
     private static final VXLHoSoDan.VatLy VAT_LY_TEN_NHE = vatLy(0.80D, 1.10D, 0.80D);
-    private static final VXLHoSoDan.Tarzan VONG_TARZAN = tarzan(
-            45D, 4.2D, 12D, 165D, 38D, 180D, 72);
+    private static final VXLHoSoDan.Tarzan VONG_TARZAN = tarzan(1D, 2D, 90);
     private static final VXLHoSoDan.QuayVe QUAY_VE_CAPTAIN = quayVe(
             80D, 6.5D, 15D, 1.18D, 30D, 18);
 
@@ -54,7 +54,7 @@ public final class VXLCauHinhVatPhamChienDau {
             VAT_LY_SINH_VAT, false, false, 50, 100);
     private static final VXLHoSoDan DAN_TARZAN = new VXLHoSoDan("Tarzan", (byte)21,
             VXLHoSoDan.KieuBan.VONG_TARZAN, 1, 1, 0D,
-            VAT_LY_QUAY_VE, false, false, 100, 100, null, VONG_TARZAN);
+            VAT_LY_TARZAN, false, true, 100, 100, null, VONG_TARZAN);
     private static final VXLHoSoDan DAN_APACHE = new VXLHoSoDan("Apache", (byte)17,
             VXLHoSoDan.KieuBan.DAN_TACH, 4, 4, 0D,
             VAT_LY_DAN_TACH, false, false, 100, 300);
@@ -74,8 +74,8 @@ public final class VXLCauHinhVatPhamChienDau {
             VXLHoSoDan.KieuBan.DAN_CHUM, 2, 2, 4D,
             VAT_LY_TRUNG_BINH_NHAY_GIO, false, false, 60, 120);
     private static final VXLHoSoDan DAN_CAPTAIN = new VXLHoSoDan("Captain", (byte)21,
-            VXLHoSoDan.KieuBan.QUAY_VE, 1, 1, 0D,
-            VAT_LY_QUAY_VE_IT_GIO, false, true, 100, 200, QUAY_VE_CAPTAIN);
+            VXLHoSoDan.KieuBan.VONG_TARZAN, 1, 1, 0D,
+            VAT_LY_TARZAN, false, true, 100, 200, null, VONG_TARZAN);
     private static final VXLHoSoDan DAN_WINTER_SOLDIER = new VXLHoSoDan("Winter Soldier", (byte)80,
             VXLHoSoDan.KieuBan.DAN_KEP, 2, 2, 3D,
             VAT_LY_XUYEN_NANG, true, false, 60, 120);
@@ -468,13 +468,9 @@ public final class VXLCauHinhVatPhamChienDau {
                 tocDoXoayDoMoiGiay, banKinhThuVe);
     }
 
-    private static VXLHoSoDan.Tarzan tarzan(double tamBayTruocNgoatCoBan,
-            double tamBayTruocNgoatTheoLuc, double tocDoXoayXuoiDoMoiGiay,
-            double tongGocXoayXuoi, double tocDoXoayNguocDoMoiGiay,
-            double tongGocXoayNguoc, int banKinhAnToanChu) {
-        return new VXLHoSoDan.Tarzan(tamBayTruocNgoatCoBan,
-                tamBayTruocNgoatTheoLuc, tocDoXoayXuoiDoMoiGiay,
-                tongGocXoayXuoi, tocDoXoayNguocDoMoiGiay, tongGocXoayNguoc,
-                banKinhAnToanChu);
+    private static VXLHoSoDan.Tarzan tarzan(double giaTocNgoatBanDau,
+            double giaTocNgoatLienTuc, int leNgoaiBanDo) {
+        return new VXLHoSoDan.Tarzan(giaTocNgoatBanDau,
+                giaTocNgoatLienTuc, leNgoaiBanDo);
     }
 }
