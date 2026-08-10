@@ -24,6 +24,18 @@ public final class VXLCauHinhVatPhamChienDau {
     private static final VXLHoSoDan.VatLy VAT_LY_QUAY_VE_IT_GIO = vatLy(1.60D, 0.20D, 0.25D);
     private static final VXLHoSoDan.VatLy VAT_LY_XUYEN_NANG = vatLy(2D, 0.65D, 0.25D);
     private static final VXLHoSoDan.VatLy VAT_LY_TEN_NHE = vatLy(0.80D, 1.10D, 0.80D);
+    private static final VXLHoSoDan.VatLy VAT_LY_3_TIA =
+            vatLyTheoKhung(0.65D, 0.60D, 0.008D);
+    private static final VXLHoSoDan.VatLy VAT_LY_CHUOI =
+            vatLyTheoKhung(1.40D, 0.90D, 0.004D);
+    private static final VXLHoSoDan.VatLy VAT_LY_APACHE =
+            vatLyTheoKhung(0.95D, 1.00D, 0.003D);
+    private static final VXLHoSoDan.VatLy VAT_LY_CHICKY =
+            vatLyTheoKhung(1.20D, 0.50D, 0.002D);
+    private static final VXLHoSoDan.VatLy VAT_LY_TRUNG_CHICKY =
+            vatLyTheoKhung(0.60D, 0.30D, 0.001D);
+    private static final VXLHoSoDan.VatLy VAT_LY_MAGENTA =
+            vatLyTheoKhung(1.10D, 0.70D, 0.004D);
     private static final VXLHoSoDan.Tarzan VONG_TARZAN = tarzan(1D, 2D, 90);
     private static final VXLHoSoDan.QuayVe QUAY_VE_CAPTAIN = quayVe(
             80D, 6.5D, 15D, 1.18D, 30D, 18);
@@ -37,30 +49,30 @@ public final class VXLCauHinhVatPhamChienDau {
     private static final VXLHoSoDan DAN_K98 = new VXLHoSoDan("K98", (byte)1,
             VXLHoSoDan.KieuBan.DAN_KEP, 2, 6, 0D,
             VAT_LY_THANG_IT_ROI, false, false, 65, 130);
-    private static final VXLHoSoDan DAN_HOA_CAI = new VXLHoSoDan("Hoa cai", (byte)2,
-            VXLHoSoDan.KieuBan.DAN_CHUM, 3, 7, 4D,
-            VAT_LY_NHE_TAN_XA, false, false, 48, 145);
+    private static final VXLHoSoDan DAN_HOA_CAI = new VXLHoSoDan("3 tia", (byte)2,
+            VXLHoSoDan.KieuBan.DAN_CHUM, 3, 7, 5D,
+            VAT_LY_3_TIA, false, false, 34, 150);
     private static final VXLHoSoDan DAN_CHUOI = new VXLHoSoDan("Chuoi", (byte)9,
-            VXLHoSoDan.KieuBan.DAN_CHUM, 4, 4, 3.5D,
-            VAT_LY_NHE_CONG, false, false, 50, 200);
+            VXLHoSoDan.KieuBan.DAN_CHUM, 4, 4, 4D,
+            VAT_LY_CHUOI, false, false, 25, 100);
     private static final VXLHoSoDan DAN_COI = new VXLHoSoDan("Coi", (byte)10,
             VXLHoSoDan.KieuBan.LIEN_THANH, 3, 3, 0D,
             VAT_LY_TRUNG_BINH_CONG, false, false, 55, 165);
     private static final VXLHoSoDan DAN_MG = new VXLHoSoDan("MG", (byte)11,
             VXLHoSoDan.KieuBan.LIEN_THANH, 5, 5, 1D,
             VAT_LY_LIEN_THANH, false, false, 35, 175);
-    private static final VXLHoSoDan DAN_GA = new VXLHoSoDan("Ga", (byte)19,
+    private static final VXLHoSoDan DAN_GA = new VXLHoSoDan("Chicky", (byte)19,
             VXLHoSoDan.KieuBan.DAN_TACH, 2, 2, 0D,
-            VAT_LY_SINH_VAT, false, false, 50, 100);
+            VAT_LY_CHICKY, false, false, 50, 100);
     private static final VXLHoSoDan DAN_TARZAN = new VXLHoSoDan("Tarzan", (byte)21,
             VXLHoSoDan.KieuBan.VONG_TARZAN, 1, 1, 0D,
             VAT_LY_TARZAN, false, true, 100, 100, null, VONG_TARZAN);
     private static final VXLHoSoDan DAN_APACHE = new VXLHoSoDan("Apache", (byte)17,
             VXLHoSoDan.KieuBan.DAN_TACH, 4, 4, 0D,
-            VAT_LY_DAN_TACH, false, false, 100, 300);
-    private static final VXLHoSoDan DAN_LASER = new VXLHoSoDan("Laser", (byte)49,
-            VXLHoSoDan.KieuBan.LASER, 1, 1, 0D,
-            VAT_LY_TUC_THOI, false, false, 100, 100);
+            VAT_LY_APACHE, false, false, 34, 100);
+    private static final VXLHoSoDan DAN_MAGENTA = new VXLHoSoDan("Magenta", (byte)49,
+            VXLHoSoDan.KieuBan.MAGENTA, 1, 1, 0D,
+            VAT_LY_MAGENTA, false, false, 100, 100);
     private static final VXLHoSoDan DAN_IRON_MAN = new VXLHoSoDan("Iron Man", (byte)1,
             VXLHoSoDan.KieuBan.DAN_CHUM, 2, 2, 5D,
             VAT_LY_NANG_PARABOL_NHE, false, false, 60, 120);
@@ -272,6 +284,7 @@ public final class VXLCauHinhVatPhamChienDau {
             case 19 -> 38;
             case 21 -> 10;
             case 33, 79, 80, 82, 83 -> 30;
+            case 49 -> 18;
             default -> 32;
         };
     }
@@ -314,7 +327,8 @@ public final class VXLCauHinhVatPhamChienDau {
     public static DiemSieuCao timDiemSieuCao(short batDauY, short[][] cacDuongX,
             short[][] cacDuongY, byte loaiDan, byte avenger) {
         VXLHoSoDan hoSoDan = layHoSoDan(loaiDan, avenger);
-        if (!hoSoDan.dungTrongLuc() || cacDuongX == null || cacDuongY == null
+        if (hoSoDan.kieuBan() == VXLHoSoDan.KieuBan.MAGENTA
+                || !hoSoDan.dungTrongLuc() || cacDuongX == null || cacDuongY == null
                 || cacDuongX.length == 0 || cacDuongY.length == 0
                 || cacDuongX[0] == null || cacDuongY[0] == null
                 || cacDuongX[0].length == 0 || cacDuongX[0].length != cacDuongY[0].length) {
@@ -420,9 +434,15 @@ public final class VXLCauHinhVatPhamChienDau {
             case 17 -> DAN_APACHE;
             case 19 -> DAN_GA;
             case 21 -> DAN_TARZAN;
-            case 49 -> DAN_LASER;
+            case 49 -> DAN_MAGENTA;
             default -> DAN_AT;
         };
+    }
+
+    public static VXLHoSoDan.VatLy layVatLyDanCon(byte loaiDan) {
+        return Byte.toUnsignedInt(chuanHoaLoaiDan(loaiDan)) == 19
+                ? VAT_LY_TRUNG_CHICKY
+                : layHoSoDan(loaiDan).vatLy();
     }
 
     public static boolean laDanDacBiet(int maVatPham) {
@@ -458,6 +478,12 @@ public final class VXLCauHinhVatPhamChienDau {
     private static VXLHoSoDan.VatLy vatLy(double trongLuong, double heSoTrongLuc,
             double heSoGio) {
         return new VXLHoSoDan.VatLy(trongLuong, heSoTrongLuc, heSoGio);
+    }
+
+    private static VXLHoSoDan.VatLy vatLyTheoKhung(double trongLuong,
+            double giaTocTrongLucTheoKhung, double heSoGioTheoKhung) {
+        return new VXLHoSoDan.VatLy(trongLuong, 0D, 0D,
+                1D, giaTocTrongLucTheoKhung, heSoGioTheoKhung);
     }
 
     private static VXLHoSoDan.QuayVe quayVe(double tamBayCoBan, double tamBayTheoLuc,

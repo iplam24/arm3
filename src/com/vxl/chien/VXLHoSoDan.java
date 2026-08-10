@@ -26,7 +26,20 @@ public record VXLHoSoDan(String ten, byte loaiClient, KieuBan kieuBan,
                 tranPhanTramSatThuong, quayVe, null);
     }
 
-    public record VatLy(double trongLuong, double heSoTrongLuc, double heSoGio) {
+    public record VatLy(double trongLuong, double heSoTrongLuc, double heSoGio,
+            double heSoTocDoTheoKhung, double giaTocTrongLucTheoKhung,
+            double heSoGioTheoKhung) {
+
+        public VatLy(double trongLuong, double heSoTrongLuc, double heSoGio) {
+            this(trongLuong, heSoTrongLuc, heSoGio,
+                    Double.NaN, Double.NaN, Double.NaN);
+        }
+
+        public boolean dungVatLyTheoKhung() {
+            return Double.isFinite(this.heSoTocDoTheoKhung)
+                    && Double.isFinite(this.giaTocTrongLucTheoKhung)
+                    && Double.isFinite(this.heSoGioTheoKhung);
+        }
     }
 
     public record QuayVe(double tamBayCoBan, double tamBayTheoLuc,
@@ -46,6 +59,7 @@ public record VXLHoSoDan(String ten, byte loaiClient, KieuBan kieuBan,
         DAN_TACH,
         VONG_TARZAN,
         QUAY_VE,
+        MAGENTA,
         LASER,
         NHAN_VAT_LAO
     }
@@ -82,11 +96,15 @@ public record VXLHoSoDan(String ten, byte loaiClient, KieuBan kieuBan,
     }
 
     public boolean dungTrongLuc() {
-        return this.vatLy.heSoTrongLuc() > 0D;
+        return this.vatLy.dungVatLyTheoKhung()
+                ? this.vatLy.giaTocTrongLucTheoKhung() > 0D
+                : this.vatLy.heSoTrongLuc() > 0D;
     }
 
     public boolean dungGio() {
-        return this.vatLy.heSoGio() > 0D;
+        return this.vatLy.dungVatLyTheoKhung()
+                ? this.vatLy.heSoGioTheoKhung() > 0D
+                : this.vatLy.heSoGio() > 0D;
     }
 
     public double trongLuong() {

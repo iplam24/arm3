@@ -285,7 +285,7 @@ public final class VXLQuanLyLuyenTap {
 
         this.nguoiChoi.dichVu.guiKetQuaBanLuyenTapNangCao(chiMang, (byte)0,
                 this.layLoaiDanAnToan(loaiDan),
-                this.nguoiChoiX, this.nguoiChoiY, goc,
+                this.nguoiChoiX, this.nguoiChoiY, goc, luc,
                 this.layChiSoTachClient(loaiDan, lucTach, phatBan),
                 phatBan.duongX, phatBan.duongY, soPhat,
                 (byte)(sieuCaoTrungMucTieu ? 1 : 0),
@@ -672,7 +672,7 @@ public final class VXLQuanLyLuyenTap {
 
         this.nguoiChoi.dichVu.guiKetQuaBanLuyenTapNangCao((byte)0,
                 (byte)(chiSoPhienQuan + 1), loaiDan,
-                this.phienQuanX[chiSoPhienQuan], this.phienQuanY[chiSoPhienQuan], goc,
+                this.phienQuanX[chiSoPhienQuan], this.phienQuanY[chiSoPhienQuan], goc, luc,
                 this.layChiSoTachClient(loaiDan, luc, phatBan),
                 phatBan.duongX, phatBan.duongY, (byte)1,
                 (byte)(sieuCaoTrungNguoiChoi ? 1 : 0),
