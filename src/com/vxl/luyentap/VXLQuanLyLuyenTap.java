@@ -138,6 +138,8 @@ public final class VXLQuanLyLuyenTap {
             short vuKhiNguoiChoi = this.nguoiChoi.wp > 0 ? this.nguoiChoi.wp : 5;
             this.nguoiChoi.wp = vuKhiNguoiChoi;
             this.capPhienQuanHienTai = VXLCauHinhPhienQuan.gioiHanCap(this.soPhienQuanDaHa + 1);
+            byte maBanDo = VXLCauHinhPhienQuan.layBanDoChoTran(this.capPhienQuanHienTai);
+            this.tinhDuongDan.datBanDo(maBanDo);
             this.chiSoPhienQuan = VXLCauHinhPhienQuan.taoChiSo(this.capPhienQuanHienTai);
             this.vuKhiPhienQuanHienTai = VXLCauHinhPhienQuan.chonVuKhiChoTran(
                     this.capPhienQuanHienTai);
@@ -172,7 +174,6 @@ public final class VXLQuanLyLuyenTap {
             this.phienQuanY[0] = this.tinhDuongDan.layBanDo().timViTriDat(this.phienQuanX[0], (short)250);
             this.phienQuanDaChet[0] = false;
 
-            byte maBanDo = MA_BAN_DO_LUYEN_TAP;
             short vuKhiPhienQuan = this.vuKhiPhienQuanHienTai;
             this.nguoiChoi.dichVu.guiThongTinLuyenTap();
             this.nguoiChoi.dichVu.guiChonBanDoLuyenTap(maBanDo);
@@ -876,17 +877,15 @@ public final class VXLQuanLyLuyenTap {
         int capDaHa = this.capPhienQuanHienTai;
         this.soPhienQuanDaHa = Math.max(this.soPhienQuanDaHa, capDaHa);
         this.nguoiChoi.trainingSuccess = (byte)Math.min(VXLCauHinhPhienQuan.CAP_TOI_DA, this.soPhienQuanDaHa + 1);
-        this.nguoiChoi.ghiNhanHaBoss(1);
-
         int kinhNghiem = 100 + capDaHa * 15;
-        int vang = 500 + capDaHa * 50;
-        this.nguoiChoi.congKinhNghiem(kinhNghiem);
+        int vang = VXLCauHinhPhienQuan.tinhPhanThuongVang(capDaHa);
+        int kinhNghiemThucNhan = this.nguoiChoi.congKinhNghiem(kinhNghiem);
         this.nguoiChoi.vang += vang;
 
         this.nguoiChoi.dichVu.capNhat();
         this.nguoiChoi.flushCache();
 
-        this.lapLichKetQuaTran((byte)1, kinhNghiem, vang, 1, TRE_HIEN_KET_QUA_SAU_HIEU_UNG);
+        this.lapLichKetQuaTran((byte)1, kinhNghiemThucNhan, vang, 1, TRE_HIEN_KET_QUA_SAU_HIEU_UNG);
     }
 
     private synchronized void lapLichKetQuaTran(byte pheThang, int kinhNghiem, int vang, int ngoc,
@@ -938,6 +937,20 @@ public final class VXLQuanLyLuyenTap {
 
     private void phienQuanDungVatPhamNeuCan(int chiSoPhienQuan) throws IOException {
         this.soLuotPhienQuan++;
+        int khoangCach = Math.abs(this.phienQuanX[chiSoPhienQuan] - this.nguoiChoiX);
+        if (khoangCach <= 150 && this.soLuotPhienQuan % 2 == 0) {
+            int huong = this.phienQuanX[chiSoPhienQuan] >= this.nguoiChoiX ? 1 : -1;
+            short xMoi = this.tinhDuongDan.gioiHan(
+                    (short)(this.phienQuanX[chiSoPhienQuan] + huong * 280), 80,
+                    this.tinhDuongDan.layBanDo().getWidth() - 80);
+            this.phienQuanX[chiSoPhienQuan] = xMoi;
+            this.phienQuanY[chiSoPhienQuan] = this.tinhDuongDan.layBanDo().timViTriDat(xMoi, (short)180);
+            this.nguoiChoi.dichVu.guiDungVatPhamLuyenTap((byte)(chiSoPhienQuan + 1),
+                    (byte)20, (short)0);
+            this.nguoiChoi.dichVu.guiCapNhatXYLuyenTap((byte)(chiSoPhienQuan + 1),
+                    this.phienQuanX[chiSoPhienQuan], this.phienQuanY[chiSoPhienQuan]);
+            return;
+        }
         int nguongHoiMau = this.mauToiDaPhienQuan * 60 / 100;
         if (this.mauPhienQuan[chiSoPhienQuan] <= nguongHoiMau && this.soLuotPhienQuan % 2 == 1) {
             this.mauPhienQuan[chiSoPhienQuan] = Math.min(this.mauToiDaPhienQuan,

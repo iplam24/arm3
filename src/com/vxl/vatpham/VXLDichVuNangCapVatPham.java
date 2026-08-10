@@ -71,7 +71,7 @@ public final class VXLDichVuNangCapVatPham {
         nguoiChoi.dichVu.guiTin(msg);
     }
 
-    private static void congDiemNhanVat(VXLNguoiChoi nguoiChoi, byte chiSo) {
+    private static void congDiemNhanVat(VXLNguoiChoi nguoiChoi, byte chiSo) throws IOException {
         if (nguoiChoi.point <= 0) {
             nguoiChoi.moHopThoaiOK("Không đủ điểm cộng.");
             return;
@@ -87,6 +87,8 @@ public final class VXLDichVuNangCapVatPham {
         }
         nguoiChoi.point = (short)(nguoiChoi.point - 1);
         nguoiChoi.flushCache();
+        guiBangCongDiem(nguoiChoi);
+        nguoiChoi.dichVu.capNhat();
     }
 
     private static VXLVatPham layVatPham(VXLNguoiChoi nguoiChoi, boolean trenNguoi, int chiSo) {

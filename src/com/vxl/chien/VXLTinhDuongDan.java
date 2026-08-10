@@ -31,9 +31,16 @@ final class VXLTinhDuongDan {
 
     VXLHeThongDan.KetQuaPhatBan taoPhatBan(VXLChienBinh nguoiBan, byte loaiDan, byte chiMang,
             byte avengerDan, short goc, byte luc, byte lucTach, byte gioX, byte gioY) {
+        return this.taoPhatBan(nguoiBan, loaiDan, chiMang, avengerDan, goc, luc,
+                lucTach, gioX, gioY, false);
+    }
+
+    VXLHeThongDan.KetQuaPhatBan taoPhatBan(VXLChienBinh nguoiBan, byte loaiDan, byte chiMang,
+            byte avengerDan, short goc, byte luc, byte lucTach, byte gioX, byte gioY,
+            boolean epXuyenDiaHinh) {
         return this.heThongDan.taoPhatBan(nguoiBan.x, nguoiBan.y, goc, luc, lucTach, loaiDan,
                 chiMang, avengerDan, gioX, gioY, Byte.toUnsignedInt(nguoiBan.chiSo), BUOC_THOI_GIAN,
-                SO_DIEM_TOI_DA);
+                SO_DIEM_TOI_DA, epXuyenDiaHinh);
     }
 
     private boolean coVaChamTrenDoan(short x1, short y1, short x2, short y2) {

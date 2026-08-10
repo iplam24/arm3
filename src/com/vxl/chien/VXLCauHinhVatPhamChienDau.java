@@ -73,6 +73,21 @@ public final class VXLCauHinhVatPhamChienDau {
     private static final VXLHoSoDan DAN_MAGENTA = new VXLHoSoDan("Magenta", (byte)49,
             VXLHoSoDan.KieuBan.MAGENTA, 1, 1, 0D,
             VAT_LY_MAGENTA, false, false, 100, 100);
+    private static final VXLHoSoDan DAN_VAT_PHAM_B52 = danVatPham("B52", 4, 2, 2D, false);
+    private static final VXLHoSoDan DAN_VAT_PHAM_PHA_DAT = danVatPham("Pha dat", 5, 1, 0D, false);
+    private static final VXLHoSoDan DAN_VAT_PHAM_LUU_DAN = danVatPham("Luu dan", 6, 3, 4D, false);
+    private static final VXLHoSoDan DAN_VAT_PHAM_NEM = danVatPham("Dan nem", 7, 1, 0D, false);
+    private static final VXLHoSoDan DAN_VAT_PHAM_TO_NHEN = danVatPham("To nhen", 8, 1, 0D, false);
+    private static final VXLHoSoDan DAN_VAT_PHAM_TRAI_PHA = danVatPham("Trai pha", 16, 7, 3D, false);
+    private static final VXLHoSoDan DAN_VAT_PHAM_LASER = danVatPham("Laser", 14, 2, 0D, false);
+    private static final VXLHoSoDan DAN_VAT_PHAM_VOI_RONG = danVatPham("Voi rong", 13, 1, 0D, false);
+    private static final VXLHoSoDan DAN_VAT_PHAM_CHUOT = danVatPham("Chuot bom", 22, 1, 0D, false);
+    private static final VXLHoSoDan DAN_VAT_PHAM_TEN_LUA_X4 = danVatPham("Ten lua x4", 26, 5, 3D, false);
+    private static final VXLHoSoDan DAN_VAT_PHAM_XUYEN_DAT = danVatPham("Xuyen dat", 25, 1, 0D, true);
+    private static final VXLHoSoDan DAN_VAT_PHAM_MUA_SAO = danVatPham("Mua sao", 23, 8, 3D, false);
+    private static final VXLHoSoDan DAN_VAT_PHAM_MUA_DAN = danVatPham("Mua dan", 28, 14, 2D, false);
+    private static final VXLHoSoDan DAN_VAT_PHAM_KHOAN = danVatPham("Khoan dat", 30, 1, 0D, true);
+    private static final VXLHoSoDan DAN_VAT_PHAM_TO_NHEN_X3 = danVatPham("To nhen x3", 56, 3, 5D, false);
     private static final VXLHoSoDan DAN_IRON_MAN = new VXLHoSoDan("Iron Man", (byte)1,
             VXLHoSoDan.KieuBan.DAN_CHUM, 2, 2, 5D,
             VAT_LY_NANG_PARABOL_NHE, false, false, 60, 120);
@@ -112,14 +127,14 @@ public final class VXLCauHinhVatPhamChienDau {
     }
 
     public static byte layLoaiDan(int maVatPham, byte loaiDanMacDinh) {
-        if (maVatPham < 0) {
+        if (maVatPham < 0 || maVatPham == 222) {
             return chuanHoaLoaiDan(loaiDanMacDinh);
         }
         if (VXLQuanLyMayChu.itemTemplates == null) {
             return chuanHoaLoaiDan(loaiDanMacDinh);
         }
         VXLMauVatPham mau = VXLQuanLyMayChu.itemTemplates.get(maVatPham);
-        return mau != null ? chuyenLoaiDanCauHinhSangClient(mau.gioiTinh)
+        return mau != null ? chuyenHieuUngVatPhamSangLoaiDan(mau.gioiTinh, loaiDanMacDinh)
                 : chuanHoaLoaiDan(loaiDanMacDinh);
     }
 
@@ -276,7 +291,7 @@ public final class VXLCauHinhVatPhamChienDau {
         return switch (Byte.toUnsignedInt(hoSoDan.loaiClient())) {
             case 0 -> 46;
             case 1 -> 24;
-            case 2 -> 22;
+            case 2 -> 16;
             case 9 -> 28;
             case 10 -> 38;
             case 11 -> 20;
@@ -433,8 +448,23 @@ public final class VXLCauHinhVatPhamChienDau {
             case 11 -> DAN_MG;
             case 17 -> DAN_APACHE;
             case 19 -> DAN_GA;
+            case 4 -> DAN_VAT_PHAM_B52;
+            case 5 -> DAN_VAT_PHAM_PHA_DAT;
+            case 6 -> DAN_VAT_PHAM_LUU_DAN;
+            case 7 -> DAN_VAT_PHAM_NEM;
+            case 8 -> DAN_VAT_PHAM_TO_NHEN;
+            case 13 -> DAN_VAT_PHAM_VOI_RONG;
+            case 14 -> DAN_VAT_PHAM_LASER;
+            case 16 -> DAN_VAT_PHAM_TRAI_PHA;
             case 21 -> DAN_TARZAN;
+            case 22 -> DAN_VAT_PHAM_CHUOT;
+            case 23 -> DAN_VAT_PHAM_MUA_SAO;
+            case 25 -> DAN_VAT_PHAM_XUYEN_DAT;
+            case 26 -> DAN_VAT_PHAM_TEN_LUA_X4;
+            case 28 -> DAN_VAT_PHAM_MUA_DAN;
+            case 30 -> DAN_VAT_PHAM_KHOAN;
             case 49 -> DAN_MAGENTA;
+            case 56 -> DAN_VAT_PHAM_TO_NHEN_X3;
             default -> DAN_AT;
         };
     }
@@ -447,9 +477,38 @@ public final class VXLCauHinhVatPhamChienDau {
 
     public static boolean laDanDacBiet(int maVatPham) {
         return switch (maVatPham) {
-            case 222, 227, 228, 231, 235, 236, 237, 238, 239, 240, 241,
-                    243, 244, 245, 247, 248, 249, 250 -> true;
+            case 226, 227, 228, 229, 231, 235, 236, 237, 238, 239, 240, 241,
+                    242, 243, 244, 245, 246, 247, 248, 249, 250, 388 -> true;
             default -> false;
+        };
+    }
+
+    private static byte chuyenHieuUngVatPhamSangLoaiDan(byte maHieuUng, byte loaiDanMacDinh) {
+        return switch (Byte.toUnsignedInt(maHieuUng)) {
+            case 1 -> 5;
+            case 6 -> 6;
+            case 7 -> 7;
+            case 8 -> 4;
+            case 9 -> 8;
+            case 11 -> 16;
+            case 16 -> 14;
+            case 17 -> 13;
+            case 18 -> 22;
+            case 19 -> 26;
+            case 20 -> 25;
+            case 21 -> 23;
+            case 22 -> 28;
+            case 23 -> 30;
+            case 24 -> 50;
+            case 25 -> 51;
+            case 26 -> 52;
+            case 27 -> 53;
+            case 28 -> 54;
+            case 29 -> 55;
+            case 30 -> 56;
+            case 31 -> 57;
+            case 42 -> 58;
+            default -> chuanHoaLoaiDan(loaiDanMacDinh);
         };
     }
 
@@ -473,6 +532,16 @@ public final class VXLCauHinhVatPhamChienDau {
         int loai = Byte.toUnsignedInt(loaiDan);
         return loai <= 58 || loai == 79 || loai == 80 || loai == 82 || loai == 83
                 ? loaiDan : 0;
+    }
+
+    private static VXLHoSoDan danVatPham(String ten, int loaiClient, int soVien,
+            double khoangLechGoc, boolean xuyenDiaHinh) {
+        VXLHoSoDan.KieuBan kieuBan = soVien > 1
+                ? VXLHoSoDan.KieuBan.DAN_CHUM : VXLHoSoDan.KieuBan.DAN_DON;
+        int phanTramMoiVien = Math.max(1, (100 + soVien - 1) / soVien);
+        return new VXLHoSoDan(ten, (byte)loaiClient, kieuBan, soVien, soVien,
+                khoangLechGoc, VAT_LY_NANG_IT_GIO, xuyenDiaHinh, false,
+                phanTramMoiVien, 100);
     }
 
     private static VXLHoSoDan.VatLy vatLy(double trongLuong, double heSoTrongLuc,

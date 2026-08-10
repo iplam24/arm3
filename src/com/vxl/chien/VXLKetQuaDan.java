@@ -69,4 +69,34 @@ public class VXLKetQuaDan {
         this.mucTieu = mucTieuDauTien;
         this.satThuong = tongSatThuong;
     }
+
+    public VXLKetQuaDan nhanBanDuongDanHienThi(int soLan) {
+        int soBan = Math.max(1, soLan);
+        if (soBan == 1 || this.cacDuongX.length == 0) {
+            return this;
+        }
+        int soQuyDaoMoi = this.cacDuongX.length * soBan;
+        short[][] duongXMoi = new short[soQuyDaoMoi][];
+        short[][] duongYMoi = new short[soQuyDaoMoi][];
+        VXLChienBinh[] mucTieuMoi = new VXLChienBinh[soQuyDaoMoi];
+        int[] satThuongMoi = new int[soQuyDaoMoi];
+        for (int lan = 0; lan < soBan; lan++) {
+            int batDau = lan * this.cacDuongX.length;
+            for (int i = 0; i < this.cacDuongX.length; i++) {
+                int dich = batDau + i;
+                duongXMoi[dich] = this.cacDuongX[i].clone();
+                duongYMoi[dich] = this.cacDuongY[i].clone();
+                if (lan == 0 && i < this.mucTieuTheoQuyDao.length) {
+                    mucTieuMoi[dich] = this.mucTieuTheoQuyDao[i];
+                    satThuongMoi[dich] = i < this.satThuongTheoQuyDao.length
+                            ? this.satThuongTheoQuyDao[i] : 0;
+                }
+            }
+        }
+        return new VXLKetQuaDan(this.loaiDan, this.batDauX, this.batDauY, this.goc,
+                this.luc, this.lucTach, this.chiMang, this.loaiSieuCao,
+                this.xSieuCao, this.ySieuCao, duongXMoi, duongYMoi, mucTieuMoi,
+                satThuongMoi, this.satThuongMoiVien, this.tranSatThuong,
+                this.avengerDan);
+    }
 }

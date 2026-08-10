@@ -19,6 +19,9 @@ final class VXLCauHinhPhienQuan {
     private static final int LOAI_VU_KHI = 5;
     private static final int MA_AVENGER_DAU = 391;
     private static final int MA_AVENGER_CUOI = 400;
+    private static final byte[] BAN_DO_SAU_CAP_BON = new byte[]{
+        1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 12, 13, 14, 15, 16
+    };
 
     private VXLCauHinhPhienQuan() {
     }
@@ -52,6 +55,26 @@ final class VXLCauHinhPhienQuan {
         return new VXLChiSoPhienQuan(mauToiDa, tanCongLonNhat, giapLonNhat,
                 layPart(boHienTai[0]), layPart(boHienTai[1]), layPart(boHienTai[2]),
                 layPart(boHienTai[3]), layPart(boHienTai[4]), vuKhi.part, vuKhi.ten);
+    }
+
+    static byte layBanDoChoTran(int cap) {
+        int capHopLe = gioiHanCap(cap);
+        if (capHopLe <= 4) {
+            return 0;
+        }
+        int nhomHaiCap = (capHopLe - 5) / 2;
+        return BAN_DO_SAU_CAP_BON[nhomHaiCap % BAN_DO_SAU_CAP_BON.length];
+    }
+
+    static int tinhPhanThuongVang(int cap) {
+        int capHopLe = gioiHanCap(cap);
+        if (capHopLe <= 3) {
+            return 100;
+        }
+        if (capHopLe == 4) {
+            return 2000;
+        }
+        return 500 + capHopLe * 50;
     }
 
     static int tinhLuongHoiMau(VXLChiSoPhienQuan chiSo) {

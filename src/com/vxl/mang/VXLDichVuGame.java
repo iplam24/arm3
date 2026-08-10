@@ -558,6 +558,21 @@ implements IVXLDichVuGame {
         }
     }
 
+    public void guiKinhNghiem(int kinhNghiemNhan) {
+        try {
+            VXLTinNhan ms = new VXLTinNhan(97);
+            DataOutputStream ds = ms.boGhi();
+            ds.writeShort(Math.max(Short.MIN_VALUE, Math.min(Short.MAX_VALUE, kinhNghiemNhan)));
+            ds.writeInt(this.nguoiChoi.kinhNghiem);
+            ds.writeByte(0);
+            ds.flush();
+            this.guiTin(ms);
+        } catch (IOException ex) {
+            Logger.getLogger(VXLDichVuGame.class.getName()).log(Level.FINE,
+                    "Không thể gửi cập nhật kinh nghiệm.", ex);
+        }
+    }
+
     public void capNhat() {
         try {
             VXLTinNhan ms = new VXLTinNhan(105);
@@ -818,6 +833,10 @@ implements IVXLDichVuGame {
 
     public void guiTin(VXLTinNhan ms) {
         this.khach.guiTin(ms);
+    }
+
+    public void dongKetNoi() {
+        this.khach.close();
     }
 
     public void guiDuLieuBanDo(int maBanDo) throws IOException {

@@ -116,10 +116,67 @@ public class VXLVatPham {
             VXLThuocTinhVatPham thuocTinh = (VXLThuocTinhVatPham)this.itemOptions.get(i);
             if (thuocTinh.optionTemplate != null && thuocTinh.optionTemplate.ma == ma) {
                 thuocTinh.thamSo = thamSo;
+                if (ma == 15 || ma == 16) {
+                    this.capNhatThongTinSocket();
+                }
                 return;
             }
         }
         this.itemOptions.add(new VXLThuocTinhVatPham(ma, thamSo));
+        if (ma == 15 || ma == 16) {
+            this.capNhatThongTinSocket();
+        }
+    }
+
+    public boolean themLoTrong() {
+        if (!this.isTypeBody() || this.nSocket >= 3 || this.isSocketing) {
+            return false;
+        }
+        this.itemOptions.add(new VXLThuocTinhVatPham(16, 0));
+        this.capNhatThongTinSocket();
+        return true;
+    }
+
+    public boolean dinhNgoc(int maNgoc) {
+        if (maNgoc <= 0) {
+            return false;
+        }
+        for (int i = 0; i < this.itemOptions.size(); ++i) {
+            VXLThuocTinhVatPham thuocTinh = (VXLThuocTinhVatPham)this.itemOptions.get(i);
+            if (thuocTinh.optionTemplate != null && thuocTinh.optionTemplate.ma == 16
+                    && thuocTinh.thamSo == 0) {
+                thuocTinh.thamSo = maNgoc;
+                this.capNhatThongTinSocket();
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public java.util.List<Integer> thaoTatCaNgoc() {
+        java.util.ArrayList<Integer> cacMaNgoc = new java.util.ArrayList<>();
+        for (int i = 0; i < this.itemOptions.size(); ++i) {
+            VXLThuocTinhVatPham thuocTinh = (VXLThuocTinhVatPham)this.itemOptions.get(i);
+            if (thuocTinh.optionTemplate != null && thuocTinh.optionTemplate.ma == 16
+                    && thuocTinh.thamSo > 0) {
+                cacMaNgoc.add(thuocTinh.thamSo);
+                thuocTinh.thamSo = 0;
+            }
+        }
+        this.capNhatThongTinSocket();
+        return cacMaNgoc;
+    }
+
+    public java.util.List<Integer> layCacMaNgocDaDinh() {
+        java.util.ArrayList<Integer> cacMaNgoc = new java.util.ArrayList<>();
+        for (int i = 0; i < this.itemOptions.size(); ++i) {
+            VXLThuocTinhVatPham thuocTinh = (VXLThuocTinhVatPham)this.itemOptions.get(i);
+            if (thuocTinh.optionTemplate != null && thuocTinh.optionTemplate.ma == 16
+                    && thuocTinh.thamSo > 0) {
+                cacMaNgoc.add(thuocTinh.thamSo);
+            }
+        }
+        return cacMaNgoc;
     }
 
     public void thayMau(VXLMauVatPham mauMoi) {

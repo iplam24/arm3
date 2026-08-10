@@ -4,6 +4,7 @@ package com.vxl.mang;
 import com.vxl.cuahang.VXLCuaHang;
 import com.vxl.loi.VXLQuanLyMayChu;
 import com.vxl.phong.VXLQuanLyPhong;
+import com.vxl.vatpham.VXLDichVuNgocTrangBi;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -150,6 +151,15 @@ implements IVXLXuLyTin {
                     case -46:
                         this.khach.user.nguoiChoi.nangCapNhanVat(mss);
                         break;
+                    case -47:
+                        VXLDichVuNgocTrangBi.xuLyMenu(this.khach.user.nguoiChoi, mss);
+                        break;
+                    case -65:
+                        VXLDichVuNgocTrangBi.khamNgoc(this.khach.user.nguoiChoi, mss);
+                        break;
+                    case -66:
+                        VXLDichVuNgocTrangBi.ghepNgoc(this.khach.user.nguoiChoi, mss);
+                        break;
                     case 88:
                         this.khach.user.thanhTich(mss);
                         break;
@@ -243,7 +253,10 @@ implements IVXLXuLyTin {
             case -126:
             case -92:
             case -91:
+            case -66:
+            case -65:
             case -48:
+            case -47:
             case -46:
             case -44:
             case -43:

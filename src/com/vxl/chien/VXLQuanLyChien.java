@@ -98,7 +98,7 @@ public class VXLQuanLyChien {
         }
         short xYeuCau = ms.boDoc().readShort();
         short yYeuCau = ms.boDoc().readShort();
-        int tamDiChuyen = 180 * Math.max(100, chienBinh.heSoDiChuyen) / 100;
+        int tamDiChuyen = chienBinh.layTamDiChuyen(180);
         short[] toaDo = this.tinhDuongDan.gioiHanDiChuyen(chienBinh.x, chienBinh.y, xYeuCau, yYeuCau, tamDiChuyen);
         chienBinh.x = toaDo[0];
         chienBinh.y = toaDo[1];
@@ -187,6 +187,7 @@ public class VXLQuanLyChien {
 
         int maVatPhamDan = nguoiBan.vatPhamDanDacBiet;
         nguoiBan.vatPhamDanDacBiet = -1;
+        soPhat = Math.max(soPhat, nguoiBan.soPhatToiThieu);
         byte loaiDan = maVatPhamDan >= 0
                 ? VXLCauHinhVatPhamChienDau.layLoaiDan(maVatPhamDan, loaiDanKhachGui)
                 : nguoiBan.avenger > 0
@@ -203,7 +204,8 @@ public class VXLQuanLyChien {
         boolean kyNangDacBiet = nguoiBan.kyNangDacBiet;
         VXLKetQuaDan ketQua = this.xuLyPhatBan(nguoiBan, loaiDan, goc, luc, lucTach,
                 maVatPhamDan, kyNangDacBiet);
-        this.phatBan(nguoiBan, ketQua, (byte)soPhat);
+        VXLKetQuaDan ketQuaHienThi = ketQua.nhanBanDuongDanHienThi(soPhat);
+        this.phatBan(nguoiBan, ketQuaHienThi, (byte)soPhat);
         int satThuongThucTe = this.apDungSatThuongPhatBan(nguoiBan, ketQua, maVatPhamDan);
         nguoiBan.kyNangDacBiet = false;
         if (satThuongThucTe > 0 && nguoiBan.luotMaCaRong > 0) {
@@ -216,6 +218,7 @@ public class VXLQuanLyChien {
             nguoiBan.luotMaCaRong--;
         }
         nguoiBan.heSoPhatBan = 100;
+        nguoiBan.ketThucPhatBan();
         if (!this.kiemTraKetThuc()) {
             this.sangLuot();
         }
@@ -284,8 +287,12 @@ public class VXLQuanLyChien {
             byte lucTach, int maVatPhamDan, boolean kyNangDacBiet) {
         byte avengerDan = maVatPhamDan >= 0 ? 0 : nguoiBan.avenger;
         byte chiMang = (byte)(kyNangDacBiet ? 1 : 0);
+        byte gioApDungX = nguoiBan.luotNgungGio > 0 ? 0 : this.gioX;
+        byte gioApDungY = nguoiBan.luotNgungGio > 0 ? 0 : this.gioY;
+        boolean epXuyenDiaHinh = nguoiBan.luotXuyenDiaHinh > 0;
         VXLHeThongDan.KetQuaPhatBan phatBan = this.tinhDuongDan.taoPhatBan(nguoiBan,
-                loaiDan, chiMang, avengerDan, goc, luc, lucTach, this.gioX, this.gioY);
+                loaiDan, chiMang, avengerDan, goc, luc, lucTach, gioApDungX, gioApDungY,
+                epXuyenDiaHinh);
         VXLQuanLyMayChu.log("[FIRE] path player=" + nguoiBan.ten
                 + " paths=" + phatBan.duongX.length
                 + " points=" + phatBan.duongX[0].length
@@ -370,7 +377,7 @@ public class VXLQuanLyChien {
             VXLChienBinh mucTieu = muc.getKey();
             int satThuongGoc = muc.getValue();
             int satThuongThucTe = this.satThuong(nguoiBan, mucTieu, satThuongGoc,
-                    false, false, false);
+                    nguoiBan.luotXuyenGiap > 0, false, false);
             if (mucTieu != nguoiBan) {
                 tongSatThuongThucTe += satThuongThucTe;
             }
@@ -621,6 +628,9 @@ public class VXLQuanLyChien {
             return;
         }
         VXLChienBinh tiepTheo = this.chienBinhs[this.luotHienTai];
+        if (tiepTheo.tangNo(10)) {
+            this.phatNo(tiepTheo);
+        }
         this.taoGioMoi();
         this.phatTin.guiGio(this.gioX, this.gioY);
         this.hanLuot = System.currentTimeMillis() + TURN_SECONDS * 1000L;

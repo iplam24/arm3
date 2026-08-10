@@ -95,7 +95,23 @@ public final class VXLHeThongDan {
     public KetQuaPhatBan taoPhatBan(short batDauX, short batDauY, short goc, byte luc,
             byte lucTach, byte loaiDan, byte chiMang, byte avenger, byte gioX, byte gioY,
             int mucTieuBoQua, double buocThoiGian, int soDiemToiDa) {
+        return this.taoPhatBan(batDauX, batDauY, goc, luc, lucTach, loaiDan,
+                chiMang, avenger, gioX, gioY, mucTieuBoQua, buocThoiGian,
+                soDiemToiDa, false);
+    }
+
+    public KetQuaPhatBan taoPhatBan(short batDauX, short batDauY, short goc, byte luc,
+            byte lucTach, byte loaiDan, byte chiMang, byte avenger, byte gioX, byte gioY,
+            int mucTieuBoQua, double buocThoiGian, int soDiemToiDa,
+            boolean epXuyenDiaHinh) {
         VXLHoSoDan hoSoDan = VXLCauHinhVatPhamChienDau.layHoSoDan(loaiDan, avenger);
+        if (epXuyenDiaHinh && !hoSoDan.xuyenDiaHinh()) {
+            hoSoDan = new VXLHoSoDan(hoSoDan.ten(), hoSoDan.loaiClient(),
+                    hoSoDan.kieuBan(), hoSoDan.soVienThuong(), hoSoDan.soVienChiMang(),
+                    hoSoDan.khoangLechGoc(), hoSoDan.vatLy(), true,
+                    hoSoDan.xuyenNguoi(), hoSoDan.phanTramSatThuongMoiVien(),
+                    hoSoDan.tranPhanTramSatThuong(), hoSoDan.quayVe(), hoSoDan.tarzan());
+        }
         int soQuyDao = hoSoDan.laySoVien(chiMang);
         short[][] cacDuongX = new short[soQuyDao][];
         short[][] cacDuongY = new short[soQuyDao][];
@@ -128,8 +144,16 @@ public final class VXLHeThongDan {
             return new KetQuaPhatBan(new short[][]{quayVe.x}, new short[][]{quayVe.y},
                     new int[][]{quayVe.cacMucTieu}, -1);
         }
+        if (hoSoDan.kieuBan() == VXLHoSoDan.KieuBan.NHAN_VAT_LAO) {
+            QuyDao nhanVatLao = this.taoQuyDaoNhanVatLao(batDauX, batDauY, goc, luc,
+                    mucTieuBoQua, buocThoiGian, soDiemToiDa);
+            return new KetQuaPhatBan(new short[][]{nhanVatLao.x}, new short[][]{nhanVatLao.y},
+                    new int[][]{nhanVatLao.cacMucTieu}, -1);
+        }
 
-        double[] cacDoLech = hoSoDan.taoDoLechGoc(chiMang);
+        double[] cacDoLech = Byte.toUnsignedInt(loaiDan) == 2
+                ? taoDoLechBaTia(soQuyDao, hoSoDan.khoangLechGoc())
+                : hoSoDan.taoDoLechGoc(chiMang);
         if (Byte.toUnsignedInt(loaiDan) == 11 && soQuyDao == MAU_LECH_GOC_MG.length) {
             cacDoLech = new double[soQuyDao];
             for (int i = 0; i < soQuyDao; i++) {
@@ -156,6 +180,69 @@ public final class VXLHeThongDan {
             cacMucTieu[i] = quyDao.cacMucTieu;
         }
         return new KetQuaPhatBan(cacDuongX, cacDuongY, cacMucTieu, -1);
+    }
+
+    private QuyDao taoQuyDaoNhanVatLao(short batDauX, short batDauY, short goc,
+            byte luc, int mucTieuBoQua, double buocThoiGian, int soDiemToiDa) {
+        int gioiHanDiem = Math.max(80, soDiemToiDa);
+        double dt = Math.max(0.1D, buocThoiGian);
+        int lucBan = Math.max(8, Byte.toUnsignedInt(luc));
+        double radian = Math.toRadians(goc);
+        double buocX = Math.cos(radian) * Math.max(5D, lucBan * HE_SO_TOC_DO) * dt;
+        double buocY = -Math.sin(radian) * Math.max(5D, lucBan * HE_SO_TOC_DO) * dt;
+        double tamBayToiDa = Math.max(90D, 80D + lucBan * 4.5D);
+        double xHienTai = batDauX;
+        double yHienTai = batDauY - DO_CAO_DAU_SUNG;
+        double quangDuong = 0D;
+        java.util.ArrayList<Short> xs = new java.util.ArrayList<>();
+        java.util.ArrayList<Short> ys = new java.util.ArrayList<>();
+        java.util.ArrayList<Integer> cacMucTieu = new java.util.ArrayList<>();
+        java.util.HashSet<Integer> mucTieuDaTrung = new java.util.HashSet<>();
+        int xTruoc = (int)Math.round(xHienTai);
+        int yTruoc = (int)Math.round(yHienTai);
+        xs.add((short)xTruoc);
+        ys.add((short)yTruoc);
+
+        for (int i = 1; i < gioiHanDiem / 2; i++) {
+            double xMoiThuc = xHienTai + buocX;
+            double yMoiThuc = yHienTai + buocY;
+            quangDuong += Math.hypot(xMoiThuc - xHienTai, yMoiThuc - yHienTai);
+            int xMoi = (int)Math.round(xMoiThuc);
+            int yMoi = (int)Math.round(yMoiThuc);
+            boolean raNgoai = xMoi < 0 || xMoi >= this.banDo.getWidth()
+                    || yMoi < -200 || yMoi >= this.banDo.getHeight();
+            xMoi = Math.max(0, Math.min(this.banDo.getWidth() - 1, xMoi));
+            yMoi = Math.max(-200, Math.min(this.banDo.getHeight() - 1, yMoi));
+            KetQuaVaCham vaCham = this.timVaChamTrongBanDoTrenDoan(xTruoc, yTruoc,
+                    xMoi, yMoi, false, false, mucTieuBoQua, mucTieuDaTrung, cacMucTieu);
+            if (vaCham != null) {
+                xMoi = vaCham.x;
+                yMoi = vaCham.y;
+            }
+            if (xs.get(xs.size() - 1) != (short)xMoi || ys.get(ys.size() - 1) != (short)yMoi) {
+                xs.add((short)xMoi);
+                ys.add((short)yMoi);
+            }
+            if (vaCham != null || raNgoai || quangDuong >= tamBayToiDa) {
+                break;
+            }
+            xHienTai = xMoiThuc;
+            yHienTai = yMoiThuc;
+            xTruoc = xMoi;
+            yTruoc = yMoi;
+        }
+
+        int doDaiBayRa = xs.size();
+        for (int i = doDaiBayRa - 2; i >= 0 && xs.size() < gioiHanDiem; i--) {
+            short xVe = xs.get(i);
+            short yVe = ys.get(i);
+            if (xs.get(xs.size() - 1) != xVe || ys.get(ys.size() - 1) != yVe) {
+                xs.add(xVe);
+                ys.add(yVe);
+            }
+        }
+        return new QuyDao(chuyenDanhSachDiem(xs), chuyenDanhSachDiem(ys),
+                chuyenDanhSachMucTieu(cacMucTieu));
     }
 
     private KetQuaPhatBan taoDanLaser(short batDauX, short batDauY, short goc,
@@ -938,6 +1025,15 @@ public final class VXLHeThongDan {
             }
         }
         return null;
+    }
+
+    private static double[] taoDoLechBaTia(int soVien, double khoangLechGoc) {
+        double[] ketQua = new double[Math.max(1, soVien)];
+        for (int i = 1; i < ketQua.length; i++) {
+            int bac = (i + 1) / 2;
+            ketQua[i] = (i % 2 == 1 ? 1D : -1D) * bac * khoangLechGoc;
+        }
+        return ketQua;
     }
 
     private static QuyDao saoChepQuyDao(QuyDao quyDao) {

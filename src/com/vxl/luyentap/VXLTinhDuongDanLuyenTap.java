@@ -50,6 +50,10 @@ final class VXLTinhDuongDanLuyenTap {
         return this.banDo;
     }
 
+    void datBanDo(byte maBanDo) {
+        this.banDo.setMapId(Byte.toUnsignedInt(maBanDo));
+    }
+
     void capNhatGio(byte gioX, byte gioY) {
         this.gioX = gioX;
         this.gioY = gioY;

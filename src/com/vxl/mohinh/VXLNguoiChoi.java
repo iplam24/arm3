@@ -3,8 +3,10 @@ package com.vxl.mohinh;
 // Vũ Xuân Lâm đẹp trai VCL
 import com.vxl.loi.VXLCoSoDuLieu;
 import com.vxl.loi.VXLQuanLyMayChu;
+import com.vxl.quantri.VXLBoLenhQuanTri;
 import com.vxl.luyentap.VXLQuanLyLuyenTap;
 import com.vxl.vatpham.VXLDichVuNangCapVatPham;
+import com.vxl.vatpham.VXLDichVuNgocTrangBi;
 import com.vxl.vatpham.VXLVatPham;
 import com.vxl.vatpham.VXLThuocTinhVatPham;
 import com.vxl.vatpham.VXLMauVatPham;
@@ -43,6 +45,7 @@ public class VXLNguoiChoi {
     public int kinhNghiem;
     public int cup;
     public int cap;
+    public boolean quanTri;
     public int clan = -1;
     public byte power;
     public byte busyHammer;
@@ -156,6 +159,19 @@ public class VXLNguoiChoi {
         return players_id.get(ma);
     }
 
+    public static VXLNguoiChoi layNguoiChoiTheoTen(String ten) {
+        if (ten == null || ten.isBlank()) {
+            return null;
+        }
+        for (VXLNguoiChoi nguoiChoi : players_id.values()) {
+            if (nguoiChoi != null && nguoiChoi.ten != null
+                    && nguoiChoi.ten.equalsIgnoreCase(ten.trim())) {
+                return nguoiChoi;
+            }
+        }
+        return null;
+    }
+
     public static void xoa(int ma) {
         players_id.remove(ma);
     }
@@ -173,6 +189,13 @@ public class VXLNguoiChoi {
     public void banDoRPG(VXLTinNhan ms) throws IOException {
         byte b = ms.boDoc().readByte();
         switch (b) {
+            case 0: {
+                this.luyenTap.dong();
+                VXLQuanLyPhong.roiBanCho(this);
+                VXLBanDoRPG.roi(this);
+                VXLBanDoRPG.vao(this);
+                break;
+            }
             case 2: {
                 this.diChuyen(ms);
                 break;
@@ -484,17 +507,7 @@ public class VXLNguoiChoi {
                         return;
                     }
                     if (t <= 5) {
-                        Vector<String> vector = new Vector<String>();
-                        if (vatPham.nSocket < 3) {
-                            vector.add("Đục lỗ");
-                        }
-                        if (vatPham.nGem < vatPham.nSocket) {
-                            vector.add("Đính ngọc");
-                        }
-                        if (vatPham.nGem > 0) {
-                            vector.add("Tháo ngọc");
-                        }
-                        this.dichVu.moDanhSach("Bạn muốn làm gì?", vector);
+                        VXLDichVuNgocTrangBi.moMenu(this, true, Byte.toUnsignedInt(chiSo), vatPham);
                     } else if (ma == 256) {
                         this.ensurePointAdd();
                         this.point = (short)Math.min(Short.MAX_VALUE, this.point + (this.pointAdd[0] - 1000) / 10
@@ -524,17 +537,7 @@ public class VXLNguoiChoi {
                 kiemTraChiSo(chiSo, this.itemBody.length, "trang bi");
                 VXLVatPham vatPham = this.itemBody[chiSo];
                 if (vatPham != null) {
-                    Vector<String> vector = new Vector<String>();
-                    if (vatPham.nSocket < 3) {
-                        vector.add("Đục lỗ");
-                    }
-                    if (vatPham.nGem < vatPham.nSocket) {
-                        vector.add("Đính ngọc");
-                    }
-                    if (vatPham.nGem > 0) {
-                        vector.add("Tháo ngọc");
-                    }
-                    this.dichVu.moDanhSach("Bạn muốn làm gì?", vector);
+                    VXLDichVuNgocTrangBi.moMenu(this, false, Byte.toUnsignedInt(chiSo), vatPham);
                 } else {
                     this.startOKDlg2("Không tìm thấy vật phẩm này. Vui lòng đăng nhập lại để kiểm tra.");
                 }
@@ -835,6 +838,9 @@ public class VXLNguoiChoi {
 
     public void chat(VXLTinNhan ms) throws IOException {
         String noiDung = ms.docUTF(200, "nội dung chat");
+        if (VXLBoLenhQuanTri.xuLy(this, noiDung)) {
+            return;
+        }
         VXLTinNhan mss = new VXLTinNhan(-98);
         DataOutputStream ds = mss.boGhi();
         ds.writeByte(3);
@@ -1022,6 +1028,9 @@ public class VXLNguoiChoi {
     public void chatTo(VXLTinNhan ms) throws IOException {
         int ma = ms.boDoc().readInt();
         String noiDung = ms.docUTF(200, "nội dung chat");
+        if (VXLBoLenhQuanTri.xuLy(this, noiDung)) {
+            return;
+        }
         if (ma == -1) {
             if (this.ngoc < 10) {
                 this.moHopThoaiOK("Bạn không đủ ngọc để chat thế giới.");

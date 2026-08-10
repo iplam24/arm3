@@ -34,6 +34,7 @@ public class VXLNguoiDung {
     private String tenDangNhap;
     private String matKhau;
     private boolean ban;
+    private boolean quanTri;
     public VXLNguoiChoi nguoiChoi;
     private static final int[] ID_TEMPLATE_BALO = new int[]{85, 90, 95, 100, 105};
     private static final int[] ID_TEMPLATE_BODY = new int[]{35, 40, 45, 50, 55};
@@ -55,7 +56,7 @@ public class VXLNguoiDung {
         return false;
     }
 
-    private static final String DEFAULT_STATS_JSON = "{\"power\":100,\"avenger\":100,\"kill\":0,\"dead\":1,\"assist\":0,\"trainingSuccess\":1,\"trainingRebelDefeated\":0,\"busyHammer\":0,\"nHammer\":2,\"exp\":1000,\"point\":0,\"pointAdd\":[1000,0,0,0,0,0],\"pvpWins\":0,\"kamikazeKills\":0,\"bossKills\":0,\"pvpDamage\":0,\"dailyDate\":\"\",\"dailyPvpWins\":0,\"dailyKamikazeKills\":0,\"dailyBossKills\":0,\"dailyPvpClaimed\":false,\"dailyKamikazeClaimed\":false,\"dailyBossClaimed\":false,\"achievementPvpClaimed\":false,\"achievementKamikazeClaimed\":false,\"achievementBossClaimed\":false,\"doubleExpUntil\":0}";
+    private static final String DEFAULT_STATS_JSON = "{\"power\":100,\"avenger\":100,\"kill\":0,\"dead\":1,\"assist\":0,\"trainingSuccess\":1,\"trainingRebelDefeated\":0,\"busyHammer\":0,\"nHammer\":2,\"exp\":1000,\"point\":0,\"pointAdd\":[1000,0,0,0,0,0],\"pvpWins\":0,\"kamikazeKills\":0,\"bossKills\":0,\"pvpDamage\":0,\"dailyDate\":\"\",\"dailyPvpWins\":0,\"dailyKamikazeKills\":0,\"dailyBossKills\":0,\"dailyPvpClaimed\":false,\"dailyKamikazeClaimed\":false,\"dailyBossClaimed\":false,\"achievementPvpClaimed\":false,\"achievementKamikazeClaimed\":false,\"achievementBossClaimed\":false,\"achievementClaimMask\":0,\"doubleExpUntil\":0}";
 
     private static String taoDuLieuChiSoMacDinh() {
         JSONObject chiSo = (JSONObject)JSON.parse(DEFAULT_STATS_JSON);
@@ -95,6 +96,7 @@ public class VXLNguoiDung {
                 if (res != null && res.next()) {
                     us.user_id = res.getInt("id");
                     us.ban = res.getBoolean("is_banned");
+                    us.quanTri = res.getBoolean("is_admin");
                     if (us.ban) {
                         us.dichVu.moHopThoaiOK("Tài khoản đã bị khóa.");
                         res.close();
@@ -348,6 +350,7 @@ public class VXLNguoiDung {
              ResultSet res = moKetQuaNguoiChoi(stmt, this.user_id)) {
             if (res != null && res.next()) {
                 this.nguoiChoi = new VXLNguoiChoi(this.dichVu);
+                this.nguoiChoi.quanTri = this.quanTri;
                 this.nguoiChoi.ma = res.getInt("id");
                 this.nguoiChoi.ten = res.getString("name");
                 this.nguoiChoi.vang = res.getInt("gold");
@@ -471,7 +474,7 @@ public class VXLNguoiDung {
     public void thanhTich(VXLTinNhan mss) {
         try {
             if (this.nguoiChoi != null) {
-                this.nguoiChoi.nhiemVu.guiThanhTich();
+                this.nguoiChoi.nhiemVu.xuLyThanhTich(mss);
             }
         }
         catch (IOException ex) {

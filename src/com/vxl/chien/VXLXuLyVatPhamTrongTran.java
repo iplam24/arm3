@@ -30,7 +30,8 @@ final class VXLXuLyVatPhamTrongTran {
             }
             chienBinh.daDungVatPhamTrongLuot = true;
             this.tranDau.phatNo(chienBinh);
-            this.tranDau.phatDungVatPham(chienBinh, (byte)100, (short)0);
+            this.tranDau.phatDungVatPham(chienBinh, (byte)100,
+                    chienBinh.layIconKyNangDacBiet());
             return true;
         }
         int[] viTri = this.timVatPhamTrongBalo(nguoiChoi, yeuCau);
@@ -48,7 +49,7 @@ final class VXLXuLyVatPhamTrongTran {
         }
         chienBinh.daDungVatPhamTrongLuot = true;
         nguoiChoi.tieuThuVatPhamTrongBalo(viTri[0]);
-        this.tranDau.phatDungVatPham(chienBinh, (byte)vatPham.mau.part, vatPham.mau.iconID);
+        this.tranDau.phatDungVatPham(chienBinh, vatPham.mau.gioiTinh, vatPham.mau.iconID);
         this.tranDau.kiemTraKetThuc();
         return true;
     }
@@ -57,22 +58,17 @@ final class VXLXuLyVatPhamTrongTran {
         switch (vatPham.ma) {
             case 220:
                 return this.hoiMau(chienBinh, Math.max(1, chienBinh.mauToiDa * 30 / 100));
-            case 221:
-                int dichChuyen = chienBinh.chiSo % 2 == 0 ? 240 : -240;
-                chienBinh.x = this.kep(chienBinh.x + dichChuyen, 30, this.tranDau.layChieuRongBanDo() - 30);
-                this.tranDau.phatDiChuyen(chienBinh);
+            case 222:
+                chienBinh.soPhatToiThieu = Math.max(chienBinh.soPhatToiThieu, 2);
+                chienBinh.heSoPhatBan = Math.max(chienBinh.heSoPhatBan, 175);
                 return true;
             case 223:
                 chienBinh.heSoDiChuyen = 200;
                 return true;
             case 224:
-                if (chienBinh.themKhien(Math.max(1, chienBinh.mauToiDa * 25 / 100)) <= 0) {
-                    if (chienBinh.coPhien()) {
-                        chienBinh.nguoiChoi.startOKDlg2("Khiên của bạn đang đầy.");
-                    }
-                    return false;
-                }
-                chienBinh.luotVoHinh = Math.max(chienBinh.luotVoHinh, 1);
+                return true;
+            case 225:
+                chienBinh.luotNgungGio = Math.max(chienBinh.luotNgungGio, 3);
                 return true;
             case 230:
                 return this.hoiMauDongDoi(chienBinh);
@@ -90,6 +86,21 @@ final class VXLXuLyVatPhamTrongTran {
                 return chienBinh.nguoiChoi != null && chienBinh.nguoiChoi.kichHoatNhanDoiKinhNghiem();
             case 258:
                 this.noBomTuSat(chienBinh);
+                return true;
+            case 296:
+                chienBinh.heSoTangNo = Math.max(chienBinh.heSoTangNo, 150);
+                return true;
+            case 297:
+                chienBinh.luotNapNhanh = Math.max(chienBinh.luotNapNhanh, 3);
+                return true;
+            case 298:
+                chienBinh.luotXuyenGiap = Math.max(chienBinh.luotXuyenGiap, 3);
+                return true;
+            case 389:
+                chienBinh.luotXuyenDiaHinh = Math.max(chienBinh.luotXuyenDiaHinh, 3);
+                return true;
+            case 390:
+                chienBinh.heSoGoBom = Math.max(chienBinh.heSoGoBom, 200);
                 return true;
             default:
                 if (VXLCauHinhVatPhamChienDau.laDanDacBiet(vatPham.ma)) {
