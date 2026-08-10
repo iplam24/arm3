@@ -23,6 +23,10 @@ final class VXLPhatTinTranDau {
         this.guiTungNguoi(chienBinh -> chienBinh.nguoiChoi.dichVu.guiLuotDauTiep(luotHienTai, x, y, this.chienBinhs, giay));
     }
 
+    void guiGio(byte gioX, byte gioY) {
+        this.guiTungNguoi(chienBinh -> chienBinh.nguoiChoi.dichVu.guiGioLuyenTap(gioX, gioY));
+    }
+
     void guiDiChuyen(VXLChienBinh daDiChuyen) {
         this.guiTungNguoi(chienBinh -> chienBinh.nguoiChoi.dichVu.guiDiChuyenDau(daDiChuyen.chiSo, daDiChuyen.x, daDiChuyen.y));
     }
@@ -40,8 +44,20 @@ final class VXLPhatTinTranDau {
                 mucTieu.chiSo, mucTieu.hp, mucTieu.phanTramMau(), mucTieu.chet ? (byte)2 : (byte)0));
     }
 
+    void guiNo(VXLChienBinh chienBinh) {
+        this.guiTungNguoi(nguoiNhan -> nguoiNhan.nguoiChoi.dichVu.guiNoDau(
+                chienBinh.chiSo, (byte)chienBinh.no));
+    }
+
     void guiDungVatPham(VXLChienBinh nguoiDung, byte maHieuUng, short icon) {
         this.guiTungNguoi(chienBinh -> chienBinh.nguoiChoi.dichVu.guiDungVatPhamLuyenTap(nguoiDung.chiSo, maHieuUng, icon));
+    }
+
+    void guiDoiSung(VXLChienBinh nguoiDoi, short iconVuKhiCu) {
+        this.guiTungNguoi(chienBinh -> chienBinh.nguoiChoi.dichVu.guiDoiSungLuyenTap(
+                nguoiDoi.chiSo, nguoiDoi.maVuKhi,
+                chienBinh == nguoiDoi ? iconVuKhiCu : (short)-1,
+                nguoiDoi.layThoiGianNapDan()));
     }
 
     private void guiTungNguoi(HanhDongGui hanhDong) {

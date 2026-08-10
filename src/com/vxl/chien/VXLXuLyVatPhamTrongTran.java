@@ -21,6 +21,18 @@ final class VXLXuLyVatPhamTrongTran {
         while (ms.boDoc().available() > 0) {
             ms.boDoc().readByte();
         }
+        if (yeuCau == 100) {
+            if (!chienBinh.kichHoatKyNangDacBiet()) {
+                if (chienBinh.coPhien()) {
+                    chienBinh.nguoiChoi.startOKDlg2("Nộ chưa đầy hoặc kỹ năng đặc biệt đã được kích hoạt.");
+                }
+                return true;
+            }
+            chienBinh.daDungVatPhamTrongLuot = true;
+            this.tranDau.phatNo(chienBinh);
+            this.tranDau.phatDungVatPham(chienBinh, (byte)100, (short)0);
+            return true;
+        }
         int[] viTri = this.timVatPhamTrongBalo(nguoiChoi, yeuCau);
         if (viTri == null) {
             nguoiChoi.startOKDlg2("Vật phẩm không có trong balo chiến đấu.");

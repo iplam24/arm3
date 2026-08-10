@@ -1,87 +1,189 @@
 package com.vxl.luyentap;
 
 import com.vxl.bando.VXLQuanLyBanDo;
+import com.vxl.chien.VXLCauHinhVatPhamChienDau;
+import com.vxl.chien.VXLHeThongDan;
+import com.vxl.chien.VXLHoSoDan;
 
 final class VXLTinhDuongDanLuyenTap {
+    static final class CachBanBot {
+        final short goc;
+        final byte luc;
+        final VXLHeThongDan.KetQuaPhatBan phatBan;
+
+        CachBanBot(short goc, byte luc, VXLHeThongDan.KetQuaPhatBan phatBan) {
+            this.goc = goc;
+            this.luc = luc;
+            this.phatBan = phatBan;
+        }
+    }
+
     private static final int CHIEU_RONG_NHAN_VAT = 20;
     private static final int CHIEU_CAO_NHAN_VAT = 35;
     private static final int LE_TRUNG_MAC_DINH = 5;
-    private static final int SO_DIEM_TOI_DA = 360;
-    private static final double BUOC_THOI_GIAN_DAN_BOT = 0.45D;
-    private static final double BUOC_THOI_GIAN_DAN_NGUOI_CHOI = 0.8D;
+    private static final int SO_DIEM_TOI_DA = 220;
+    private static final double BUOC_THOI_GIAN_DAN_BOT = 0.72D;
+    private static final double BUOC_THOI_GIAN_DAN_NGUOI_CHOI = 1.0D;
     private static final double HE_SO_TOC_DO = 0.85D;
     private static final double TRONG_LUC = 0.33D;
-    private static final double KHOANG_CACH_DAU_SUNG = 15D;
-    private static final double DO_CAO_DAU_SUNG = 12D;
+    private static final double KHOANG_CACH_DAU_SUNG = 30D;
+    private static final double DO_CAO_DAU_SUNG = 17D;
     private static final byte LUC_TOI_THIEU = 12;
     private static final byte LUC_TOI_DA = 30;
     private final short[] botX;
     private final short[] botY;
     private final boolean[] botDaChet;
     private final VXLQuanLyBanDo banDo;
+    private final VXLHeThongDan heThongDan;
+    private byte gioX;
+    private byte gioY;
 
     VXLTinhDuongDanLuyenTap(short[] botX, short[] botY, boolean[] botDaChet) {
         this.botX = botX;
         this.botY = botY;
         this.botDaChet = botDaChet;
         this.banDo = new VXLQuanLyBanDo(0);
+        this.heThongDan = new VXLHeThongDan(this.banDo, this::timBotTrungDiem);
     }
 
     public VXLQuanLyBanDo layBanDo() {
         return this.banDo;
     }
 
+    void capNhatGio(byte gioX, byte gioY) {
+        this.gioX = gioX;
+        this.gioY = gioY;
+    }
+
     short[][] taoDuongDanCong(short batDauX, short batDauY, short goc, byte luc, byte loaiDan) {
-        return this.taoDuongDanCong(batDauX, batDauY, goc, luc, loaiDan, -1,
-                BUOC_THOI_GIAN_DAN_NGUOI_CHOI);
+        VXLHeThongDan.KetQuaPhatBan ketQua = this.taoPhatBan(batDauX, batDauY, goc, luc,
+                (byte)0, loaiDan, (byte)0, (byte)0, -1, BUOC_THOI_GIAN_DAN_NGUOI_CHOI);
+        return new short[][]{ketQua.duongX[0], ketQua.duongY[0]};
     }
 
     short[][] taoDuongDanCong(short batDauX, short batDauY, short goc, byte luc, byte loaiDan,
             int botBoQua) {
-        return this.taoDuongDanCong(batDauX, batDauY, goc, luc, loaiDan, botBoQua,
-                BUOC_THOI_GIAN_DAN_BOT);
+        VXLHeThongDan.KetQuaPhatBan ketQua = this.taoPhatBan(batDauX, batDauY, goc, luc,
+                (byte)0, loaiDan, (byte)0, (byte)0, botBoQua, BUOC_THOI_GIAN_DAN_BOT);
+        return new short[][]{ketQua.duongX[0], ketQua.duongY[0]};
     }
 
-    private short[][] taoDuongDanCong(short batDauX, short batDauY, short goc, byte luc, byte loaiDan,
-            int botBoQua, double buocThoiGian) {
+    VXLHeThongDan.KetQuaPhatBan taoPhatBan(short batDauX, short batDauY, short goc, byte luc,
+            byte lucTach, byte loaiDan, byte chiMang, byte avenger, int botBoQua,
+            double buocThoiGian) {
         int soDiemToiDa = Math.max(1, Math.min(SO_DIEM_TOI_DA,
                 (int)Math.ceil(SO_DIEM_TOI_DA * BUOC_THOI_GIAN_DAN_BOT / buocThoiGian)));
-        short[] xs = new short[soDiemToiDa];
-        short[] ys = new short[soDiemToiDa];
-        double radian = Math.toRadians(goc);
-        double tocDo = Math.max(8, Byte.toUnsignedInt(luc)) * HE_SO_TOC_DO;
-        double trongLuc = loaiDan == 80 ? 0D : TRONG_LUC;
-        boolean xuyenDiaHinh = loaiDan == 80;
-        double dauSungX = batDauX + Math.cos(radian) * KHOANG_CACH_DAU_SUNG;
-        double dauSungY = batDauY - DO_CAO_DAU_SUNG - Math.sin(radian) * KHOANG_CACH_DAU_SUNG;
-        int chieuRongBanDo = this.banDo.getWidth();
-        int chieuCaoBanDo = this.banDo.getHeight();
-        int xTruoc = (int)Math.round(dauSungX);
-        int yTruoc = (int)Math.round(dauSungY);
-        int doDai = 0;
-        for (int i = 0; i < soDiemToiDa; i++) {
-            double thoiGian = i * buocThoiGian;
-            int x = (int)Math.round(dauSungX + Math.cos(radian) * tocDo * thoiGian);
-            int y = (int)Math.round(dauSungY - Math.sin(radian) * tocDo * thoiGian
-                    + trongLuc * thoiGian * thoiGian);
-            boolean raNgoaiBanDo = x < 0 || x >= chieuRongBanDo || y < 0 || y >= chieuCaoBanDo;
-            x = Math.max(0, Math.min(chieuRongBanDo - 1, x));
-            y = Math.max(0, Math.min(chieuCaoBanDo - 1, y));
-            short[] diemDung = this.timDiemDungTrenDoan(xTruoc, yTruoc, x, y, xuyenDiaHinh, botBoQua);
-            if (diemDung != null) {
-                x = diemDung[0];
-                y = diemDung[1];
-            }
-            xs[i] = (short)x;
-            ys[i] = (short)y;
-            doDai = i + 1;
-            if (raNgoaiBanDo || diemDung != null) {
-                break;
-            }
-            xTruoc = x;
-            yTruoc = y;
+        return this.heThongDan.taoPhatBan(batDauX, batDauY, goc, luc, lucTach, loaiDan,
+                chiMang, avenger, this.gioX, this.gioY, botBoQua, buocThoiGian, soDiemToiDa);
+    }
+
+    VXLHeThongDan.KetQuaPhatBan taoPhatBanNguoiChoi(short batDauX, short batDauY, short goc,
+            byte luc, byte lucTach, byte loaiDan, byte chiMang, byte avenger) {
+        return this.taoPhatBan(batDauX, batDauY, goc, luc, lucTach, loaiDan, chiMang, avenger,
+                -1, BUOC_THOI_GIAN_DAN_NGUOI_CHOI);
+    }
+
+    VXLHeThongDan.KetQuaPhatBan taoPhatBanBot(short batDauX, short batDauY, short goc,
+            byte luc, byte loaiDan, int botBoQua) {
+        return this.taoPhatBan(batDauX, batDauY, goc, luc, (byte)0, loaiDan, (byte)0,
+                (byte)0, botBoQua, BUOC_THOI_GIAN_DAN_BOT);
+    }
+
+    CachBanBot timCachBanBot(short batDauX, short batDauY, short dichX, short dichY,
+            byte loaiDan, int botBoQua, boolean uuTienSieuCao) {
+        VXLHoSoDan hoSoDan = VXLCauHinhVatPhamChienDau.layHoSoDan(loaiDan, (byte)0);
+        if (hoSoDan.kieuBan() == VXLHoSoDan.KieuBan.LASER) {
+            short goc = this.tinhGocToiMucTieu(batDauX, batDauY, dichX, dichY);
+            byte luc = 30;
+            return new CachBanBot(goc, luc,
+                    this.taoPhatBanBot(batDauX, batDauY, goc, luc, loaiDan, botBoQua));
         }
-        return this.catDuongDan(xs, ys, doDai);
+        boolean banSangPhai = dichX >= batDauX;
+        int gocBatDau = banSangPhai ? 38 : 98;
+        int gocKetThuc = banSangPhai ? 84 : 142;
+        long diemTotNhat = Long.MAX_VALUE;
+        CachBanBot cachTotNhat = null;
+        CachBanBot cachTrungThuong = null;
+        CachBanBot cachTrungSieuCao = null;
+        for (int luc = 18; luc <= 30; luc += 2) {
+            for (int goc = gocBatDau; goc <= gocKetThuc; goc += 2) {
+                VXLHeThongDan.KetQuaPhatBan phatBan = this.taoPhatBanBot(
+                        batDauX, batDauY, (short)goc, (byte)luc, loaiDan, botBoQua);
+                long diem = this.tinhDiemLechMucTieu(phatBan.duongX, phatBan.duongY,
+                        dichX, dichY, loaiDan);
+                if (diem < diemTotNhat) {
+                    diemTotNhat = diem;
+                    cachTotNhat = new CachBanBot((short)goc, (byte)luc, phatBan);
+                }
+                if (diem != 0L) {
+                    continue;
+                }
+                CachBanBot cachTrung = new CachBanBot((short)goc, (byte)luc, phatBan);
+                if (cachTrungThuong == null) {
+                    cachTrungThuong = cachTrung;
+                }
+                if (VXLCauHinhVatPhamChienDau.timDiemSieuCao(batDauY,
+                        phatBan.duongX, phatBan.duongY, loaiDan, (byte)0).kichHoat()) {
+                    cachTrungSieuCao = cachTrung;
+                    break;
+                }
+            }
+            if (uuTienSieuCao && cachTrungSieuCao != null) {
+                return cachTrungSieuCao;
+            }
+            if (!uuTienSieuCao && cachTrungThuong != null) {
+                return cachTrungThuong;
+            }
+        }
+        if (cachTrungSieuCao != null) {
+            return cachTrungSieuCao;
+        }
+        if (cachTrungThuong != null) {
+            return cachTrungThuong;
+        }
+        if (cachTotNhat != null) {
+            return cachTotNhat;
+        }
+        byte luc = this.lucCanThietToiMucTieu(batDauX, batDauY, dichX, dichY);
+        short goc = this.gocDanDaoCaoToiMucTieu(batDauX, batDauY, dichX, dichY, luc);
+        return new CachBanBot(goc, luc,
+                this.taoPhatBanBot(batDauX, batDauY, goc, luc, loaiDan, botBoQua));
+    }
+
+    private long tinhDiemLechMucTieu(short[][] cacDuongX, short[][] cacDuongY,
+            short dichX, short dichY, byte loaiDan) {
+        long diemTotNhat = Long.MAX_VALUE;
+        int soQuyDao = Math.min(cacDuongX.length, cacDuongY.length);
+        for (int i = 0; i < soQuyDao; i++) {
+            if (Byte.toUnsignedInt(loaiDan) == 17 && soQuyDao > 1 && i == 0) {
+                continue;
+            }
+            short[] xs = cacDuongX[i];
+            short[] ys = cacDuongY[i];
+            if (xs == null || ys == null) {
+                continue;
+            }
+            int soDiem = Math.min(xs.length, ys.length);
+            for (int j = 0; j < soDiem; j++) {
+                int dx = 0;
+                if (xs[j] < dichX - CHIEU_RONG_NHAN_VAT / 2) {
+                    dx = dichX - CHIEU_RONG_NHAN_VAT / 2 - xs[j];
+                } else if (xs[j] > dichX + CHIEU_RONG_NHAN_VAT / 2) {
+                    dx = xs[j] - dichX - CHIEU_RONG_NHAN_VAT / 2;
+                }
+                int dy = 0;
+                if (ys[j] < dichY - CHIEU_CAO_NHAN_VAT) {
+                    dy = dichY - CHIEU_CAO_NHAN_VAT - ys[j];
+                } else if (ys[j] > dichY) {
+                    dy = ys[j] - dichY;
+                }
+                long diem = (long)dx * dx + (long)dy * dy;
+                if (diem < diemTotNhat) {
+                    diemTotNhat = diem;
+                }
+            }
+        }
+        return diemTotNhat;
     }
 
     short[][] taoDuongDanThang(short batDauX, short batDauY, short dichX, short dichY) {

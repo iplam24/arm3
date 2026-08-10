@@ -54,7 +54,9 @@ implements IVXLXuLyTin {
                         VXLQuanLyPhong.vaoBan(this.khach.user.nguoiChoi, mss);
                         break;
                     case 15:
-                        VXLQuanLyPhong.roiBanCho(this.khach.user.nguoiChoi);
+                        if (!this.khach.user.nguoiChoi.roiLuyenTapNeuCan()) {
+                            VXLQuanLyPhong.roiBanCho(this.khach.user.nguoiChoi);
+                        }
                         break;
                     case 16:
                         VXLQuanLyPhong.sanSang(this.khach.user.nguoiChoi, mss);
@@ -70,6 +72,13 @@ implements IVXLXuLyTin {
                         break;
                     case 53:
                         VXLQuanLyPhong.dauCapNhatXY(this.khach.user.nguoiChoi, mss);
+                        break;
+                    case 69:
+                        if (this.khach.user.nguoiChoi.inTraining) {
+                            this.khach.user.nguoiChoi.xuLyDoiSungLuyenTap(mss);
+                        } else {
+                            VXLQuanLyPhong.dauDoiSung(this.khach.user.nguoiChoi, mss);
+                        }
                         break;
                     case 75:
                         VXLQuanLyPhong.chonBanDo(this.khach.user.nguoiChoi, mss);
@@ -120,7 +129,9 @@ implements IVXLXuLyTin {
                         this.khach.user.nguoiChoi.yeuCauMuaVatPham(mss);
                         break;
                     case 26:
-                        if (!VXLQuanLyPhong.dungVatPhamTrongTran(this.khach.user.nguoiChoi, mss)) {
+                        if (this.khach.user.nguoiChoi.inTraining) {
+                            this.khach.user.nguoiChoi.xuLyVatPhamLuyenTap(mss);
+                        } else if (!VXLQuanLyPhong.dungVatPhamTrongTran(this.khach.user.nguoiChoi, mss)) {
                             this.khach.user.nguoiChoi.dungVatPham(mss);
                         }
                         break;
@@ -222,6 +233,7 @@ implements IVXLXuLyTin {
             case 26:
             case 49:
             case 53:
+            case 69:
             case 72:
             case 75:
             case 79:

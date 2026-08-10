@@ -218,6 +218,13 @@ public class VXLQuanLyPhong {
         }
     }
 
+    public static void dauDoiSung(VXLNguoiChoi nguoiChoi, VXLTinNhan ms) throws IOException {
+        VXLQuanLyChien fight = layTranDau(nguoiChoi);
+        if (fight != null) {
+            fight.doiSung(nguoiChoi, ms);
+        }
+    }
+
     public static void dauKiemTraVaCham(VXLNguoiChoi nguoiChoi, VXLTinNhan ms) throws IOException {
         VXLQuanLyChien fight = layTranDau(nguoiChoi);
         if (fight != null) {

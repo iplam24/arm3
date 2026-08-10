@@ -700,26 +700,17 @@ implements IVXLDichVuGame {
     }
 
     public void guiKetQuaBanDau(byte whoShoot, VXLKetQuaDan ketQua, byte numShoot) throws IOException {
-        VXLTinNhan ms = new VXLTinNhan(22);
+        this.guiKetQuaBan(22, ketQua.chiMang, whoShoot, ketQua.loaiDan, ketQua.batDauX,
+                ketQua.batDauY, ketQua.goc, ketQua.lucTach, numShoot,
+                ketQua.cacDuongX, ketQua.cacDuongY, ketQua.loaiSieuCao,
+                ketQua.xSieuCao, ketQua.ySieuCao);
+    }
+
+    public void guiNoDau(byte chiSo, byte no) throws IOException {
+        VXLTinNhan ms = new VXLTinNhan(113);
         DataOutputStream ds = ms.boGhi();
-        ds.writeByte(1);
-        ds.writeByte(0);
-        ds.writeByte(whoShoot);
-        ds.writeByte(ketQua.loaiDan);
-        ds.writeShort(ketQua.batDauX);
-        ds.writeShort(ketQua.batDauY);
-        ds.writeShort(ketQua.goc);
-        if (ketQua.loaiDan == 17 || ketQua.loaiDan == 19) {
-            ds.writeByte(ketQua.luc);
-        }
-        ds.writeByte(numShoot <= 0 ? 1 : numShoot);
-        ds.writeByte(1);
-        ds.writeShort(ketQua.duongX.length);
-        for (int i = 0; i < ketQua.duongX.length; i++) {
-            ds.writeShort(ketQua.duongX[i]);
-            ds.writeShort(ketQua.duongY[i]);
-        }
-        ds.writeByte(0);
+        ds.writeByte(chiSo);
+        ds.writeByte(Math.max(0, Math.min(100, Byte.toUnsignedInt(no))));
         ds.flush();
         this.guiTin(ms);
     }
@@ -775,6 +766,19 @@ implements IVXLDichVuGame {
         ds.writeByte(0);
         ds.flush();
         this.guiTin(ms);
+    }
+
+    public void guiGioLuyenTap(byte gioX, byte gioY) throws IOException {
+        VXLTinNhan ms = new VXLTinNhan(25);
+        DataOutputStream ds = ms.boGhi();
+        ds.writeByte(gioX);
+        ds.writeByte(gioY);
+        ds.flush();
+        this.guiTin(ms);
+    }
+
+    public void guiThoatManHinhLuyenTap() {
+        this.guiTin(new VXLTinNhan(83));
     }
 
     public void capNhatCup(byte loai, int cup) throws IOException {
@@ -873,6 +877,15 @@ implements IVXLDichVuGame {
 
     public void guiBatDauLuyenTap(byte maBanDo, short maVuKhi, int hpNguoiChoi,
             short[] botX, short[] botY, int[] botHp, short[] botWeapons) throws IOException {
+        ArrayList<Short> cacVuKhiCanTai = new ArrayList<>();
+        cacVuKhiCanTai.add(maVuKhi);
+        if (botWeapons != null) {
+            for (short botWeapon : botWeapons) {
+                if (!cacVuKhiCanTai.contains(botWeapon)) {
+                    cacVuKhiCanTai.add(botWeapon);
+                }
+            }
+        }
         VXLTinNhan ms = new VXLTinNhan(20);
         DataOutputStream ds = ms.boGhi();
         ds.writeByte(maBanDo);
@@ -895,10 +908,9 @@ implements IVXLDichVuGame {
             }
         }
         ds.writeByte(0);
-        ds.writeByte(1 + botWeapons.length);
-        ds.writeShort(maVuKhi);
-        for (short botWeapon : botWeapons) {
-            ds.writeShort(botWeapon);
+        ds.writeByte(cacVuKhiCanTai.size());
+        for (short vuKhiCanTai : cacVuKhiCanTai) {
+            ds.writeShort(vuKhiCanTai);
         }
         ds.flush();
         this.guiTin(ms);
@@ -906,6 +918,18 @@ implements IVXLDichVuGame {
 
     public void guiHienManHinhGameLuyenTap() {
         this.guiTin(new VXLTinNhan(-67));
+    }
+
+    public void guiDoiSungLuyenTap(byte chiSo, short maVuKhi, short iconVuKhiCu,
+            int thoiGianNapDan) throws IOException {
+        VXLTinNhan ms = new VXLTinNhan(-45);
+        DataOutputStream ds = ms.boGhi();
+        ds.writeByte(chiSo);
+        ds.writeShort(maVuKhi);
+        ds.writeShort(iconVuKhiCu);
+        ds.writeShort(Math.max(50, Math.min(5000, thoiGianNapDan)));
+        ds.flush();
+        this.guiTin(ms);
     }
 
     public void yeuCauDanLuyenTap(VXLTinNhan ms) throws IOException {
@@ -922,7 +946,7 @@ implements IVXLDichVuGame {
     }
 
     private byte layLoaiDanLuyenTap(short maVuKhi) {
-        return VXLCauHinhVatPhamChienDau.layLoaiDanTheoVuKhi(maVuKhi, (byte)0);
+        return VXLCauHinhVatPhamChienDau.layNhomSungClientTheoVuKhi(maVuKhi);
     }
 
     private byte[] layAnhDanLuyenTap(short maVuKhi) {
@@ -972,49 +996,70 @@ implements IVXLDichVuGame {
 
     public void guiKetQuaBanLuyenTap(byte whoShoot, byte loaiDan, short x, short y, short goc,
             byte luc, short[] duongX, short[] duongY, byte soPhat) throws IOException {
-        int soDiem = Math.min(duongX == null ? 0 : duongX.length, duongY == null ? 0 : duongY.length);
-        VXLTinNhan ms = new VXLTinNhan(84);
+        this.guiKetQuaBanLuyenTap(whoShoot, loaiDan, x, y, goc, luc,
+                new short[][]{duongX}, new short[][]{duongY}, soPhat);
+    }
+
+    public void guiKetQuaBanLuyenTap(byte whoShoot, byte loaiDan, short x, short y, short goc,
+            byte lucTach, short[][] cacDuongX, short[][] cacDuongY, byte soPhat) throws IOException {
+        this.guiKetQuaBan(84, (byte)0, whoShoot, loaiDan, x, y, goc, lucTach, soPhat,
+                cacDuongX, cacDuongY, (byte)0, (short)-1, (short)-1);
+    }
+
+    public void guiKetQuaBanLuyenTapNangCao(byte chiMang, byte whoShoot, byte loaiDan,
+            short x, short y, short goc, byte lucTach, short[][] cacDuongX,
+            short[][] cacDuongY, byte soPhat, byte loaiSieuCao, short xSieuCao,
+            short ySieuCao) throws IOException {
+        this.guiKetQuaBan(84, chiMang, whoShoot, loaiDan, x, y, goc, lucTach, soPhat,
+                cacDuongX, cacDuongY, loaiSieuCao, xSieuCao, ySieuCao);
+    }
+
+    private void guiKetQuaBan(int maLenh, byte chiMang, byte whoShoot, byte loaiDan,
+            short x, short y, short goc, byte lucTach, byte soPhat,
+            short[][] cacDuongX, short[][] cacDuongY, byte loaiSieuCao,
+            short xSieuCao, short ySieuCao) throws IOException {
+        if (cacDuongX == null || cacDuongY == null || cacDuongX.length == 0
+                || cacDuongX.length != cacDuongY.length) {
+            return;
+        }
+        for (int i = 0; i < cacDuongX.length; i++) {
+            if (cacDuongX[i] == null || cacDuongY[i] == null || cacDuongX[i].length == 0
+                    || cacDuongX[i].length != cacDuongY[i].length) {
+                return;
+            }
+        }
+        boolean nenDuongDan = loaiDan != 49 && coTheNenDuongDan(cacDuongX, cacDuongY);
+        VXLTinNhan ms = new VXLTinNhan(maLenh);
         DataOutputStream ds = ms.boGhi();
-        ds.writeByte(1);
-        ds.writeByte(0);
+        ds.writeByte(nenDuongDan ? 0 : 1);
+        ds.writeByte(chiMang);
         ds.writeByte(whoShoot);
         ds.writeByte(loaiDan);
         ds.writeShort(x);
         ds.writeShort(y);
         ds.writeShort(goc);
         if (loaiDan == 17 || loaiDan == 19) {
-            ds.writeByte(luc);
+            ds.writeByte(Math.max(4, Byte.toUnsignedInt(lucTach)));
         }
-        byte soPhatThuc = soPhat;
-        byte soQuyDao = 1;
-        if (loaiDan == 9) {
-            soPhatThuc = 1;
-            soQuyDao = 4;
-        } else if (loaiDan == 80) {
-            soPhatThuc = 1;
-            soQuyDao = 2;
-        }
-        ds.writeByte(soPhatThuc <= 0 ? 1 : soPhatThuc);
-        ds.writeByte(soQuyDao);
-        for (int quyDao = 0; quyDao < soQuyDao; quyDao++) {
-            double doLech = loaiDan == 9 ? Math.toRadians((quyDao - 1.5D) * 3.5D) : 0D;
-            double cos = Math.cos(doLech);
-            double sin = Math.sin(doLech);
-            ds.writeShort(soDiem);
-            for (int i = 0; i < soDiem; ++i) {
-                int diemX = duongX[i];
-                int diemY = duongY[i];
-                if (loaiDan == 9) {
-                    int tuongDoiX = diemX - x;
-                    int tuongDoiY = diemY - y;
-                    diemX = (int)Math.round(x + tuongDoiX * cos - tuongDoiY * sin);
-                    diemY = (int)Math.round(y + tuongDoiX * sin + tuongDoiY * cos);
+        ds.writeByte(soPhat <= 0 ? 1 : soPhat);
+        ds.writeByte(cacDuongX.length);
+        for (int quyDao = 0; quyDao < cacDuongX.length; quyDao++) {
+            ds.writeShort(cacDuongX[quyDao].length);
+            for (int i = 0; i < cacDuongX[quyDao].length; i++) {
+                if (!nenDuongDan || i == 0) {
+                    ds.writeShort(cacDuongX[quyDao][i]);
+                    ds.writeShort(cacDuongY[quyDao][i]);
+                } else {
+                    ds.writeByte(cacDuongX[quyDao][i] - cacDuongX[quyDao][i - 1]);
+                    ds.writeByte(cacDuongY[quyDao][i] - cacDuongY[quyDao][i - 1]);
                 }
-                ds.writeShort(diemX);
-                ds.writeShort(diemY);
             }
         }
-        ds.writeByte(0);
+        ds.writeByte(loaiSieuCao);
+        if (loaiSieuCao == 1 || loaiSieuCao == 2) {
+            ds.writeShort(xSieuCao);
+            ds.writeShort(ySieuCao);
+        }
         ds.flush();
         this.guiTin(ms);
     }
@@ -1082,6 +1127,20 @@ implements IVXLDichVuGame {
         ds.writeByte(1);
         ds.flush();
         this.guiTin(ms);
+    }
+
+    private static boolean coTheNenDuongDan(short[][] cacDuongX, short[][] cacDuongY) {
+        for (int quyDao = 0; quyDao < cacDuongX.length; quyDao++) {
+            for (int i = 1; i < cacDuongX[quyDao].length; i++) {
+                int lechX = cacDuongX[quyDao][i] - cacDuongX[quyDao][i - 1];
+                int lechY = cacDuongY[quyDao][i] - cacDuongY[quyDao][i - 1];
+                if (lechX < Byte.MIN_VALUE || lechX > Byte.MAX_VALUE
+                        || lechY < Byte.MIN_VALUE || lechY > Byte.MAX_VALUE) {
+                    return false;
+                }
+            }
+        }
+        return true;
     }
 
     public void guiYeuCauSkill(byte hanhDong) throws IOException {

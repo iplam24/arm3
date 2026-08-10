@@ -57,6 +57,12 @@ public class VXLNguoiDung {
 
     private static final String DEFAULT_STATS_JSON = "{\"power\":100,\"avenger\":100,\"kill\":0,\"dead\":1,\"assist\":0,\"trainingSuccess\":1,\"trainingRebelDefeated\":0,\"busyHammer\":0,\"nHammer\":2,\"exp\":1000,\"point\":0,\"pointAdd\":[1000,0,0,0,0,0],\"pvpWins\":0,\"kamikazeKills\":0,\"bossKills\":0,\"pvpDamage\":0,\"dailyDate\":\"\",\"dailyPvpWins\":0,\"dailyKamikazeKills\":0,\"dailyBossKills\":0,\"dailyPvpClaimed\":false,\"dailyKamikazeClaimed\":false,\"dailyBossClaimed\":false,\"achievementPvpClaimed\":false,\"achievementKamikazeClaimed\":false,\"achievementBossClaimed\":false,\"doubleExpUntil\":0}";
 
+    private static String taoDuLieuChiSoMacDinh() {
+        JSONObject chiSo = (JSONObject)JSON.parse(DEFAULT_STATS_JSON);
+        chiSo.put("exp", VXLTienIch.layKinhNghiemCapMot());
+        return chiSo.toJSONString();
+    }
+
     public VXLNguoiDung(VXLPhien khach, VXLDichVuGame dichVu) {
         this.khach = khach;
         this.dichVu = dichVu;
@@ -188,7 +194,7 @@ public class VXLNguoiDung {
                     stmt2.setInt(3, 1000000);
                     stmt2.setInt(4, 0);
                     stmt2.setInt(5, 1000);
-                    stmt2.setString(6, DEFAULT_STATS_JSON);
+                    stmt2.setString(6, taoDuLieuChiSoMacDinh());
                     stmt2.setString(7, "[]");
                     stmt2.setString(8, "[]");
                     stmt2.setString(9, "[]");
@@ -215,7 +221,8 @@ public class VXLNguoiDung {
                             this.nguoiChoi.wp = weapon;
                             JSONObject stats = (JSONObject)JSON.parse(res2.getString("stats_json"));
                             VXLDuLieuJson p = new VXLDuLieuJson(stats);
-                            this.nguoiChoi.kinhNghiem = Math.max(0, p.getInt("exp"));
+                            this.nguoiChoi.kinhNghiem = VXLTienIch.chuanHoaKinhNghiemKhoiTao(
+                                    p.getInt("exp"));
                             this.nguoiChoi.cap = VXLTienIch.layCap(this.nguoiChoi.kinhNghiem);
                             this.nguoiChoi.point = p.getShort("point");
                             this.nguoiChoi.trainingSuccess = p.getByte("trainingSuccess");
@@ -356,7 +363,8 @@ public class VXLNguoiDung {
                 this.nguoiChoi.wp = (short)-1;
                 JSONObject stats = docJsonObject(res.getString("stats_json"));
                 VXLDuLieuJson p = new VXLDuLieuJson(stats);
-                this.nguoiChoi.kinhNghiem = p.getInt("exp");
+                this.nguoiChoi.kinhNghiem = VXLTienIch.chuanHoaKinhNghiemKhoiTao(
+                        p.getInt("exp"));
                 this.nguoiChoi.cap = VXLTienIch.layCap(this.nguoiChoi.kinhNghiem);
                 this.nguoiChoi.point = p.getShort("point");
                 this.nguoiChoi.trainingSuccess = p.getByte("trainingSuccess");

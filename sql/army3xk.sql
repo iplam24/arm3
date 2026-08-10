@@ -1095,7 +1095,7 @@ CREATE TABLE `players` (
   `gold` int(11) NOT NULL DEFAULT 0,
   `cup` int(11) NOT NULL DEFAULT 0,
   `gem` int(11) NOT NULL DEFAULT 0,
-  `stats_json` varchar(10000) NOT NULL DEFAULT '{"power":100,"avenger":100,"kill":0,"dead":1,"assist":0,"trainingSuccess":1,"busyHammer":0,"nHammer":2,"exp":1000,"point":0,"pointAdd":[1000,0,0,0,0,0]}',
+  `stats_json` varchar(10000) NOT NULL DEFAULT '{"power":100,"avenger":100,"kill":0,"dead":1,"assist":0,"trainingSuccess":1,"busyHammer":0,"nHammer":2,"exp":10214,"point":0,"pointAdd":[1000,0,0,0,0,0]}',
   `inventory_json` text NOT NULL,
   `equipped_json` text NOT NULL,
   `pocket_json` text NOT NULL,

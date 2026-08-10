@@ -87,9 +87,7 @@ final class VXLDieuKhienBotTranDau {
             short goc = this.tinhDuongDan.gocDanDaoToiMucTieu(bot, mucTieu, luc);
             VXLKetQuaDan ketQua = this.tranDau.xuLyPhatBan(bot, (byte)0, goc, luc, -1);
             this.tranDau.phatBan(bot, ketQua, (byte)1);
-            if (ketQua.mucTieu != null && ketQua.satThuong > 0) {
-                this.tranDau.satThuong(bot, ketQua.mucTieu, ketQua.satThuong, false, false, false);
-            }
+            this.tranDau.apDungSatThuongPhatBan(bot, ketQua, -1);
         }
         if (!this.tranDau.kiemTraKetThuc()) {
             this.tranDau.sangLuot();

@@ -87,6 +87,8 @@ public class VXLNguoiChoi {
 
     public VXLNguoiChoi(VXLDichVuGame dichVu) {
         this.dichVu = dichVu;
+        this.kinhNghiem = VXLTienIch.layKinhNghiemCapMot();
+        this.cap = VXLTienIch.layCap(this.kinhNghiem);
         this.pointAdd = new short[]{1000, 0, 0, 0, 0, 0};
         this.head = -1;
         this.hat = -1;
@@ -443,6 +445,19 @@ public class VXLNguoiChoi {
         }
     }
 
+    private void lamMoiTrangBiNhanVat() {
+        this.head = -1;
+        this.hat = -1;
+        this.body = -1;
+        this.leg = -1;
+        this.wp = -1;
+        this.wing = -1;
+        this.avenger = 0;
+        for (VXLVatPham vatPham : this.itemBody) {
+            this.datTrangBiChoNhanVat(vatPham);
+        }
+    }
+
     public boolean vatPhamCoTrongBalo(VXLVatPham vatPham) {
         if (vatPham == null || this.itemBalo == null) {
             return false;
@@ -543,7 +558,8 @@ public class VXLNguoiChoi {
                 this.moHopThoaiOK("Vật phẩm đã gắn vào Balo.");
                 return;
             }
-            if (this.cap < item2.mau.cap) {
+            int capYeuCau = Math.max(0, Byte.toUnsignedInt(item2.mau.cap) - 1);
+            if (this.cap < capYeuCau) {
                 this.moHopThoaiOK("Trình độ không đạt yêu cầu.");
                 return;
             }
@@ -594,13 +610,7 @@ public class VXLNguoiChoi {
                 }
                 this.dichVu.guiBalo();
             }
-            if (t == 5) {
-                for (VXLVatPham ite : this.itemBody) {
-                    this.datTrangBiChoNhanVat(ite);
-                }
-            } else {
-                this.datTrangBiChoNhanVat(item2);
-            }
+            this.lamMoiTrangBiNhanVat();
             this.dichVu.guiTuiDo();
             this.dichVu.guiDoTrenNguoi();
             this.dichVu.doiTrangBi();
@@ -608,22 +618,19 @@ public class VXLNguoiChoi {
             return;
         }
         if (loai == 5) {
-            int param2;
             kiemTraChiSo(chiSo, this.itemBody.length, "trang bi");
             VXLVatPham item4 = this.itemBody[chiSo];
             if (item4 == null || item4.mau == null) return;
             byte t = item4.mau.loai;
-            if (t != 0 && t != 4) {
+            if (t < 0 || t > 5) {
                 this.moHopThoaiOK("Không thể tháo trang bị này.");
                 return;
             }
-            int n = this.layOTrongTuiDo();
-            if (t == 0) {
-                if (n == 0) {
-                    this.moHopThoaiOK("Túi đồ đã đầy.");
-                    return;
-                }
-            } else if (t == 4 && n == 0) {
+            if (t == 4 && this.soVatPhamTrongBalo() > 0) {
+                this.moHopThoaiOK("Balo đang chứa vật phẩm.");
+                return;
+            }
+            if (this.layOTrongTuiDo() == 0) {
                 this.moHopThoaiOK("Túi đồ đã đầy.");
                 return;
             }
@@ -632,18 +639,13 @@ public class VXLNguoiChoi {
                 return;
             }
             this.itemBody[chiSo] = null;
-            if (t == 0) {
-                this.head = 0;
-            } else {
+            if (t == 4) {
                 this.itemBalo = new int[0];
-                this.wing = 0;
                 this.dichVu.guiBalo();
             }
+            this.lamMoiTrangBiNhanVat();
             this.dichVu.guiTuiDo();
             this.dichVu.guiDoTrenNguoi();
-            if (this.itemBody[5] != null) {
-                this.datTrangBiChoNhanVat(this.itemBody[5]);
-            }
             this.dichVu.doiTrangBi();
             this.guiCapNhatTrangBiChoKhu();
             return;
@@ -722,6 +724,40 @@ public class VXLNguoiChoi {
             }
         }
         return number;
+    }
+
+    public VXLVatPham layVuKhiTrongBalo(int chiSoBalo) {
+        if (this.itemBalo == null || chiSoBalo < 0 || chiSoBalo >= this.itemBalo.length) {
+            return null;
+        }
+        int chiSoTui = this.itemBalo[chiSoBalo];
+        if (this.itemBag == null || chiSoTui < 0 || chiSoTui >= this.itemBag.length) {
+            return null;
+        }
+        VXLVatPham vuKhi = this.itemBag[chiSoTui];
+        if (vuKhi == null || vuKhi.mau == null || vuKhi.mau.loai != 5
+                || vuKhi.HP <= 0 || vuKhi.soLuong <= 0 || vuKhi.mau.part < 0) {
+            return null;
+        }
+        return vuKhi;
+    }
+
+    public synchronized VXLVatPham doiVuKhiTrongBalo(int chiSoBalo) {
+        VXLVatPham vuKhiMoi = this.layVuKhiTrongBalo(chiSoBalo);
+        if (vuKhiMoi == null || this.itemBody == null || this.itemBody.length <= 5) {
+            return null;
+        }
+        VXLVatPham vuKhiCu = this.itemBody[5];
+        if (vuKhiCu == null || vuKhiCu.mau == null || vuKhiCu == vuKhiMoi) {
+            return null;
+        }
+        int chiSoTui = this.itemBalo[chiSoBalo];
+        vuKhiCu.chiSo = chiSoTui;
+        vuKhiMoi.chiSo = 5;
+        this.itemBody[5] = vuKhiMoi;
+        this.itemBag[chiSoTui] = vuKhiCu;
+        this.lamMoiTrangBiNhanVat();
+        return vuKhiCu;
     }
 
     public boolean themVatPhamVaoTui(VXLVatPham vatPham) {
@@ -1199,6 +1235,10 @@ public class VXLNguoiChoi {
         this.luyenTap.vao();
     }
 
+    public boolean roiLuyenTapNeuCan() {
+        return this.luyenTap.roiNeuDangLuyenTap();
+    }
+
     public void handleTrainingMove(VXLTinNhan ms) throws IOException {
         this.luyenTap.diChuyen(ms);
     }
@@ -1221,5 +1261,13 @@ public class VXLNguoiChoi {
 
     public void xuLyFocusSkill(VXLTinNhan ms) throws IOException {
         this.luyenTap.xuLyFocusSkill(ms);
+    }
+
+    public void xuLyDoiSungLuyenTap(VXLTinNhan ms) throws IOException {
+        this.luyenTap.doiSung(ms);
+    }
+
+    public void xuLyVatPhamLuyenTap(VXLTinNhan ms) throws IOException {
+        this.luyenTap.dungVatPham(ms);
     }
 }

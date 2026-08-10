@@ -12,6 +12,7 @@ import java.text.DecimalFormat;
 import java.util.Random;
 
 public class VXLTienIch {
+    public static final int KINH_NGHIEM_CAP_MOT_MAC_DINH = 10214;
     private static final long K = 1024L;
     private static final long M = 0x100000L;
     private static final long G = 0x40000000L;
@@ -63,10 +64,28 @@ public class VXLTienIch {
         int cap = 0;
         for (java.util.Map.Entry<Integer, VXLTieuDeCap> muc : VXLTieuDeCap.levels.entrySet()) {
             VXLTieuDeCap tieuDeCap = muc.getValue();
-            if (tieuDeCap == null || kinhNghiem <= tieuDeCap.kinhNghiem) continue;
+            if (tieuDeCap == null || kinhNghiem < tieuDeCap.kinhNghiem) continue;
             cap = Math.max(cap, muc.getKey());
         }
         return cap;
+    }
+
+    public static int layKinhNghiemCapMot() {
+        VXLTieuDeCap capMot = VXLTieuDeCap.levels.get(1);
+        if (capMot != null && capMot.kinhNghiem > 0) {
+            return capMot.kinhNghiem;
+        }
+        int mocThapNhat = Integer.MAX_VALUE;
+        for (VXLTieuDeCap tieuDeCap : VXLTieuDeCap.levels.values()) {
+            if (tieuDeCap != null && tieuDeCap.kinhNghiem > 0) {
+                mocThapNhat = Math.min(mocThapNhat, tieuDeCap.kinhNghiem);
+            }
+        }
+        return mocThapNhat == Integer.MAX_VALUE ? KINH_NGHIEM_CAP_MOT_MAC_DINH : mocThapNhat;
+    }
+
+    public static int chuanHoaKinhNghiemKhoiTao(int kinhNghiem) {
+        return Math.max(layKinhNghiemCapMot(), kinhNghiem);
     }
 
     public static byte[] layTep(String url) {
@@ -135,4 +154,3 @@ public class VXLTienIch {
         return nhoNhat + ngauNhien.nextInt(lonNhat - nhoNhat);
     }
 }
-
