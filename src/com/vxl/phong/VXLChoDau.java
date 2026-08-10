@@ -9,10 +9,10 @@ public class VXLChoDau {
     public final VXLPhong phong;
     public final byte ma;
     public final byte maxPlayers;
-    public byte maBanDo;
+    public volatile byte maBanDo;
     public int tien;
     public String ten;
-    public boolean started;
+    public volatile boolean started;
     private final VXLNguoiChoi[] nguoiChois;
     private final boolean[] sanSang;
     private VXLNguoiChoi chuPhong;
@@ -20,6 +20,12 @@ public class VXLChoDau {
     private final VXLQuanLyNguoiChoiAo quanLyNguoiChoiAo;
 
     public VXLChoDau(VXLPhong phong, byte ma, byte maxPlayers, byte maBanDo) {
+        if (phong == null) {
+            throw new IllegalArgumentException("Phong must not be null.");
+        }
+        if (maxPlayers <= 0) {
+            throw new IllegalArgumentException("maxPlayers must be positive.");
+        }
         this.phong = phong;
         this.ma = ma;
         this.maxPlayers = maxPlayers;
@@ -50,12 +56,16 @@ public class VXLChoDau {
     }
 
     public synchronized boolean vao(VXLNguoiChoi nguoiChoi, String matKhau) throws IOException {
-        if (nguoiChoi == null) {
+        if (nguoiChoi == null || nguoiChoi.dichVu == null) {
             return false;
         }
         if (this.started) {
             nguoiChoi.startOKDlg2("Bàn đang thi đấu.");
             return false;
+        }
+        if (this.chiSoCua(nguoiChoi) >= 0) {
+            VXLQuanLyPhong.gan(nguoiChoi, this);
+            return true;
         }
         if (VXLQuanLyPhong.layBanCho(nguoiChoi) != null) {
             VXLQuanLyPhong.roiBanCho(nguoiChoi);
@@ -78,12 +88,12 @@ public class VXLChoDau {
         nguoiChoi.dichVu.guiThongTinChoDau(this.phong.ma, this.ma, this.ten, this.phong.loai);
         nguoiChoi.dichVu.guiChonBanDoDau(this.maBanDo);
         for (VXLNguoiChoi existing : this.nguoiChois) {
-            if (existing != null) {
+            if (existing != null && existing.dichVu != null) {
                 nguoiChoi.dichVu.guiNguoiChoiVaoDau(existing, this.chuPhong, this.phong.ma, this.ma);
             }
         }
         for (VXLNguoiChoi existing : this.nguoiChois) {
-            if (existing != null && existing != nguoiChoi) {
+            if (existing != null && existing != nguoiChoi && existing.dichVu != null) {
                 existing.dichVu.guiNguoiChoiVaoDau(nguoiChoi, this.chuPhong, this.phong.ma, this.ma);
             }
         }
@@ -97,6 +107,7 @@ public class VXLChoDau {
         }
         int o = this.chiSoCua(nguoiChoi);
         if (o < 0) {
+            VXLQuanLyPhong.boGan(nguoiChoi, this);
             return;
         }
         this.nguoiChois[o] = null;
@@ -104,7 +115,7 @@ public class VXLChoDau {
         nguoiChoi.isReady = false;
         nguoiChoi.chiSo = -1;
         nguoiChoi.pointSeat = 0;
-        VXLQuanLyPhong.boGan(nguoiChoi);
+        VXLQuanLyPhong.boGan(nguoiChoi, this);
         if (this.fight != null) {
             this.fight.khiNguoiChoiRoi(nguoiChoi);
         }
@@ -113,11 +124,13 @@ public class VXLChoDau {
         }
         int ownerId = this.chuPhong != null ? this.chuPhong.ma : -1;
         for (VXLNguoiChoi existing : this.nguoiChois) {
-            if (existing != null) {
+            if (existing != null && existing.dichVu != null) {
                 existing.dichVu.guiRoiDau(nguoiChoi.ma, ownerId);
             }
         }
-        nguoiChoi.dichVu.guiRoiDau(nguoiChoi.ma, ownerId);
+        if (nguoiChoi.dichVu != null) {
+            nguoiChoi.dichVu.guiRoiDau(nguoiChoi.ma, ownerId);
+        }
         if (this.laySoNguoiChoi() == 0) {
             this.started = false;
             if (this.fight != null) {
@@ -130,6 +143,9 @@ public class VXLChoDau {
     }
 
     public synchronized void datSanSang(VXLNguoiChoi nguoiChoi, boolean giaTri) throws IOException {
+        if (nguoiChoi == null) {
+            return;
+        }
         int o = this.chiSoCua(nguoiChoi);
         if (o < 0 || this.started) {
             return;
@@ -137,26 +153,26 @@ public class VXLChoDau {
         this.sanSang[o] = giaTri;
         nguoiChoi.isReady = giaTri;
         for (VXLNguoiChoi existing : this.nguoiChois) {
-            if (existing != null) {
+            if (existing != null && existing.dichVu != null) {
                 existing.dichVu.guiSanSangDau(nguoiChoi.ma, giaTri);
             }
         }
     }
 
     public synchronized void datBanDo(VXLNguoiChoi nguoiChoi, byte maBanDo) throws IOException {
-        if (nguoiChoi != this.chuPhong || this.started) {
+        if (nguoiChoi == null || nguoiChoi != this.chuPhong || this.started) {
             return;
         }
         this.maBanDo = maBanDo;
         for (VXLNguoiChoi existing : this.nguoiChois) {
-            if (existing != null) {
+            if (existing != null && existing.dichVu != null) {
                 existing.dichVu.guiChonBanDoDau(maBanDo);
             }
         }
     }
 
     public synchronized void batDau(VXLNguoiChoi nguoiChoi) throws IOException {
-        if (this.started || nguoiChoi != this.chuPhong) {
+        if (nguoiChoi == null || this.started || nguoiChoi != this.chuPhong) {
             return;
         }
         if (this.laySoNguoiChoi() == 0) {
@@ -187,6 +203,9 @@ public class VXLChoDau {
     }
 
     public synchronized void ketThucDau() {
+        if (!this.started && this.fight == null) {
+            return;
+        }
         this.started = false;
         if (this.fight != null) {
             this.fight.dungBot();
@@ -230,7 +249,7 @@ public class VXLChoDau {
 
     private void phatTien() throws IOException {
         for (VXLNguoiChoi existing : this.nguoiChois) {
-            if (existing != null) {
+            if (existing != null && existing.dichVu != null) {
                 existing.dichVu.guiTienDau(this.tien, this.phong.loai);
             }
         }

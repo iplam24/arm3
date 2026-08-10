@@ -21,6 +21,11 @@ public class VXLQuanLyBanDo {
 
     public void setMapId(int mapID) {
         this.maBanDo = (byte)mapID;
+        this.maNen = 0;
+        this.chieuRong = 1200;
+        this.chieuCao = 700;
+        this.spawnX = DEFAULT_SPAWN_X;
+        this.spawnY = DEFAULT_SPAWN_Y;
         this.mucs.clear();
         VXLDuLieuBanDo.MapDataEntry muc = this.findEntry(mapID);
         if (muc == null || muc.duLieu == null || muc.duLieu.length < 5) {
@@ -49,21 +54,42 @@ public class VXLQuanLyBanDo {
     }
 
     public short laySinhX(int chiSo) {
+        int chiSoAnToan = Math.floorMod(chiSo, this.spawnX.length);
         if (chiSo >= 0 && chiSo < this.spawnX.length) {
             return this.spawnX[chiSo];
         }
-        return DEFAULT_SPAWN_X[chiSo % DEFAULT_SPAWN_X.length];
+        return this.spawnX[chiSoAnToan];
     }
 
     public short laySinhY(int chiSo) {
+        short rawX = laySinhX(chiSo);
+        short rawY;
+        int chiSoAnToan = Math.floorMod(chiSo, this.spawnY.length);
         if (chiSo >= 0 && chiSo < this.spawnY.length) {
-            return this.spawnY[chiSo];
+            rawY = this.spawnY[chiSo];
+        } else {
+            rawY = this.spawnY[chiSoAnToan];
         }
-        return DEFAULT_SPAWN_Y[chiSo % DEFAULT_SPAWN_Y.length];
+        return timViTriDat(rawX, rawY);
+    }
+
+    public short timViTriDat(short x, short yBatDau) {
+        short testY = (short)Math.max(0, Math.min(this.chieuCao - 1, (int)yBatDau));
+        if (this.coVaCham(x, testY)) {
+            while (testY > 0 && this.coVaCham(x, testY)) {
+                testY--;
+            }
+            return testY;
+        } else {
+            while (testY < this.chieuCao - 1 && !this.coVaCham(x, (short)(testY + 1))) {
+                testY++;
+            }
+            return testY;
+        }
     }
 
     public boolean coVaCham(short x, short y) {
-        if (y >= this.chieuCao) {
+        if (x < 0 || y < 0 || x >= this.chieuRong || y >= this.chieuCao) {
             return true;
         }
         for (MapEntry muc : this.mucs) {
@@ -79,7 +105,7 @@ public class VXLQuanLyBanDo {
             return null;
         }
         for (VXLDuLieuBanDo.MapDataEntry muc : VXLDuLieuBanDo.entrys) {
-            if (muc.mapID == mapID) {
+            if (muc != null && muc.mapID == mapID) {
                 return muc;
             }
         }
@@ -88,6 +114,9 @@ public class VXLQuanLyBanDo {
 
     private void phanTichBanDo(byte[] duLieu) {
         try {
+            if (duLieu.length < 5) {
+                return;
+            }
             int offset = 4;
             int len = duLieu[offset++] & 0xFF;
             for (int i = 0; i < len && offset + 4 < duLieu.length; i++) {
@@ -107,7 +136,7 @@ public class VXLQuanLyBanDo {
                 return;
             }
             int spawnCount = duLieu[offset++] & 0xFF;
-            if (spawnCount <= 0 || offset + spawnCount * 4 > duLieu.length) {
+            if (spawnCount <= 0 || spawnCount > 64 || offset + spawnCount * 4 > duLieu.length) {
                 return;
             }
             this.spawnX = new short[spawnCount];
@@ -149,9 +178,9 @@ public class VXLQuanLyBanDo {
             if (this.argb == null || this.argb.length <= localY * this.chieuRong + localX) {
                 return true;
             }
-            int alpha = this.argb[localY * this.chieuRong + localX] >>> 24;
-            return alpha > 10;
+            int mau = this.argb[localY * this.chieuRong + localX];
+            int alpha = mau >>> 24;
+            return alpha > 30;
         }
     }
 }
-

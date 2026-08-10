@@ -22,6 +22,7 @@ repositories {
 
 dependencies {
     implementation 'io.netty:netty-all:4.2.2.Final'
+    runtimeOnly 'org.slf4j:slf4j-simple:1.7.36'
     implementation 'com.mysql:mysql-connector-j:9.3.0'
     implementation 'com.zaxxer:HikariCP:6.3.0'
     implementation 'com.alibaba.fastjson2:fastjson2:2.0.57'
@@ -33,7 +34,7 @@ application {
 
 run {
     workingDir = projectDir
-    jvmArgs '-Dfile.encoding=UTF-8', '-Xms512M', '-Xmx1024M'
+    jvmArgs '-Dfile.encoding=UTF-8', '-Dstdout.encoding=UTF-8', '-Dstderr.encoding=UTF-8', '-Xms512M', '-Xmx1024M'
 }
 
 sourceSets {

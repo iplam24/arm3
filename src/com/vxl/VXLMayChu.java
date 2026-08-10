@@ -36,10 +36,12 @@ public class VXLMayChu {
             try {
                 String ten = dis.readUTF();
                 byte loai = dis.readByte();
-                PreparedStatement stmt = VXLCoSoDuLieu.getConnection().prepareStatement("INSERT INTO `item_options`(`name`, `type`) VALUES (?, ?);");
-                stmt.setString(1, ten);
-                stmt.setInt(2, loai);
-                stmt.execute();
+                try (java.sql.Connection conn = VXLCoSoDuLieu.getConnection();
+                     PreparedStatement stmt = conn.prepareStatement("INSERT INTO `item_options`(`name`, `type`) VALUES (?, ?);")) {
+                    stmt.setString(1, ten);
+                    stmt.setInt(2, loai);
+                    stmt.execute();
+                }
                 continue;
             }
             catch (SQLException ex) {
@@ -57,17 +59,19 @@ public class VXLMayChu {
                 byte require = dis.readByte();
                 short iconId = dis.readShort();
                 short part = dis.readShort();
-                PreparedStatement stmt = VXLCoSoDuLieu.getConnection().prepareStatement(
-                        "INSERT INTO `items`(`name`, `type`, `gender`, `description`, `level`, `strength_required`, `icon`, `part_id`, `buy_gold`, `buy_gem`, `options`) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 0, 0, '[]');");
-                stmt.setString(1, ten);
-                stmt.setInt(2, loai);
-                stmt.setInt(3, gioiTinh);
-                stmt.setString(4, desc);
-                stmt.setInt(5, cap);
-                stmt.setInt(6, require);
-                stmt.setInt(7, iconId);
-                stmt.setInt(8, part);
-                stmt.execute();
+                try (java.sql.Connection conn = VXLCoSoDuLieu.getConnection();
+                     PreparedStatement stmt = conn.prepareStatement(
+                        "INSERT INTO `items`(`name`, `type`, `gender`, `description`, `level`, `strength_required`, `icon`, `part_id`, `buy_gold`, `buy_gem`, `options`) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 0, 0, '[]');")) {
+                    stmt.setString(1, ten);
+                    stmt.setInt(2, loai);
+                    stmt.setInt(3, gioiTinh);
+                    stmt.setString(4, desc);
+                    stmt.setInt(5, cap);
+                    stmt.setInt(6, require);
+                    stmt.setInt(7, iconId);
+                    stmt.setInt(8, part);
+                    stmt.execute();
+                }
                 continue;
             }
             catch (SQLException ex) {
@@ -90,12 +94,14 @@ public class VXLMayChu {
                 short iconID = dis.readShort();
                 byte maNen = dis.readByte();
                 VXLTienIch.luuTep("res/map/" + ma, map);
-                PreparedStatement stmt = VXLCoSoDuLieu.getConnection().prepareStatement("INSERT INTO `game_maps`(`id`, `name`, `icon`, `background`) VALUES (?, ?, ?, ?);");
-                stmt.setInt(1, ma);
-                stmt.setString(2, mapName);
-                stmt.setInt(3, iconID);
-                stmt.setInt(4, maNen);
-                stmt.execute();
+                try (java.sql.Connection conn = VXLCoSoDuLieu.getConnection();
+                     PreparedStatement stmt = conn.prepareStatement("INSERT INTO `game_maps`(`id`, `name`, `icon`, `background`) VALUES (?, ?, ?, ?);")) {
+                    stmt.setInt(1, ma);
+                    stmt.setString(2, mapName);
+                    stmt.setInt(3, iconID);
+                    stmt.setInt(4, maNen);
+                    stmt.execute();
+                }
                 continue;
             }
             catch (SQLException ex) {
@@ -113,13 +119,15 @@ public class VXLMayChu {
                 String ten = dis.readUTF();
                 int kinhNghiem = dis.readInt();
                 short icon = dis.readShort();
-                PreparedStatement stmt = VXLCoSoDuLieu.getConnection().prepareStatement(
-                        "INSERT INTO `caption_levels`(`id`, `name`, `exp`, `icon`) VALUES (?, ?, ?, ?);");
-                stmt.setInt(1, i + 1);
-                stmt.setString(2, ten);
-                stmt.setInt(3, kinhNghiem);
-                stmt.setInt(4, icon);
-                stmt.execute();
+                try (java.sql.Connection conn = VXLCoSoDuLieu.getConnection();
+                     PreparedStatement stmt = conn.prepareStatement(
+                        "INSERT INTO `caption_levels`(`id`, `name`, `exp`, `icon`) VALUES (?, ?, ?, ?);")) {
+                    stmt.setInt(1, i + 1);
+                    stmt.setString(2, ten);
+                    stmt.setInt(3, kinhNghiem);
+                    stmt.setInt(4, icon);
+                    stmt.execute();
+                }
                 continue;
             }
             catch (SQLException ex) {
@@ -147,11 +155,13 @@ public class VXLMayChu {
                     doiTuong.put("dy", dy);
                     jArr.add((Object)doiTuong);
                 }
-                PreparedStatement stmt = VXLCoSoDuLieu.getConnection().prepareStatement(
-                        "INSERT INTO `avatar_parts`(`type`, `part_data`) VALUES (?, ?);");
-                stmt.setInt(1, loai);
-                stmt.setString(2, jArr.toJSONString());
-                stmt.execute();
+                try (java.sql.Connection conn = VXLCoSoDuLieu.getConnection();
+                     PreparedStatement stmt = conn.prepareStatement(
+                        "INSERT INTO `avatar_parts`(`type`, `part_data`) VALUES (?, ?);")) {
+                    stmt.setInt(1, loai);
+                    stmt.setString(2, jArr.toJSONString());
+                    stmt.execute();
+                }
                 continue;
             }
             catch (SQLException ex) {
@@ -171,13 +181,15 @@ public class VXLMayChu {
                 short y = dis.readShort();
                 short w = dis.readShort();
                 short h = dis.readShort();
-                PreparedStatement stmt = VXLCoSoDuLieu.getConnection().prepareStatement("INSERT INTO `sprite_images`(`image_id`, `x`, `y`, `width`, `height`) VALUES (?, ?, ?, ?, ?);");
-                stmt.setInt(1, ma);
-                stmt.setInt(2, x);
-                stmt.setInt(3, y);
-                stmt.setInt(4, w);
-                stmt.setInt(5, h);
-                stmt.execute();
+                try (java.sql.Connection conn = VXLCoSoDuLieu.getConnection();
+                     PreparedStatement stmt = conn.prepareStatement("INSERT INTO `sprite_images`(`image_id`, `x`, `y`, `width`, `height`) VALUES (?, ?, ?, ?, ?);")) {
+                    stmt.setInt(1, ma);
+                    stmt.setInt(2, x);
+                    stmt.setInt(3, y);
+                    stmt.setInt(4, w);
+                    stmt.setInt(5, h);
+                    stmt.execute();
+                }
                 continue;
             }
             catch (SQLException ex) {

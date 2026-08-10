@@ -2,6 +2,7 @@ package com.vxl.mang;
 
 // Vũ Xuân Lâm đẹp trai VCL
 import com.vxl.cuahang.VXLCuaHang;
+import com.vxl.loi.VXLQuanLyMayChu;
 import com.vxl.phong.VXLQuanLyPhong;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -22,6 +23,10 @@ implements IVXLXuLyTin {
                 if (!this.laLenhTruocDangNhap(lenh) && !this.khach.daDangNhap()) {
                     throw new IllegalStateException("Lenh " + lenh + " yêu cầu đăng nhập.");
                 }
+                if (this.lenhCanNhanVat(lenh) && (this.khach.user == null || this.khach.user.nguoiChoi == null)) {
+                    VXLQuanLyMayChu.log("Bo qua lenh " + lenh + " khi nhan vat chua san sang: " + this.khach.moTa());
+                    return;
+                }
                 switch (lenh) {
                     case 1:
                         this.khach.dangNhap(mss);
@@ -37,6 +42,8 @@ implements IVXLXuLyTin {
                         this.khach.user.nguoiChoi.banDoRPG(mss);
                         break;
                     case -28:
+                        VXLQuanLyPhong.guiPhongTisEmpty(this.khach.user.nguoiChoi);
+                        break;
                     case 6:
                         VXLQuanLyPhong.yeuCauDanhSachPhong(this.khach.user.nguoiChoi);
                         break;
@@ -176,7 +183,12 @@ implements IVXLXuLyTin {
                     case -92:
                         this.khach.user.nguoiChoi.handleTrainingHoleRequest(mss);
                         break;
+                    case -91:
+                        this.khach.user.nguoiChoi.xuLyFocusSkill(mss);
+                        break;
                     case -67:
+                        VXLQuanLyMayChu.log("[FIGHT] client-ready " + this.khach.moTa()
+                                + " training=" + this.khach.user.nguoiChoi.inTraining);
                         this.khach.user.nguoiChoi.handleTrainingClientReady();
                         break;
                     default:
@@ -190,6 +202,45 @@ implements IVXLXuLyTin {
                 Logger.getLogger(VXLXuLyTin.class.getName()).log(Level.WARNING, "Gói tin không hợp lệ, lệnh=" + mss.layLenh() + " từ " + this.khach.moTa(), ex);
                 this.khach.dongTin();
             }
+        }
+    }
+
+    private boolean lenhCanNhanVat(byte lenh) {
+        switch (lenh) {
+            case -98:
+            case -28:
+            case 5:
+            case 6:
+            case 7:
+            case 8:
+            case 15:
+            case 16:
+            case 20:
+            case 21:
+            case 22:
+            case 23:
+            case 26:
+            case 49:
+            case 53:
+            case 72:
+            case 75:
+            case 79:
+            case 83:
+            case 84:
+            case 103:
+            case -126:
+            case -92:
+            case -91:
+            case -48:
+            case -46:
+            case -44:
+            case -43:
+            case -33:
+            case -25:
+            case -67:
+                return true;
+            default:
+                return false;
         }
     }
 

@@ -23,7 +23,7 @@ public class VXLVatPham {
 
     public VXLVatPham(int ma) {
         this.ma = ma;
-        this.mau = VXLQuanLyMayChu.itemTemplates.get(ma);
+        this.mau = VXLQuanLyMayChu.itemTemplates == null ? null : VXLQuanLyMayChu.itemTemplates.get(ma);
         this.HP = 100;
         this.soLuong = 1;
         this.nSocket = 0;
@@ -35,34 +35,39 @@ public class VXLVatPham {
     }
 
     public boolean isTypeBody() {
-        return this.mau.loai >= 0 && this.mau.loai < 6;
+        return this.mau != null && this.mau.loai >= 0 && this.mau.loai < 6;
     }
 
     public void tai(JSONObject doiTuong) {
         VXLDuLieuJson parse = new VXLDuLieuJson(doiTuong);
         this.ma = parse.getInt("id");
-        this.mau = VXLQuanLyMayChu.itemTemplates.get(this.ma);
-        this.soLuong = parse.getInt("quantity");
-        this.HP = parse.getInt("HP");
-        this.chiSo = parse.getByte("index");
+        this.mau = VXLQuanLyMayChu.itemTemplates == null ? null : VXLQuanLyMayChu.itemTemplates.get(this.ma);
+        if (this.mau == null) {
+            throw new IllegalArgumentException("Không tồn tại mẫu vật phẩm: " + this.ma);
+        }
+        this.soLuong = Math.max(1, parse.getInt("quantity"));
+        this.HP = Math.max(0, Math.min(100, parse.getInt("HP")));
+        this.chiSo = parse.getInt("index");
         if (parse.containsKey("options")) {
             JSONArray jArr = parse.getJSONArray("options");
+            if (jArr == null) {
+                return;
+            }
             for (int i = 0; i < jArr.size(); ++i) {
+                if (!(jArr.get(i) instanceof JSONObject)) {
+                    continue;
+                }
                 VXLDuLieuJson d = new VXLDuLieuJson((JSONObject)jArr.get(i));
                 int ma = d.getInt("id");
                 int thamSo = d.getInt("param");
-                if (ma == 15) {
-                    this.isSocketing = true;
-                    this.socketFinishTime = thamSo * 1000;
-                } else if (ma == 16) {
-                    this.nSocket = (byte)(this.nSocket + 1);
-                    if (thamSo != 0) {
-                        ++this.nGem;
-                    }
+                VXLThuocTinhVatPham thuocTinh = new VXLThuocTinhVatPham(ma, thamSo);
+                if (thuocTinh.optionTemplate == null) {
+                    continue;
                 }
-                this.itemOptions.add(new VXLThuocTinhVatPham(ma, thamSo));
+                this.itemOptions.add(thuocTinh);
             }
         }
+        this.capNhatThongTinSocket();
     }
 
     public JSONObject toJSONObject() {
@@ -74,6 +79,9 @@ public class VXLVatPham {
         JSONArray thuocTinhs = new JSONArray();
         for (int i = 0; i < this.itemOptions.size(); ++i) {
             VXLThuocTinhVatPham op = (VXLThuocTinhVatPham)this.itemOptions.get(i);
+            if (op == null || op.optionTemplate == null) {
+                continue;
+            }
             JSONObject option = new JSONObject();
             option.put("id", op.optionTemplate.ma);
             option.put("param", op.thamSo);
@@ -115,6 +123,9 @@ public class VXLVatPham {
     }
 
     public void thayMau(VXLMauVatPham mauMoi) {
+        if (mauMoi == null) {
+            throw new IllegalArgumentException("Mẫu vật phẩm không hợp lệ.");
+        }
         Vector thuocTinhBaoLuu = new Vector();
         for (int i = 0; i < this.itemOptions.size(); ++i) {
             VXLThuocTinhVatPham thuocTinh = (VXLThuocTinhVatPham)this.itemOptions.get(i);
@@ -138,6 +149,29 @@ public class VXLVatPham {
         this.mau = mauMoi;
         this.itemOptions = thuocTinhMoi;
         this.HP = 100;
+        this.capNhatThongTinSocket();
+    }
+
+    private void capNhatThongTinSocket() {
+        this.nSocket = 0;
+        this.nGem = 0;
+        this.isSocketing = false;
+        this.socketFinishTime = 0L;
+        for (Object giaTri : this.itemOptions) {
+            if (!(giaTri instanceof VXLThuocTinhVatPham thuocTinh)
+                    || thuocTinh.optionTemplate == null) {
+                continue;
+            }
+            if (thuocTinh.optionTemplate.ma == 15) {
+                this.isSocketing = true;
+                this.socketFinishTime = (long)thuocTinh.thamSo * 1000L;
+            } else if (thuocTinh.optionTemplate.ma == 16) {
+                this.nSocket++;
+                if (thuocTinh.thamSo != 0) {
+                    this.nGem++;
+                }
+            }
+        }
     }
 }
 

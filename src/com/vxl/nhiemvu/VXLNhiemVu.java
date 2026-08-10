@@ -38,14 +38,14 @@ public final class VXLNhiemVu {
     }
 
     public synchronized void tai(JSONObject duLieu) {
-        this.tongThangPvp = docInt(duLieu, "pvpWins", 0);
-        this.tongHaCamTu = docInt(duLieu, "kamikazeKills", 0);
-        this.tongHaBoss = docInt(duLieu, "bossKills", 0);
-        this.tongSatThuongPvp = docInt(duLieu, "pvpDamage", 0);
+        this.tongThangPvp = Math.max(0, docInt(duLieu, "pvpWins", 0));
+        this.tongHaCamTu = Math.max(0, docInt(duLieu, "kamikazeKills", 0));
+        this.tongHaBoss = Math.max(0, docInt(duLieu, "bossKills", 0));
+        this.tongSatThuongPvp = Math.max(0, docInt(duLieu, "pvpDamage", 0));
         this.ngayNhiemVu = docString(duLieu, "dailyDate", "");
-        this.ngayThangPvp = docInt(duLieu, "dailyPvpWins", 0);
-        this.ngayHaCamTu = docInt(duLieu, "dailyKamikazeKills", 0);
-        this.ngayHaBoss = docInt(duLieu, "dailyBossKills", 0);
+        this.ngayThangPvp = Math.max(0, docInt(duLieu, "dailyPvpWins", 0));
+        this.ngayHaCamTu = Math.max(0, docInt(duLieu, "dailyKamikazeKills", 0));
+        this.ngayHaBoss = Math.max(0, docInt(duLieu, "dailyBossKills", 0));
         this.daNhanNgayPvp = docBoolean(duLieu, "dailyPvpClaimed", false);
         this.daNhanNgayCamTu = docBoolean(duLieu, "dailyKamikazeClaimed", false);
         this.daNhanNgayBoss = docBoolean(duLieu, "dailyBossClaimed", false);
@@ -83,7 +83,8 @@ public final class VXLNhiemVu {
         int heSo = this.nhanDoiKinhNghiemDen > hienTai ? 2 : 1;
         long thucNhan = (long)soKinhNghiem * heSo;
         int gioiHan = thucNhan > Integer.MAX_VALUE ? Integer.MAX_VALUE : (int)thucNhan;
-        this.nguoiChoi.kinhNghiem = Math.max(0, this.nguoiChoi.kinhNghiem + gioiHan);
+        long kinhNghiemMoi = (long)Math.max(0, this.nguoiChoi.kinhNghiem) + gioiHan;
+        this.nguoiChoi.kinhNghiem = (int)Math.min(Integer.MAX_VALUE, kinhNghiemMoi);
         this.nguoiChoi.cap = com.vxl.tienich.VXLTienIch.layCap(this.nguoiChoi.kinhNghiem);
         return gioiHan;
     }
@@ -230,8 +231,8 @@ public final class VXLNhiemVu {
     }
 
     private void traoThuong(int vang, int kinhNghiem, int ngoc, String tenNhiemVu, StringBuilder thongBao) {
-        this.nguoiChoi.vang += vang;
-        this.nguoiChoi.ngoc += ngoc;
+        this.nguoiChoi.updateGold(vang);
+        this.nguoiChoi.updateGem(ngoc);
         int kinhNghiemThucNhan = this.congKinhNghiem(kinhNghiem);
         if (thongBao.length() > 0) {
             thongBao.append('\n');
@@ -277,6 +278,19 @@ public final class VXLNhiemVu {
 
     private static boolean docBoolean(JSONObject duLieu, String khoa, boolean macDinh) {
         Object giaTri = duLieu != null ? duLieu.get(khoa) : null;
-        return giaTri != null ? Boolean.parseBoolean(giaTri.toString()) : macDinh;
+        if (giaTri == null) {
+            return macDinh;
+        }
+        if (giaTri instanceof Boolean) {
+            return (Boolean)giaTri;
+        }
+        String chuoi = giaTri.toString().trim();
+        if ("1".equals(chuoi)) {
+            return true;
+        }
+        if ("0".equals(chuoi)) {
+            return false;
+        }
+        return Boolean.parseBoolean(chuoi);
     }
 }

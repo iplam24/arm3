@@ -60,7 +60,7 @@ final class VXLDieuKhienBotTranDau {
             }
             byte chiSoLuot = this.tranDau.layLuotHienTai();
             VXLChienBinh luot = chiSoLuot >= 0 && chiSoLuot < this.chienBinhs.length ? this.chienBinhs[chiSoLuot] : null;
-            if (luot == null || luot.chet) {
+            if (luot == null || luot.chet || luot.daRoiTran) {
                 this.tranDau.sangLuot();
                 return;
             }
@@ -79,9 +79,13 @@ final class VXLDieuKhienBotTranDau {
     private void xuLyLuotBotBan(VXLChienBinh bot) throws IOException {
         this.diChuyenTruocKhiBan(bot);
         VXLChienBinh mucTieu = this.timMucTieuGanNhat(bot);
+        if (mucTieu == null) {
+            System.out.println("[BOT] " + bot.ten + " không tìm thấy mục tiêu, bỏ lượt.");
+        }
         if (mucTieu != null) {
-            short goc = this.tinhDuongDan.gocToiMucTieu(bot, mucTieu);
-            VXLKetQuaDan ketQua = this.tranDau.xuLyPhatBan(bot, (byte)0, goc, (byte)18, -1);
+            byte luc = this.tinhDuongDan.lucCanThietToiMucTieu(bot, mucTieu);
+            short goc = this.tinhDuongDan.gocDanDaoToiMucTieu(bot, mucTieu, luc);
+            VXLKetQuaDan ketQua = this.tranDau.xuLyPhatBan(bot, (byte)0, goc, luc, -1);
             this.tranDau.phatBan(bot, ketQua, (byte)1);
             if (ketQua.mucTieu != null && ketQua.satThuong > 0) {
                 this.tranDau.satThuong(bot, ketQua.mucTieu, ketQua.satThuong, false, false, false);
@@ -132,7 +136,10 @@ final class VXLDieuKhienBotTranDau {
 
     private void diChuyenTruocKhiBan(VXLChienBinh bot) {
         int dichChuyen = bot.chiSo % 2 == 0 ? 28 : -28;
-        bot.x = this.gioiHan((short)(bot.x + dichChuyen), 40, this.banDo.getWidth() - 40);
+        short mucTieuX = this.gioiHan((short)(bot.x + dichChuyen), 40, this.banDo.getWidth() - 40);
+        short[] toaDo = this.tinhDuongDan.gioiHanDiChuyen(bot.x, bot.y, mucTieuX, bot.y, 40);
+        bot.x = toaDo[0];
+        bot.y = this.banDo.timViTriDat(bot.x, toaDo[1]);
         this.tranDau.phatDiChuyen(bot);
     }
 
@@ -140,7 +147,7 @@ final class VXLDieuKhienBotTranDau {
         VXLChienBinh ganNhat = null;
         int khoangCachGanNhat = Integer.MAX_VALUE;
         for (VXLChienBinh mucTieu : this.chienBinhs) {
-            if (mucTieu == null || mucTieu == nguoiBan || mucTieu.chet || nguoiBan.bot && mucTieu.bot) {
+            if (mucTieu == null || mucTieu == nguoiBan || mucTieu.chet || (nguoiBan.bot && mucTieu.bot)) {
                 continue;
             }
             int dx = mucTieu.x - nguoiBan.x;

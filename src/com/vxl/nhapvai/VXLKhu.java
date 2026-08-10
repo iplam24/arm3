@@ -4,24 +4,34 @@ package com.vxl.nhapvai;
 import com.vxl.mohinh.VXLNguoiChoi;
 import com.vxl.mang.VXLTinNhan;
 import java.io.IOException;
-import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class VXLKhu {
     public byte zoneId;
-    public int pts;
-    public int numPlayer;
+    public volatile int pts;
+    public volatile int numPlayer;
     public int maxPlayer;
-    public HashMap<Integer, VXLNguoiChoi> players_index = new HashMap();
-    public HashMap<Integer, VXLNguoiChoi> players_id = new HashMap();
+    public final Map<Integer, VXLNguoiChoi> players_index = new ConcurrentHashMap<>();
+    public final Map<Integer, VXLNguoiChoi> players_id = new ConcurrentHashMap<>();
 
     public VXLKhu(int ma) {
         this.zoneId = (byte)ma;
         this.maxPlayer = 24;
     }
 
-    public boolean vao(VXLNguoiChoi nguoiChoi) {
+    public synchronized boolean vao(VXLNguoiChoi nguoiChoi) {
+        if (nguoiChoi == null || nguoiChoi.ma < 0) {
+            return false;
+        }
+        if (this.players_id.get(nguoiChoi.ma) != null) {
+            return true;
+        }
+        if (nguoiChoi.zone != null && nguoiChoi.zone != this) {
+            nguoiChoi.zone.roi(nguoiChoi);
+        }
         if (this.players_id.get(nguoiChoi.ma) == null) {
             for (int i = 0; i < this.maxPlayer; ++i) {
                 if (this.players_index.get(i) != null) continue;
@@ -30,7 +40,7 @@ public class VXLKhu {
                 nguoiChoi.chiSo = i;
                 nguoiChoi.zoneId = this.zoneId;
                 nguoiChoi.zone = this;
-                ++this.numPlayer;
+                this.numPlayer = this.players_id.size();
                 this.datDiem();
                 this.guiNguoiChoiTrongKhu(nguoiChoi);
                 nguoiChoi.dichVu.guiNhanVatPhu();
@@ -40,11 +50,11 @@ public class VXLKhu {
         return false;
     }
 
-    public boolean roi(VXLNguoiChoi nguoiChoi) {
-        if (this.players_id.get(nguoiChoi.ma) != null) {
+    public synchronized boolean roi(VXLNguoiChoi nguoiChoi) {
+        if (nguoiChoi != null && this.players_id.get(nguoiChoi.ma) == nguoiChoi) {
             this.players_index.remove(nguoiChoi.chiSo);
             this.players_id.remove(nguoiChoi.ma);
-            --this.numPlayer;
+            this.numPlayer = Math.max(0, this.players_id.size());
             int chiSo = nguoiChoi.chiSo;
             nguoiChoi.chiSo = -1;
             nguoiChoi.zoneId = (byte)-1;
@@ -62,17 +72,21 @@ public class VXLKhu {
 
     public void guiTatCaNguoiChoi(VXLTinNhan ms) {
         for (VXLNguoiChoi nguoiChoi : this.players_id.values()) {
-            nguoiChoi.dichVu.guiTin(ms);
+            if (nguoiChoi != null && nguoiChoi.dichVu != null) {
+                nguoiChoi.dichVu.guiTin(ms);
+            }
         }
     }
 
     public void guiNguoiChoiTrongKhu(VXLNguoiChoi nguoiChoi) {
         try {
             for (VXLNguoiChoi pl : this.players_id.values()) {
-                pl.dichVu.vaoCho(nguoiChoi);
+                if (pl != null && pl.dichVu != null) {
+                    pl.dichVu.vaoCho(nguoiChoi);
+                }
             }
             for (VXLNguoiChoi pl : this.players_id.values()) {
-                if (pl == nguoiChoi) continue;
+                if (pl == null || pl == nguoiChoi || nguoiChoi.dichVu == null) continue;
                 nguoiChoi.dichVu.vaoCho(pl);
             }
         }
@@ -83,7 +97,9 @@ public class VXLKhu {
 
     public void guiNguoiChoiRoiKhu(int chiSo) {
         for (VXLNguoiChoi pl : this.players_id.values()) {
-            pl.dichVu.roi(chiSo);
+            if (pl != null && pl.dichVu != null) {
+                pl.dichVu.roi(chiSo);
+            }
         }
     }
 }

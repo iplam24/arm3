@@ -24,6 +24,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -145,14 +146,14 @@ public class VXLQuanLyMayChu {
             VXLCuaHang.SHOP_EQUIP.themTab("Hỗ\nTrợ", balos);
             VXLCuaHang.SHOP_EQUIP.themTab("Súng", weapons);
         }
-        catch (SQLException ex) {
+        catch (SQLException | RuntimeException ex) {
             Logger.getLogger(VXLQuanLyMayChu.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
 
     private static void loadDataMap() {
         try (java.sql.Connection conn = VXLCoSoDuLieu.getConnection();
-             PreparedStatement stmt = conn.prepareStatement("SELECT * FROM `game_maps`");
+             PreparedStatement stmt = conn.prepareStatement("SELECT * FROM `game_maps` ORDER BY `id`");
              ResultSet res = stmt.executeQuery()) {
             VXLDuLieuBanDo.entrys = new ArrayList();
             VXLDuLieuBanDo.brickEntrys = new ArrayList();
@@ -166,7 +167,7 @@ public class VXLQuanLyMayChu {
                 VXLDuLieuBanDo.entrys.add(map);
             }
         }
-        catch (SQLException ex) {
+        catch (SQLException | RuntimeException ex) {
             Logger.getLogger(VXLQuanLyMayChu.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
@@ -187,7 +188,7 @@ public class VXLQuanLyMayChu {
                 VXLTieuDeCap.levels.put(ma, cap);
             }
         }
-        catch (SQLException ex) {
+        catch (SQLException | RuntimeException ex) {
             Logger.getLogger(VXLQuanLyMayChu.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
@@ -200,10 +201,16 @@ public class VXLQuanLyMayChu {
                 int ma = res.getInt("id");
                 String duLieu = res.getString("part_data");
                 byte loai = res.getByte("type");
-                JSONArray jArr = (JSONArray)JSON.parse((String)duLieu);
+                JSONArray jArr = duLieu == null ? new JSONArray() : (JSONArray)JSON.parse(duLieu);
                 VXLBoPhan part = new VXLBoPhan(loai);
+                if (jArr.size() < part.pi.length) {
+                    throw new IllegalArgumentException("Avatar part data is incomplete: " + ma);
+                }
                 for (int i = 0; i < part.pi.length; ++i) {
-                    JSONObject doiTuong = (JSONObject)jArr.get(i);
+                    Object giaTri = jArr.get(i);
+                    if (!(giaTri instanceof JSONObject doiTuong)) {
+                        throw new IllegalArgumentException("Avatar part entry is invalid: " + ma + "/" + i);
+                    }
                     part.pi[i] = new VXLAnhBoPhan();
                     part.pi[i].ma = Short.parseShort(doiTuong.get("id").toString());
                     part.pi[i].dx = Byte.parseByte(doiTuong.get("dx").toString());
@@ -212,7 +219,7 @@ public class VXLQuanLyMayChu {
                 parts.put(ma, part);
             }
         }
-        catch (SQLException ex) {
+        catch (SQLException | RuntimeException ex) {
             Logger.getLogger(VXLQuanLyMayChu.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
@@ -237,7 +244,7 @@ public class VXLQuanLyMayChu {
                 VXLAnhNho.smallImg.put(ma, small);
             }
         }
-        catch (SQLException ex) {
+        catch (SQLException | RuntimeException ex) {
             Logger.getLogger(VXLQuanLyMayChu.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
@@ -245,10 +252,9 @@ public class VXLQuanLyMayChu {
     private static void loadConfigFile() {
         byte[] ab = VXLTienIch.layTep("config.conf");
         if (ab == null) {
-            System.out.println("Config file not found!");
-            System.exit(0);
+            throw new IllegalStateException("Config file not found: config.conf");
         }
-        String duLieu = new String(ab);
+        String duLieu = new String(ab, StandardCharsets.UTF_8);
         HashMap<String, String> configMap = new HashMap<String, String>();
         StringBuilder sbd = new StringBuilder();
         boolean bo = false;
@@ -262,7 +268,8 @@ public class VXLQuanLyMayChu {
                     String khoa = sbf.substring(0, j).trim();
                     String giaTri = sbf.substring(j + 1).trim();
                     configMap.put(khoa, giaTri);
-                    System.out.println("config: " + khoa + "-" + giaTri);
+                    String giaTriHienThi = khoa.toLowerCase().contains("password") ? "******" : giaTri;
+                    System.out.println("config: " + khoa + "-" + giaTriHienThi);
                 }
                 sbd.setLength(0);
                 continue;
@@ -275,7 +282,10 @@ public class VXLQuanLyMayChu {
         }
         goLoi = VXLQuanLyMayChu.cfgBool(configMap, false, "debug-mode", "debug");
         mayChu = VXLQuanLyMayChu.cfgStr(configMap, "localhost", "server-host", "host");
-        cong = VXLQuanLyMayChu.cfgShort(configMap, (short)14445, "server-port", "post");
+        cong = VXLQuanLyMayChu.cfgShort(configMap, (short)14445, "server-port", "port");
+        if (cong <= 0) {
+            throw new IllegalArgumentException("server-port must be between 1 and 65535");
+        }
         mysql_host = VXLQuanLyMayChu.cfgStr(configMap, "127.0.0.1", "database-host", "mysql-host");
         mysql_user = VXLQuanLyMayChu.cfgStr(configMap, "root", "database-user", "mysql-user");
         mysql_pass = VXLQuanLyMayChu.cfgStr(configMap, "", "database-password", "mysql-password");
@@ -305,17 +315,32 @@ public class VXLQuanLyMayChu {
 
     private static int cfgInt(HashMap<String, String> map, int def, String... keys) {
         String v = VXLQuanLyMayChu.cfgStr(map, null, keys);
-        return v != null ? Integer.parseInt(v) : def;
+        try {
+            return v != null ? Integer.parseInt(v) : def;
+        }
+        catch (NumberFormatException ex) {
+            return def;
+        }
     }
 
     private static short cfgShort(HashMap<String, String> map, short def, String... keys) {
         String v = VXLQuanLyMayChu.cfgStr(map, null, keys);
-        return v != null ? Short.parseShort(v) : def;
+        try {
+            return v != null ? Short.parseShort(v) : def;
+        }
+        catch (NumberFormatException ex) {
+            return def;
+        }
     }
 
     private static byte cfgByte(HashMap<String, String> map, byte def, String... keys) {
         String v = VXLQuanLyMayChu.cfgStr(map, null, keys);
-        return v != null ? Byte.parseByte(v) : def;
+        try {
+            return v != null ? Byte.parseByte(v) : def;
+        }
+        catch (NumberFormatException ex) {
+            return def;
+        }
     }
 
     private static boolean cfgBool(HashMap<String, String> map, boolean def, String... keys) {
@@ -333,12 +358,14 @@ public class VXLQuanLyMayChu {
 
     public static void khoiTao() {
         for (int i = 0; i < 4; ++i) {
-            File[] files;
             int kichThuoc = 0;
             int numberBig = 0;
-            for (File file : files = new File("res/data/" + (i + 1) + "/").listFiles()) {
-                kichThuoc = (int)((long)kichThuoc + file.length());
-                ++numberBig;
+            File[] files = new File("res/data/" + (i + 1)).listFiles(File::isFile);
+            if (files != null) {
+                for (File file : files) {
+                    kichThuoc = (int)((long)kichThuoc + file.length());
+                    ++numberBig;
+                }
             }
             VXLQuanLyMayChu.dataSize[i] = VXLTienIch.doiThanhChuoiRutGon(kichThuoc);
             VXLQuanLyMayChu.nBig[i] = numberBig;
@@ -346,6 +373,11 @@ public class VXLQuanLyMayChu {
         batDau = false;
         VXLQuanLyMayChu.loadConfigFile();
         VXLCoSoDuLieu.khoiTao(mysql_host, mysql_database, mysql_user, mysql_pass);
+        iOptionTemplates.clear();
+        itemTemplates.clear();
+        parts.clear();
+        VXLTieuDeCap.levels.clear();
+        VXLAnhNho.smallImg.clear();
         VXLQuanLyMayChu.loadDataItem();
         VXLQuanLyMayChu.setDataItem();
         VXLQuanLyMayChu.loadDataMap();
@@ -494,10 +526,15 @@ public class VXLQuanLyMayChu {
      * WARNING - Removed try catching itself - possible behaviour change.
      */
     public static void onClientConnected(VXLPhien cl) {
-        ArrayList<VXLPhien> arrayList = clients;
-        synchronized (arrayList) {
+        if (cl == null) {
+            return;
+        }
+        synchronized (VXLQuanLyMayChu.class) {
+            if (clients == null || clients.contains(cl)) {
+                return;
+            }
             clients.add(cl);
-            ++numClients;
+            numClients = clients.size();
             VXLQuanLyMayChu.logConnection("Ket noi " + cl.moTa() + " | online=" + numClients);
         }
     }
@@ -516,22 +553,25 @@ public class VXLQuanLyMayChu {
             nettyServer = new VXLMayChuNetty();
             nettyServer.batDau(mayChu, cong);
             VXLQuanLyMayChu.log(GAME_NAME + " start OK!");
-            Thread.currentThread().join();
+            if (nettyServer != null) {
+                nettyServer.choDong();
+            }
         }
         catch (InterruptedException e) {
             Thread.currentThread().interrupt();
         }
         catch (Exception e) {
-            e.printStackTrace();
+            Logger.getLogger(VXLQuanLyMayChu.class.getName()).log(Level.SEVERE, "Server stopped unexpectedly", e);
+            VXLQuanLyMayChu.dung();
         }
     }
 
-    public static void dung() {
-        if (batDau) {
-            VXLQuanLyMayChu.close();
-            batDau = false;
-            System.gc();
+    public static synchronized void dung() {
+        if (!batDau && nettyServer == null) {
+            return;
         }
+        batDau = false;
+        VXLQuanLyMayChu.close();
     }
 
     protected static void close() {
@@ -540,13 +580,16 @@ public class VXLQuanLyMayChu {
                 nettyServer.dung();
                 nettyServer = null;
             }
-            if (clients != null) {
-                while (!clients.isEmpty()) {
-                    VXLPhien c = clients.getFirst();
-                    c.close();
-                    --numClients;
+            synchronized (VXLQuanLyMayChu.class) {
+                if (clients != null) {
+                    ArrayList<VXLPhien> connectedClients = new ArrayList<>(clients);
+                    for (VXLPhien c : connectedClients) {
+                        c.close();
+                    }
+                    clients.clear();
+                    numClients = 0;
+                    clients = null;
                 }
-                clients = null;
             }
             VXLCoSoDuLieu.close();
             System.out.println("VXLMayChu stopped");
@@ -570,10 +613,14 @@ public class VXLQuanLyMayChu {
      * WARNING - Removed try catching itself - possible behaviour change.
      */
     public static void disconnect(VXLPhien cl) {
-        ArrayList<VXLPhien> arrayList = clients;
-        synchronized (arrayList) {
-            clients.remove(cl);
-            --numClients;
+        if (cl == null) {
+            return;
+        }
+        synchronized (VXLQuanLyMayChu.class) {
+            if (clients == null || !clients.remove(cl)) {
+                return;
+            }
+            numClients = clients.size();
             VXLQuanLyMayChu.logConnection("Ngat ket noi " + cl.moTa() + " | online=" + numClients);
         }
     }

@@ -1,8 +1,12 @@
 # Gradle / Java build
 .gradle/
 build/
+bin/
 out/
 *.class
+
+# Generated client cache blobs
+cache/
 
 # Node.js
 node_modules/

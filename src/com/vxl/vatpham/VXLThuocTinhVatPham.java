@@ -13,7 +13,8 @@ public class VXLThuocTinhVatPham {
 
     public VXLThuocTinhVatPham(int optionTemplateId, int thamSo) {
         this.thamSo = thamSo;
-        this.optionTemplate = VXLQuanLyMayChu.iOptionTemplates.get(optionTemplateId);
+        this.optionTemplate = VXLQuanLyMayChu.iOptionTemplates == null
+                ? null : VXLQuanLyMayChu.iOptionTemplates.get(optionTemplateId);
     }
 }
 

@@ -23,6 +23,7 @@ public class VXLNhanVatPhu {
 
     public VXLNhanVatPhu(int npcId, int trangThai, short cx, short cy, byte templateId, short anhDaiDien, short head1, short body1, short leg1) {
         this.npcId = npcId;
+        this.trangThai = (byte)trangThai;
         this.anhDaiDien = anhDaiDien;
         this.x = cx;
         this.y = cy;
@@ -42,6 +43,11 @@ public class VXLNhanVatPhu {
             }
             case 3: {
                 this.ten = "Đại úy";
+                break;
+            }
+            default: {
+                this.ten = "Nhân vật phụ";
+                break;
             }
         }
         this.head = head1;

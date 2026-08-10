@@ -18,33 +18,63 @@ public final class VXLMayChuNetty {
     private EventLoopGroup nhomTho;
     private Channel kenhMayChu;
 
-    public void batDau(String mayChu, int cong) throws InterruptedException {
+    public synchronized void batDau(String mayChu, int cong) throws InterruptedException {
+        if (this.kenhMayChu != null || this.nhomChu != null || this.nhomTho != null) {
+            throw new IllegalStateException("Netty server is already started.");
+        }
         this.nhomChu = new MultiThreadIoEventLoopGroup(1, NioIoHandler.newFactory());
         this.nhomTho = new MultiThreadIoEventLoopGroup(NioIoHandler.newFactory());
-        ServerBootstrap bootstrap = new ServerBootstrap();
-        bootstrap.group(nhomChu, nhomTho)
-                .channel(NioServerSocketChannel.class)
-                .option(ChannelOption.SO_BACKLOG, 1024)
-                .childOption(ChannelOption.TCP_NODELAY, true)
-                .childOption(ChannelOption.SO_KEEPALIVE, true)
-                .childHandler(new VXLKhoiTaoKenhGame());
-        ChannelFuture bindFuture = bootstrap.bind(mayChu, cong).sync();
-        this.kenhMayChu = bindFuture.channel();
-        VXLQuanLyMayChu.log("Netty server listening on " + mayChu + ":" + cong);
+        try {
+            ServerBootstrap bootstrap = new ServerBootstrap();
+            bootstrap.group(nhomChu, nhomTho)
+                    .channel(NioServerSocketChannel.class)
+                    .option(ChannelOption.SO_BACKLOG, 1024)
+                    .childOption(ChannelOption.TCP_NODELAY, true)
+                    .childOption(ChannelOption.SO_KEEPALIVE, true)
+                    .childHandler(new VXLKhoiTaoKenhGame());
+            ChannelFuture bindFuture = bootstrap.bind(mayChu, cong).sync();
+            this.kenhMayChu = bindFuture.channel();
+            VXLQuanLyMayChu.log("Netty server listening on " + mayChu + ":" + cong);
+        }
+        catch (InterruptedException | RuntimeException ex) {
+            if (this.kenhMayChu != null) {
+                this.kenhMayChu.close();
+                this.kenhMayChu = null;
+            }
+            if (this.nhomChu != null) {
+                this.nhomChu.shutdownGracefully();
+                this.nhomChu = null;
+            }
+            if (this.nhomTho != null) {
+                this.nhomTho.shutdownGracefully();
+                this.nhomTho = null;
+            }
+            throw ex;
+        }
     }
 
-    public void dung() throws InterruptedException {
-        if (this.kenhMayChu != null) {
-            this.kenhMayChu.close().sync();
-            this.kenhMayChu = null;
+    public synchronized void dung() throws InterruptedException {
+        Channel mayChuHienTai = this.kenhMayChu;
+        EventLoopGroup nhomChuHienTai = this.nhomChu;
+        EventLoopGroup nhomThoHienTai = this.nhomTho;
+        this.kenhMayChu = null;
+        this.nhomChu = null;
+        this.nhomTho = null;
+        if (mayChuHienTai != null) {
+            mayChuHienTai.close().sync();
         }
-        if (this.nhomChu != null) {
-            this.nhomChu.shutdownGracefully().sync();
-            this.nhomChu = null;
+        if (nhomChuHienTai != null) {
+            nhomChuHienTai.shutdownGracefully().sync();
         }
-        if (this.nhomTho != null) {
-            this.nhomTho.shutdownGracefully().sync();
-            this.nhomTho = null;
+        if (nhomThoHienTai != null) {
+            nhomThoHienTai.shutdownGracefully().sync();
+        }
+    }
+
+    public void choDong() throws InterruptedException {
+        Channel kenh = this.kenhMayChu;
+        if (kenh != null) {
+            kenh.closeFuture().sync();
         }
     }
 }

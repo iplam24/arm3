@@ -54,7 +54,12 @@ final class VXLXuLyVatPhamTrongTran {
                 chienBinh.heSoDiChuyen = 200;
                 return true;
             case 224:
-                chienBinh.themKhien(Math.max(1, chienBinh.mauToiDa * 25 / 100));
+                if (chienBinh.themKhien(Math.max(1, chienBinh.mauToiDa * 25 / 100)) <= 0) {
+                    if (chienBinh.coPhien()) {
+                        chienBinh.nguoiChoi.startOKDlg2("Khiên của bạn đang đầy.");
+                    }
+                    return false;
+                }
                 chienBinh.luotVoHinh = Math.max(chienBinh.luotVoHinh, 1);
                 return true;
             case 230:
@@ -151,7 +156,8 @@ final class VXLXuLyVatPhamTrongTran {
                 continue;
             }
             VXLVatPham vatPham = nguoiChoi.itemBag[chiSoTui];
-            if (vatPham.ma == yeuCau || Byte.toUnsignedInt((byte)vatPham.mau.part) == yeuCau) {
+            if (vatPham.ma == yeuCau || (vatPham.ma & 0xFF) == yeuCau
+                    || Byte.toUnsignedInt((byte)vatPham.mau.part) == yeuCau) {
                 return new int[]{i, chiSoTui};
             }
         }

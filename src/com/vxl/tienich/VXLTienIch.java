@@ -6,6 +6,8 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.text.DecimalFormat;
 import java.util.Random;
 
@@ -19,7 +21,7 @@ public class VXLTienIch {
     public static String doiThanhChuoiRutGon(long giaTri) {
         long[] dividers = new long[]{0x10000000000L, 0x40000000L, 0x100000L, 1024L, 1L};
         String[] units = new String[]{"TB", "GB", "MB", "KB", "B"};
-        if (giaTri < 1L) {
+        if (giaTri < 0L) {
             throw new IllegalArgumentException("Invalid file size: " + giaTri);
         }
         String ketQua = null;
@@ -29,7 +31,7 @@ public class VXLTienIch {
             ketQua = VXLTienIch.format(giaTri, soChia, units[i]);
             break;
         }
-        return ketQua;
+        return ketQua == null ? "0B" : ketQua;
     }
 
     private static String format(long giaTri, long soChia, String donVi) {
@@ -59,24 +61,19 @@ public class VXLTienIch {
 
     public static int layCap(int kinhNghiem) {
         int cap = 0;
-        for (int i = 0; i < VXLTieuDeCap.levels.size(); ++i) {
-            VXLTieuDeCap tieuDeCap = VXLTieuDeCap.levels.get(i);
-            if (kinhNghiem <= tieuDeCap.kinhNghiem) continue;
-            cap = i;
+        for (java.util.Map.Entry<Integer, VXLTieuDeCap> muc : VXLTieuDeCap.levels.entrySet()) {
+            VXLTieuDeCap tieuDeCap = muc.getValue();
+            if (tieuDeCap == null || kinhNghiem <= tieuDeCap.kinhNghiem) continue;
+            cap = Math.max(cap, muc.getKey());
         }
         return cap;
     }
 
     public static byte[] layTep(String url) {
         try {
-            FileInputStream fis = new FileInputStream(url);
-            byte[] ab = new byte[fis.available()];
-            fis.read(ab, 0, ab.length);
-            fis.close();
-            return ab;
+            return Files.readAllBytes(Path.of(url));
         }
-        catch (IOException ex) {
-            ex.printStackTrace();
+        catch (IOException | RuntimeException ex) {
             return null;
         }
     }

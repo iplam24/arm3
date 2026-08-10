@@ -1,6 +1,6 @@
 package com.vxl.mang;
 
-// Vũ Xuân Lâm đẹp trai VCL
+// V? Xu?n L?m ??p trai VCL
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
@@ -27,8 +27,8 @@ public class VXLTinNhan {
 
     public VXLTinNhan(byte lenh, byte[] duLieu) {
         this.lenh = lenh;
-        this.taiDuLieu = duLieu;
-        this.is = new ByteArrayInputStream(duLieu);
+        this.taiDuLieu = duLieu == null ? new byte[0] : duLieu;
+        this.is = new ByteArrayInputStream(this.taiDuLieu);
         this.dis = new DataInputStream(this.is);
     }
 
@@ -48,22 +48,36 @@ public class VXLTinNhan {
         if (this.taiDuLieu != null) {
             return this.taiDuLieu;
         }
-        return this.os.toByteArray();
+        if (this.os != null) {
+            return this.os.toByteArray();
+        }
+        return new byte[0];
     }
 
     public DataInputStream boDoc() {
+        if (this.dis == null) {
+            this.taiDuLieu = this.layDuLieu();
+            this.is = new ByteArrayInputStream(this.taiDuLieu);
+            this.dis = new DataInputStream(this.is);
+        }
         return this.dis;
     }
 
     public String docUTF(int doDaiToiDa, String tenTruong) throws IOException {
-        String giaTri = this.dis.readUTF();
+        if (doDaiToiDa < 0) {
+            throw new IllegalArgumentException("Maximum length must not be negative.");
+        }
+        String giaTri = this.boDoc().readUTF();
         if (giaTri.length() > doDaiToiDa) {
-            throw new IllegalArgumentException(tenTruong + " vượt quá " + doDaiToiDa + " ký tự.");
+            throw new IllegalArgumentException(tenTruong + " exceeds " + doDaiToiDa + " characters.");
         }
         return giaTri;
     }
 
     public DataOutputStream boGhi() {
+        if (this.dos == null) {
+            throw new IllegalStateException("This message is read-only.");
+        }
         return this.dos;
     }
 
@@ -76,9 +90,7 @@ public class VXLTinNhan {
                 this.dos.close();
             }
         }
-        catch (IOException iOException) {
-            // empty catch block
+        catch (IOException ignored) {
         }
     }
 }
-

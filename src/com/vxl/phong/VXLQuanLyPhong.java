@@ -5,21 +5,38 @@ import com.vxl.chien.VXLQuanLyChien;
 import com.vxl.bando.VXLDuLieuBanDo;
 import com.vxl.mohinh.VXLNguoiChoi;
 import com.vxl.mang.VXLTinNhan;
+import java.io.ByteArrayInputStream;
+import java.io.DataInputStream;
 import java.io.DataOutputStream;
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.nio.file.Files;
+import javax.imageio.ImageIO;
 
 public class VXLQuanLyPhong {
     private static final int ROOM_COUNT = 4;
     private static final int BOARD_PER_ROOM = 10;
-    private static final Map<Integer, VXLChoDau> playerBoards = new HashMap<>();
+    private static final ConcurrentMap<Integer, VXLChoDau> playerBoards = new ConcurrentHashMap<>();
     private static byte[] fightMaps = new byte[]{1};
-    public static VXLPhong[] phongs = new VXLPhong[0];
+    public static volatile VXLPhong[] phongs = new VXLPhong[0];
 
     public static void khoiTao() {
-        byte maxPlayers = VXLQuanLyMayChu.maxPlayers > 0 ? VXLQuanLyMayChu.maxPlayers : 8;
+        int configuredMaxPlayers = VXLQuanLyMayChu.maxPlayers;
+        if (configuredMaxPlayers <= 0) {
+            configuredMaxPlayers = 8;
+        }
+        if (configuredMaxPlayers > Byte.MAX_VALUE) {
+            configuredMaxPlayers = Byte.MAX_VALUE;
+        }
+        byte maxPlayers = (byte)configuredMaxPlayers;
+        playerBoards.clear();
         fightMaps = taiBanDoDau();
         phongs = new VXLPhong[ROOM_COUNT];
         for (int i = 0; i < ROOM_COUNT; i++) {
@@ -31,24 +48,32 @@ public class VXLQuanLyPhong {
     }
 
     public static void gan(VXLNguoiChoi nguoiChoi, VXLChoDau banCho) {
-        synchronized (playerBoards) {
-            playerBoards.put(nguoiChoi.ma, banCho);
+        if (nguoiChoi == null || banCho == null) {
+            return;
         }
+        playerBoards.put(nguoiChoi.ma, banCho);
     }
 
     public static void boGan(VXLNguoiChoi nguoiChoi) {
-        synchronized (playerBoards) {
+        if (nguoiChoi != null) {
             playerBoards.remove(nguoiChoi.ma);
         }
     }
 
-    public static VXLChoDau layBanCho(VXLNguoiChoi nguoiChoi) {
-        synchronized (playerBoards) {
-            return playerBoards.get(nguoiChoi.ma);
+    static void boGan(VXLNguoiChoi nguoiChoi, VXLChoDau banCho) {
+        if (nguoiChoi != null && banCho != null) {
+            playerBoards.remove(nguoiChoi.ma, banCho);
         }
     }
 
+    public static VXLChoDau layBanCho(VXLNguoiChoi nguoiChoi) {
+        return nguoiChoi == null ? null : playerBoards.get(nguoiChoi.ma);
+    }
+
     public static void roiBanCho(VXLNguoiChoi nguoiChoi) {
+        if (nguoiChoi == null) {
+            return;
+        }
         VXLChoDau banCho = layBanCho(nguoiChoi);
         if (banCho != null) {
             banCho.roi(nguoiChoi);
@@ -56,9 +81,13 @@ public class VXLQuanLyPhong {
     }
 
     public static void yeuCauDanhSachPhong(VXLNguoiChoi nguoiChoi) throws IOException {
+        if (nguoiChoi == null || nguoiChoi.dichVu == null) {
+            return;
+        }
+        VXLPhong[] danhSachPhong = phongs;
         VXLTinNhan ms = new VXLTinNhan(6);
         DataOutputStream ds = ms.boGhi();
-        for (VXLPhong phong : phongs) {
+        for (VXLPhong phong : danhSachPhong) {
             ds.writeByte(phong.ma);
             ds.writeByte(phong.layDoDay());
             ds.writeByte(0);
@@ -66,25 +95,28 @@ public class VXLQuanLyPhong {
         }
         ds.flush();
         nguoiChoi.dichVu.guiTin(ms);
-        nguoiChoi.dichVu.guiTieuDePhongDau();
-        guiPhongTisEmpty(nguoiChoi);
     }
 
     public static void guiPhongTisEmpty(VXLNguoiChoi nguoiChoi) throws IOException {
+        if (nguoiChoi == null || nguoiChoi.dichVu == null) {
+            return;
+        }
+        VXLPhong[] danhSachPhong = phongs;
         VXLTinNhan ms = new VXLTinNhan(-28);
         DataOutputStream ds = ms.boGhi();
         ds.writeByte(0);
         ds.writeByte(-1);
         ds.writeUTF("Đấu thường");
-        for (VXLPhong phong : phongs) {
+        for (VXLPhong phong : danhSachPhong) {
             for (VXLChoDau banCho : phong.banChos) {
-                if (banCho.started || banCho.laySoNguoiChoi() >= banCho.maxPlayers) {
+                int soNguoiChoi = banCho.laySoNguoiChoi();
+                if (banCho.started || soNguoiChoi >= banCho.maxPlayers) {
                     continue;
                 }
                 ds.writeByte(phong.ma);
                 ds.writeByte(banCho.ma);
                 ds.writeByte(banCho.maBanDo);
-                ds.writeByte(banCho.laySoNguoiChoi());
+                ds.writeByte(soNguoiChoi);
                 ds.writeByte(banCho.maxPlayers);
                 ds.writeInt(banCho.tien);
             }
@@ -94,6 +126,9 @@ public class VXLQuanLyPhong {
     }
 
     public static void yeuCauDanhSachBan(VXLNguoiChoi nguoiChoi, VXLTinNhan ms) throws IOException {
+        if (nguoiChoi == null || nguoiChoi.dichVu == null || ms == null || ms.layDuLieu().length < 1) {
+            return;
+        }
         byte maPhong = ms.boDoc().readByte();
         VXLPhong phong = layPhong(maPhong);
         if (phong == null) {
@@ -121,18 +156,24 @@ public class VXLQuanLyPhong {
     }
 
     public static void vaoBan(VXLNguoiChoi nguoiChoi, VXLTinNhan ms) throws IOException {
+        if (nguoiChoi == null || nguoiChoi.dichVu == null || ms == null || ms.layDuLieu().length < 4) {
+            return;
+        }
         byte maPhong = ms.boDoc().readByte();
         byte maBan = ms.boDoc().readByte();
         String matKhau = ms.docUTF(32, "mật khẩu phòng");
         VXLPhong phong = layPhong(maPhong);
-        if (phong == null || maBan < 0 || maBan >= phong.banChos.length) {
+        if (phong == null || Byte.toUnsignedInt(maBan) >= phong.banChos.length) {
             nguoiChoi.startOKDlg2("Khu vực không tồn tại.");
             return;
         }
-        phong.banChos[maBan].vao(nguoiChoi, matKhau);
+        phong.banChos[Byte.toUnsignedInt(maBan)].vao(nguoiChoi, matKhau);
     }
 
     public static void sanSang(VXLNguoiChoi nguoiChoi, VXLTinNhan ms) throws IOException {
+        if (nguoiChoi == null || ms == null || ms.layDuLieu().length < 1) {
+            return;
+        }
         VXLChoDau banCho = layBanCho(nguoiChoi);
         if (banCho != null) {
             banCho.datSanSang(nguoiChoi, ms.boDoc().readBoolean());
@@ -147,6 +188,9 @@ public class VXLQuanLyPhong {
     }
 
     public static void chonBanDo(VXLNguoiChoi nguoiChoi, VXLTinNhan ms) throws IOException {
+        if (nguoiChoi == null || ms == null || ms.layDuLieu().length < 1) {
+            return;
+        }
         VXLChoDau banCho = layBanCho(nguoiChoi);
         if (banCho != null) {
             banCho.datBanDo(nguoiChoi, chuanHoaBanDo(ms.boDoc().readByte()));
@@ -198,25 +242,39 @@ public class VXLQuanLyPhong {
     }
 
     private static VXLQuanLyChien layTranDau(VXLNguoiChoi nguoiChoi) {
+        if (nguoiChoi == null) {
+            return null;
+        }
         VXLChoDau banCho = layBanCho(nguoiChoi);
         return banCho != null ? banCho.layTranDau() : null;
     }
 
     private static VXLPhong layPhong(byte maPhong) {
-        if (maPhong < 0 || maPhong >= phongs.length) {
+        VXLPhong[] danhSachPhong = phongs;
+        int chiSo = Byte.toUnsignedInt(maPhong);
+        if (chiSo >= danhSachPhong.length) {
             return null;
         }
-        return phongs[maPhong];
+        return danhSachPhong[chiSo];
     }
 
     private static byte[] taiBanDoDau() {
         ArrayList<Byte> maps = new ArrayList<>();
+        Map<Integer, Boolean> taiNguyenDaKiemTra = new HashMap<>();
         if (VXLDuLieuBanDo.entrys != null) {
             for (VXLDuLieuBanDo.MapDataEntry muc : VXLDuLieuBanDo.entrys) {
-                maps.add(muc.mapID);
+                if (banDoHopLe(muc, taiNguyenDaKiemTra)) {
+                    maps.add(muc.mapID);
+                } else {
+                    System.err.println("Bo qua ban do loi hoac thieu tai nguyen: " + Byte.toUnsignedInt(muc.mapID));
+                }
             }
         }
         if (maps.isEmpty()) {
+            taiBanDoTuTep(maps);
+        }
+        if (maps.isEmpty()) {
+            System.err.println("Khong co ban do dau hop le, dung ban do mac dinh id=1.");
             maps.add((byte)1);
         }
         byte[] ketQua = new byte[maps.size()];
@@ -226,8 +284,82 @@ public class VXLQuanLyPhong {
         return ketQua;
     }
 
+    private static void taiBanDoTuTep(ArrayList<Byte> maps) {
+        File thuMuc = new File("res/map");
+        File[] tepBanDo = thuMuc.listFiles(File::isFile);
+        if (tepBanDo == null) {
+            return;
+        }
+        Arrays.sort(tepBanDo, Comparator.comparing(File::getName));
+        ArrayList<VXLDuLieuBanDo.MapDataEntry> entries = VXLDuLieuBanDo.entrys;
+        if (entries == null) {
+            entries = new ArrayList<>();
+            VXLDuLieuBanDo.entrys = entries;
+        }
+        Map<Integer, Boolean> taiNguyenDaKiemTra = new HashMap<>();
+        for (File tep : tepBanDo) {
+            try {
+                int maBanDo = Integer.parseInt(tep.getName());
+                if (maBanDo < 0 || maBanDo > 0xFF) {
+                    continue;
+                }
+                byte[] duLieu = Files.readAllBytes(tep.toPath());
+                VXLDuLieuBanDo.MapDataEntry muc = new VXLDuLieuBanDo.MapDataEntry(
+                        duLieu, (byte)maBanDo, "Map " + maBanDo, (short)0, (byte)0);
+                if (banDoHopLe(muc, taiNguyenDaKiemTra)) {
+                    entries.add(muc);
+                    maps.add((byte)maBanDo);
+                }
+            }
+            catch (IOException | NumberFormatException ex) {
+                System.err.println("Bo qua tep ban do loi: " + tep.getName());
+            }
+        }
+    }
+
+    private static boolean banDoHopLe(VXLDuLieuBanDo.MapDataEntry muc, Map<Integer, Boolean> taiNguyenDaKiemTra) {
+        if (muc == null) {
+            return false;
+        }
+        byte[] duLieu = muc.duLieu;
+        if (duLieu == null || duLieu.length < 5) {
+            return false;
+        }
+        try (DataInputStream ds = new DataInputStream(new ByteArrayInputStream(duLieu))) {
+            if (ds.readUnsignedShort() == 0 || ds.readUnsignedShort() == 0) {
+                return false;
+            }
+            int soMienDat = ds.readUnsignedByte();
+            if (soMienDat == 0 || duLieu.length < 5L + (long)soMienDat * 5L) {
+                return false;
+            }
+            for (int i = 0; i < soMienDat; i++) {
+                int maNguyenLieu = ds.readUnsignedByte();
+                ds.readShort();
+                ds.readShort();
+                if (!nguyenLieuHopLe(maNguyenLieu, taiNguyenDaKiemTra)) {
+                    return false;
+                }
+            }
+            return true;
+        } catch (IOException ex) {
+            return false;
+        }
+    }
+
+    private static boolean nguyenLieuHopLe(int ma, Map<Integer, Boolean> taiNguyenDaKiemTra) {
+        Boolean ketQuaDaCo = taiNguyenDaKiemTra.get(ma);
+        if (ketQuaDaCo != null) {
+            return ketQuaDaCo;
+        }
+        VXLDuLieuBanDo.loadMapBrick(ma);
+        boolean hopLe = VXLDuLieuBanDo.existsMapBrick(ma);
+        taiNguyenDaKiemTra.put(ma, hopLe);
+        return hopLe;
+    }
+
     private static byte chuanHoaBanDo(byte maBanDo) {
-        if (fightMaps.length == 0) {
+        if (fightMaps == null || fightMaps.length == 0) {
             return 1;
         }
         for (byte fightMap : fightMaps) {

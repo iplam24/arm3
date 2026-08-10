@@ -11,6 +11,8 @@ public class VXLBanDoRPG {
     public static ArrayList<VXLNhanVatPhu> npcs = new ArrayList();
 
     public static void khoiTaoKhu() {
+        zones.clear();
+        npcs.clear();
         for (int i = 0; i < 100; ++i) {
             zones.add(new VXLKhu(i));
         }
@@ -21,6 +23,12 @@ public class VXLBanDoRPG {
     }
 
     public static void vao(int zoneId, VXLNguoiChoi nguoiChoi) {
+        if (nguoiChoi == null || zoneId < 0 || zoneId >= zones.size()) {
+            if (nguoiChoi != null) {
+                nguoiChoi.moHopThoaiOK("Khu vực không hợp lệ.");
+            }
+            return;
+        }
         VXLKhu z = zones.get(zoneId);
         if (z != null) {
             if (!z.vao(nguoiChoi)) {
@@ -32,14 +40,19 @@ public class VXLBanDoRPG {
     }
 
     public static void vao(VXLNguoiChoi nguoiChoi) {
+        if (nguoiChoi == null) {
+            return;
+        }
         for (VXLKhu z : zones) {
             if (z != null && z.vao(nguoiChoi)) break;
         }
     }
 
     public static void roi(VXLNguoiChoi nguoiChoi) {
-        VXLKhu z = zones.get(nguoiChoi.zoneId);
-        z.roi(nguoiChoi);
+        if (nguoiChoi == null || nguoiChoi.zone == null) {
+            return;
+        }
+        nguoiChoi.zone.roi(nguoiChoi);
     }
 }
 

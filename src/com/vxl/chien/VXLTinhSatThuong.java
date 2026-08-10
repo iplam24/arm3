@@ -14,6 +14,8 @@ public final class VXLTinhSatThuong {
         if (satThuongGoc <= 0) {
             return 0;
         }
-        return Math.max(1, satThuongGoc * 100 / (100 + Math.max(0, giap)));
+        long mauSo = 100L + Math.max(0, (long)giap);
+        long ketQua = (long)satThuongGoc * 100L / mauSo;
+        return (int)Math.max(1L, Math.min(Integer.MAX_VALUE, ketQua));
     }
 }

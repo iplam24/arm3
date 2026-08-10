@@ -8,8 +8,8 @@ import java.util.ArrayList;
 import javax.imageio.ImageIO;
 
 public class VXLDuLieuBanDo {
-    public static ArrayList<MapDataEntry> entrys;
-    public static ArrayList<MapBrickEntry> brickEntrys;
+    public static ArrayList<MapDataEntry> entrys = new ArrayList<>();
+    public static ArrayList<MapBrickEntry> brickEntrys = new ArrayList<>();
     public static final short[] undestroyTile;
 
     public static boolean isTileDestroy(int ma) {
@@ -21,16 +21,56 @@ public class VXLDuLieuBanDo {
     }
 
     public static MapBrickEntry getMapBrickEntry(int ma) {
+        if (brickEntrys == null) {
+            return null;
+        }
         for (MapBrickEntry me : brickEntrys) {
-            if (me.ma != ma) continue;
-            return me;
+            if (me != null && me.ma == ma) {
+                return me;
+            }
         }
         return null;
     }
 
     public static void loadMapBrick(int ma) {
+        if (brickEntrys == null) {
+            brickEntrys = new ArrayList<>();
+        }
+        if (existsMapBrick(ma)) {
+            return;
+        }
         try {
-            BufferedImage img = ImageIO.read(new File("res/icon/map/" + ma + ".png"));
+            int resourceId = switch (ma) {
+                case 166 -> 161;
+                case 167 -> 20;
+                case 168 -> 19;
+                default -> ma;
+            };
+            String[] paths = new String[]{
+                "res/icon/map/" + ma + ".png",
+                "res/icon/map/" + resourceId + ".png",
+                "res/icon/map/b" + ma + ".png",
+                "res/data/1/b" + ma + ".png",
+                "res/data/1/b" + String.format("%02d", ma) + ".png",
+                "res/data/1/" + ma + ".png",
+                "res/data/2/b" + ma + ".png",
+                "res/data/3/b" + ma + ".png",
+                "res/data/4/b" + ma + ".png",
+                "res/map/b" + ma + ".png"
+            };
+            BufferedImage img = null;
+            for (String path : paths) {
+                File f = new File(path);
+                if (f.exists() && f.isFile()) {
+                    img = ImageIO.read(f);
+                    if (img != null) {
+                        break;
+                    }
+                }
+            }
+            if (img == null) {
+                return;
+            }
             int W = img.getWidth();
             int H = img.getHeight();
             int[] argb = new int[W * H];
@@ -38,15 +78,18 @@ public class VXLDuLieuBanDo {
             MapBrickEntry me = new MapBrickEntry(ma, argb, W, H);
             brickEntrys.add(me);
         }
-        catch (Exception e) {
-            e.printStackTrace();
+        catch (Exception ignored) {
         }
     }
 
     public static boolean existsMapBrick(int ma) {
+        if (brickEntrys == null) {
+            return false;
+        }
         for (MapBrickEntry me : brickEntrys) {
-            if (me.ma != ma) continue;
-            return true;
+            if (me != null && me.ma == ma) {
+                return true;
+            }
         }
         return false;
     }
@@ -87,14 +130,13 @@ public class VXLDuLieuBanDo {
         public short yWater;
 
         public MapDataEntry(byte[] duLieu, byte mapID, String mapName, short icon, byte bgID) {
-            this.duLieu = duLieu;
+            this.duLieu = duLieu == null ? new byte[0] : duLieu;
             this.mapID = mapID;
             this.bgID = bgID;
             this.iconID = icon;
             this.mapName = mapName;
-            this.mapW = VXLTienIch.getShort(0, duLieu) / 24;
-            this.mapH = VXLTienIch.getShort(2, duLieu) / 24;
-            System.out.println("map ID= " + mapID + " mapName= " + mapName + " bgID= " + bgID);
+            this.mapW = this.duLieu.length >= 4 ? VXLTienIch.getShort(0, this.duLieu) / 24 : 0;
+            this.mapH = this.duLieu.length >= 4 ? VXLTienIch.getShort(2, this.duLieu) / 24 : 0;
             this.khoiTao();
         }
 

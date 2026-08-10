@@ -30,6 +30,8 @@ import java.util.concurrent.TimeUnit;
 public class VXLPhien
 implements IVXLPhien {
     private static final int MAX_PACKET_SIZE = 32 * 1024;
+    private static final int MAX_LARGE_PACKET_SIZE = 16 * 1024 * 1024;
+    private static final int MAX_RESEND_MESSAGES = 200;
     private final byte[] khoa = new byte[]{0};
     public Channel kenh;
     public int ma;
@@ -47,7 +49,7 @@ implements IVXLPhien {
     protected boolean heThongXong;
     protected int svReceived_clSended;
     protected int svSended_clReceived;
-    protected List<VXLTinNhan> vResendMessage = new ArrayList<VXLTinNhan>();
+    protected final List<VXLTinNhan> vResendMessage = new ArrayList<VXLTinNhan>();
     public long timeConnected;
     private static final long SESSION_TTL_MILLIS = TimeUnit.MINUTES.toMillis(5L);
     public static final ConcurrentMap<String, Count> sessions = new ConcurrentHashMap<>();
@@ -63,7 +65,7 @@ implements IVXLPhien {
     }
 
     public VXLTinNhan thuGiaiMaTin(ByteBuf in) {
-        if (in.readableBytes() < 3) {
+        if (in == null || in.readableBytes() < 1) {
             return null;
         }
         in.markReaderIndex();
@@ -73,6 +75,11 @@ implements IVXLPhien {
             if (this.daKetNoi) {
                 cmd = this.docKhoa(cmd);
             }
+            if (in.readableBytes() < 2) {
+                in.resetReaderIndex();
+                this.curR = oldCurR;
+                return null;
+            }
             int kichThuoc;
             if (this.daKetNoi) {
                 byte b1 = in.readByte();
@@ -81,8 +88,8 @@ implements IVXLPhien {
             } else {
                 kichThuoc = in.readUnsignedShort();
             }
-            if (kichThuoc > MAX_PACKET_SIZE) {
-                throw new CorruptedFrameException("Gói tin vượt quá " + MAX_PACKET_SIZE + " byte.");
+            if (kichThuoc < 0 || kichThuoc > MAX_PACKET_SIZE) {
+                throw new CorruptedFrameException("Packet size exceeds " + MAX_PACKET_SIZE + " bytes.");
             }
             if (in.readableBytes() < kichThuoc) {
                 in.resetReaderIndex();
@@ -103,44 +110,49 @@ implements IVXLPhien {
         }
         catch (Exception ex) {
             this.curR = oldCurR;
-            throw new CorruptedFrameException("Không thể giải mã gói tin.", ex);
+            throw new CorruptedFrameException("Unable to decode packet.", ex);
         }
     }
 
     public void maHoaTin(VXLTinNhan m, ByteBuf out) {
+        if (m == null || out == null) {
+            throw new IllegalArgumentException("Message and output buffer must not be null.");
+        }
         byte[] duLieu = m.layDuLieu();
+        if (duLieu == null) {
+            duLieu = new byte[0];
+        }
         byte b = m.layLenh();
-        if (this.daKetNoi) {
+        boolean maHoa = this.daKetNoi && b != -27;
+        if (maHoa) {
             out.writeByte((int)this.ghiKhoa(b));
         } else {
             out.writeByte((int)b);
         }
         if (this.laTinLon(b)) {
             this.maHoaTinLon(duLieu, out);
+            if (!VXLPhien.laTinDacBiet(m)) {
+                ++this.svSended_clReceived;
+            }
             m.donDep();
             return;
         }
-        if (duLieu != null) {
-            int kichThuoc = duLieu.length;
-            if (this.daKetNoi) {
-                out.writeByte((int)this.ghiKhoa((byte)(kichThuoc >> 8)));
-                out.writeByte((int)this.ghiKhoa((byte)(kichThuoc & 0xFF)));
-                byte[] encrypted = new byte[duLieu.length];
-                for (int i = 0; i < duLieu.length; ++i) {
-                    encrypted[i] = this.ghiKhoa(duLieu[i]);
-                }
-                out.writeBytes(encrypted);
-            } else {
-                out.writeByte(kichThuoc >> 8);
-                out.writeByte(kichThuoc & 0xFF);
-                out.writeBytes(duLieu);
+        int kichThuoc = duLieu.length;
+        if (kichThuoc > MAX_PACKET_SIZE || kichThuoc > 0xFFFF) {
+            throw new IllegalArgumentException("Invalid packet size: " + kichThuoc);
+        }
+        if (maHoa) {
+            out.writeByte((int)this.ghiKhoa((byte)(kichThuoc >> 8)));
+            out.writeByte((int)this.ghiKhoa((byte)(kichThuoc & 0xFF)));
+            byte[] encrypted = new byte[duLieu.length];
+            for (int i = 0; i < duLieu.length; ++i) {
+                encrypted[i] = this.ghiKhoa(duLieu[i]);
             }
-        } else if (this.daKetNoi) {
-            out.writeByte((int)this.ghiKhoa((byte)0));
-            out.writeByte((int)this.ghiKhoa((byte)0));
+            out.writeBytes(encrypted);
         } else {
-            out.writeByte(0);
-            out.writeByte(0);
+            out.writeByte(kichThuoc >> 8);
+            out.writeByte(kichThuoc & 0xFF);
+            out.writeBytes(duLieu);
         }
         if (!VXLPhien.laTinDacBiet(m)) {
             ++this.svSended_clReceived;
@@ -149,6 +161,9 @@ implements IVXLPhien {
     }
 
     private void maHoaTinLon(byte[] duLieu, ByteBuf out) {
+        if (duLieu == null || duLieu.length > MAX_LARGE_PACKET_SIZE) {
+            throw new IllegalArgumentException("Invalid large packet size: " + (duLieu == null ? 0 : duLieu.length));
+        }
         int kichThuoc = duLieu.length;
         out.writeByte(kichThuoc >> 24);
         out.writeByte(kichThuoc >> 16);
@@ -158,6 +173,9 @@ implements IVXLPhien {
     }
 
     public void khiNhanTin(VXLTinNhan tin) {
+        if (tin == null) {
+            return;
+        }
         if (!this.kichHoat) {
             tin.donDep();
             return;
@@ -198,6 +216,9 @@ implements IVXLPhien {
             if (clSended < 0 || clReceived < 0) {
                 throw new IllegalArgumentException("Bộ đếm đồng bộ không hợp lệ.");
             }
+            if (oldSessionId.isBlank()) {
+                throw new IllegalArgumentException("Session id must not be blank.");
+            }
             Count count = sessions.remove(oldSessionId);
             if (count == null || count.hetHan()) {
                 this.guiMaPhien(0);
@@ -205,14 +226,25 @@ implements IVXLPhien {
             }
             this.svReceived_clSended = count.svReceived_clSended;
             this.svSended_clReceived = count.svSended_clReceived;
-            this.vResendMessage = new ArrayList<VXLTinNhan>(count.vResendMessage);
-            this.guiMaPhien(1);
-            if (clReceived != this.svSended_clReceived) {
-                int num3 = this.vResendMessage.size() - (this.svReceived_clSended - clReceived);
-                if (num3 < 0) {
-                    num3 = 0;
+            synchronized (this.vResendMessage) {
+                this.vResendMessage.clear();
+                if (count.vResendMessage != null) {
+                    this.vResendMessage.addAll(count.vResendMessage);
                 }
-                this.guiLaiTinTu(num3);
+            }
+            this.guiMaPhien(1);
+            if (clReceived > this.svSended_clReceived) {
+                this.guiMaPhien(0);
+                return;
+            }
+            if (clReceived != this.svSended_clReceived) {
+                int soTinThieu = this.svSended_clReceived - clReceived;
+                int soTinCoTheGuiLai;
+                synchronized (this.vResendMessage) {
+                    soTinCoTheGuiLai = this.vResendMessage.size();
+                }
+                int chiSo = Math.max(0, soTinCoTheGuiLai - soTinThieu);
+                this.guiLaiTinTu(chiSo);
             }
         } else if (loai == 2) {
             this.heThongXong = true;
@@ -224,8 +256,11 @@ implements IVXLPhien {
 
     public void datLoaiKhach(VXLTinNhan mss) throws IOException {
         this.loaiKhach = mss.boDoc().readByte();
-        this.mucPhong = mss.boDoc().readByte();
-        System.out.println(mucPhong);
+        int mucPhong = Byte.toUnsignedInt(mss.boDoc().readByte());
+        if (mucPhong < 1 || mucPhong > VXLQuanLyMayChu.dataSize.length) {
+            throw new IllegalArgumentException("Client resource version is invalid: " + mucPhong);
+        }
+        this.mucPhong = (byte)mucPhong;
         this.phienBan = mss.docUTF(32, "phien ban");
         ((VXLDichVuGame)this.dichVu).hienTaiXuong();
     }
@@ -244,14 +279,19 @@ implements IVXLPhien {
     public void taiXuong() throws IOException {
         VXLDichVuGame sv = (VXLDichVuGame)this.dichVu;
         sv.taiXuong();
-        File[] files = new File("res/data/" + this.mucPhong + "/").listFiles();
+        File[] files = new File("res/data/" + this.mucPhong + "/").listFiles(File::isFile);
         if (files == null) {
             return;
         }
+        java.util.Arrays.sort(files, java.util.Comparator.comparing(File::getName));
         for (File file : files) {
             try (FileInputStream fis = new FileInputStream(file);){
                 byte[] duLieu = fis.readAllBytes();
-                sv.guiTep(file.getName().replaceAll(".png", ""), duLieu);
+                String ten = file.getName();
+                if (ten.toLowerCase().endsWith(".png")) {
+                    ten = ten.substring(0, ten.length() - 4);
+                }
+                sv.guiTep(ten, duLieu);
             }
         }
     }
@@ -281,12 +321,16 @@ implements IVXLPhien {
 
     @Override
     public void guiTin(VXLTinNhan tin) {
-        if (this.vResendMessage.size() < 200) {
-            if (!VXLPhien.laTinDacBiet(tin)) {
+        if (tin == null || !this.kichHoat) {
+            return;
+        }
+        if (!VXLPhien.laTinDacBiet(tin)) {
+            synchronized (this.vResendMessage) {
+                if (this.vResendMessage.size() >= MAX_RESEND_MESSAGES) {
+                    this.vResendMessage.remove(0);
+                }
                 this.vResendMessage.add(tin);
             }
-        } else {
-            this.vResendMessage.removeFirst();
         }
         this.dayTin(tin);
     }
@@ -298,7 +342,7 @@ implements IVXLPhien {
     }
 
     private static boolean laTinDacBiet(VXLTinNhan tin) {
-        return tin.layLenh() == -27 || tin.layLenh() == -127 || tin.layLenh() == -98 || tin.layLenh() == -102;
+        return tin != null && (tin.layLenh() == -27 || tin.layLenh() == -127 || tin.layLenh() == -98 || tin.layLenh() == -102);
     }
 
     private boolean laTinLon(byte cmd) {
@@ -326,7 +370,7 @@ implements IVXLPhien {
     }
 
     @Override
-    public void close() {
+    public synchronized void close() {
         if (!this.kichHoat) {
             return;
         }
@@ -334,7 +378,9 @@ implements IVXLPhien {
         Count count = new Count();
         count.svReceived_clSended = this.svReceived_clSended;
         count.svSended_clReceived = this.svSended_clReceived;
-        count.vResendMessage = new ArrayList<VXLTinNhan>(this.vResendMessage);
+        synchronized (this.vResendMessage) {
+            count.vResendMessage = new ArrayList<VXLTinNhan>(this.vResendMessage);
+        }
         if (this.maPhien != null) {
             String closedSessionId = this.maPhien;
             sessions.put(closedSessionId, count);
@@ -432,6 +478,10 @@ implements IVXLPhien {
     }
 
     private void batGiuKetNoi() {
+        if (this.tacVuGiuKetNoi != null) {
+            this.tacVuGiuKetNoi.cancel(false);
+            this.tacVuGiuKetNoi = null;
+        }
         if (this.kenh != null && this.kenh.eventLoop() != null) {
             this.tacVuGiuKetNoi = this.kenh.eventLoop().scheduleAtFixedRate(() -> {
                 if (this.dangKetNoi()) {
@@ -471,9 +521,14 @@ implements IVXLPhien {
     }
 
     public void guiLaiTinTu(int chiSo) {
+        List<VXLTinNhan> tinCanGuiLai;
+        synchronized (this.vResendMessage) {
+            int chiSoAnToan = Math.max(0, Math.min(chiSo, this.vResendMessage.size()));
+            tinCanGuiLai = new ArrayList<VXLTinNhan>(this.vResendMessage.subList(chiSoAnToan, this.vResendMessage.size()));
+            this.vResendMessage.clear();
+        }
         try {
-            for (int i = chiSo; i < this.vResendMessage.size(); ++i) {
-                VXLTinNhan tin = this.vResendMessage.get(i);
+            for (VXLTinNhan tin : tinCanGuiLai) {
                 this.dayTin(tin);
             }
             this.guiMaPhien(2);
@@ -481,7 +536,6 @@ implements IVXLPhien {
         catch (Exception ex) {
             ex.printStackTrace();
         }
-        this.vResendMessage.clear();
     }
 
     public void guiMaPhien(int loai) {
@@ -497,8 +551,8 @@ implements IVXLPhien {
                 tin.boGhi().writeUTF(this.maPhien);
                 tin.boGhi().writeInt(this.svReceived_clSended);
                 tin.boGhi().writeInt(this.svSended_clReceived);
-                this.dayTin(tin);
             }
+            this.dayTin(tin);
         }
         catch (IOException ex) {
             ex.printStackTrace();
@@ -542,13 +596,14 @@ implements IVXLPhien {
         this.dongTin();
     }
 
-    public void dongTin() {
-        if (this.kichHoat) {
-            if (this.boXuLyTin != null) {
-                this.boXuLyTin.khiMatKetNoi();
-            }
-            this.close();
+    public synchronized void dongTin() {
+        if (!this.kichHoat) {
+            return;
         }
+        if (this.boXuLyTin != null) {
+            this.boXuLyTin.khiMatKetNoi();
+        }
+        this.close();
     }
 
     private static class Count {

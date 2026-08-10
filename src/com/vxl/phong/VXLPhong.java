@@ -7,6 +7,12 @@ public class VXLPhong {
     public final VXLChoDau[] banChos;
 
     public VXLPhong(int ma, int boardCount, byte loai, byte maxPlayers, byte maBanDo) {
+        if (boardCount <= 0) {
+            throw new IllegalArgumentException("boardCount must be positive.");
+        }
+        if (maxPlayers <= 0) {
+            throw new IllegalArgumentException("maxPlayers must be positive.");
+        }
         this.ma = (byte)ma;
         this.loai = loai;
         this.ten = "Phòng " + (ma + 1);
