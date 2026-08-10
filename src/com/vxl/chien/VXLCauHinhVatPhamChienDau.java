@@ -75,7 +75,7 @@ public final class VXLCauHinhVatPhamChienDau {
             VAT_LY_TRUNG_BINH_NHAY_GIO, false, false, 60, 120);
     private static final VXLHoSoDan DAN_CAPTAIN = new VXLHoSoDan("Captain", (byte)21,
             VXLHoSoDan.KieuBan.QUAY_VE, 1, 1, 0D,
-            VAT_LY_QUAY_VE_IT_GIO, true, true, 100, 100, QUAY_VE_CAPTAIN);
+            VAT_LY_QUAY_VE_IT_GIO, false, true, 100, 200, QUAY_VE_CAPTAIN);
     private static final VXLHoSoDan DAN_WINTER_SOLDIER = new VXLHoSoDan("Winter Soldier", (byte)80,
             VXLHoSoDan.KieuBan.DAN_KEP, 2, 2, 3D,
             VAT_LY_XUYEN_NANG, true, false, 60, 120);
@@ -243,7 +243,7 @@ public final class VXLCauHinhVatPhamChienDau {
     }
 
     public static int layTranPhanTramSatThuong(byte loaiDan, byte avenger) {
-        return 100;
+        return Byte.toUnsignedInt(avenger) == 5 ? 200 : 100;
     }
 
     public static int laySoVienGaySatThuong(byte loaiDan, byte chiMang, byte avenger) {
@@ -279,7 +279,7 @@ public final class VXLCauHinhVatPhamChienDau {
     public static int tinhSatThuongNoTaiViTri(short[][] cacDuongX, short[][] cacDuongY,
             short mucTieuX, short mucTieuY, byte loaiDan, byte avenger,
             int satThuongMoiVien, int tranSatThuong) {
-        if (Byte.toUnsignedInt(loaiDan) == 21 && avenger == 0) {
+        if (Byte.toUnsignedInt(loaiDan) == 21 && (avenger == 0 || avenger == 5)) {
             return 0;
         }
         int banKinh = layBanKinhNo(loaiDan, avenger);

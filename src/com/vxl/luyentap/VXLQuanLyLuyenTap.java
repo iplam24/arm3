@@ -269,7 +269,9 @@ public final class VXLQuanLyLuyenTap {
                         this.phatBanSieuCao, this.phatBanKyNangDacBiet) / 100);
         int satThuongMoiVien = VXLCauHinhVatPhamChienDau.tinhSatThuongMoiVien(
                 satThuongCoBan, loaiDan, chiMang, this.nguoiChoi.avenger);
-        int tranSatThuong = satThuongCoBan;
+        int tranSatThuong = satThuongCoBan
+                * VXLCauHinhVatPhamChienDau.layTranPhanTramSatThuong(
+                        loaiDan, this.nguoiChoi.avenger) / 100;
         this.satThuongNguocNguoiChoi = VXLCauHinhVatPhamChienDau.tinhSatThuongNoTaiViTri(
                 phatBan.duongX, phatBan.duongY, this.nguoiChoiX, this.nguoiChoiY,
                 loaiDan, this.nguoiChoi.avenger, satThuongMoiVien, tranSatThuong);
@@ -461,7 +463,10 @@ public final class VXLQuanLyLuyenTap {
             int satThuongMoiVien = VXLCauHinhVatPhamChienDau.tinhSatThuongMoiVien(
                     satThuongGoc, this.loaiDanPhatBanNguoiChoi,
                     (byte)(this.phatBanKyNangDacBiet ? 1 : 0), this.nguoiChoi.avenger);
-            satThuongGoc = Math.min(satThuongGoc,
+            int tranSatThuong = satThuongGoc
+                    * VXLCauHinhVatPhamChienDau.layTranPhanTramSatThuong(
+                            this.loaiDanPhatBanNguoiChoi, this.nguoiChoi.avenger) / 100;
+            satThuongGoc = Math.min(tranSatThuong,
                     satThuongMoiVien * Math.max(1, this.soVienTrungPhienQuan));
             int satThuong = VXLTinhSatThuong.tinhSauGiap(satThuongGoc, this.giapPhienQuan);
             if (this.khienPhienQuan > 0) {

@@ -317,7 +317,9 @@ public class VXLQuanLyChien {
         int satThuongCoBan = VXLTinhSatThuong.tinhPhatBan(nguoiBan.tanCong, luc, heSoTong);
         int satThuongMoiVien = VXLCauHinhVatPhamChienDau.tinhSatThuongMoiVien(
                 satThuongCoBan, loaiDan, chiMang, avengerDan);
-        int tranSatThuong = satThuongCoBan;
+        int tranSatThuong = satThuongCoBan
+                * VXLCauHinhVatPhamChienDau.layTranPhanTramSatThuong(loaiDan, avengerDan)
+                / 100;
         int[] daPhanBoTheoMucTieu = new int[this.chienBinhs.length];
         for (int i = 0; i < cacChiSoMucTieu.length; i++) {
             int chiSoMucTieu = cacChiSoMucTieu[i];

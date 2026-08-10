@@ -48,7 +48,6 @@ public final class VXLHeThongDan {
                 for (int mucTieuTrung : cacMucTieu) {
                     if (mucTieuTrung == mucTieu) {
                         soVien++;
-                        break;
                     }
                 }
             }
@@ -408,8 +407,6 @@ public final class VXLHeThongDan {
         double xHienTai = batDauX + Math.cos(radian) * KHOANG_CACH_DAU_SUNG;
         double yHienTai = batDauY - DO_CAO_DAU_SUNG
                 - Math.sin(radian) * KHOANG_CACH_DAU_SUNG;
-        double xChu = batDauX;
-        double yChu = batDauY - DO_CAO_DAU_SUNG;
         VXLHoSoDan.Tarzan tarzan = hoSoDan.tarzan() != null
                 ? hoSoDan.tarzan()
                 : new VXLHoSoDan.Tarzan(45D, 4.2D, 12D, 165D, 38D, 180D, 72);
@@ -425,8 +422,6 @@ public final class VXLHeThongDan {
                 : tarzan.tongGocXoayNguoc());
         double quangDuongDaBay = 0D;
         double tongGocDaXoay = 0D;
-        double banKinhAnToanChu = Math.max(48D, tarzan.banKinhAnToanChu());
-        boolean daRaKhoiVungChu = false;
         int doDai = 1;
         java.util.ArrayList<Integer> cacMucTieu = new java.util.ArrayList<>();
         java.util.HashSet<Integer> mucTieuDaTrung = new java.util.HashSet<>();
@@ -453,39 +448,7 @@ public final class VXLHeThongDan {
             double xMoiThuc = xHienTai + vanTocX * dt;
             double yMoiThuc = yHienTai + vanTocY * dt;
             quangDuongDaBay += Math.hypot(xMoiThuc - xHienTai, yMoiThuc - yHienTai);
-            double cachChuX = xMoiThuc - xChu;
-            double cachChuY = yMoiThuc - yChu;
-            double khoangCachChu = Math.hypot(cachChuX, cachChuY);
-            if (!daRaKhoiVungChu && khoangCachChu >= banKinhAnToanChu + 20D) {
-                daRaKhoiVungChu = true;
-            }
-            if (daRaKhoiVungChu && khoangCachChu < banKinhAnToanChu) {
-                double phapTuyenX = khoangCachChu > 0.001D
-                        ? cachChuX / khoangCachChu : 1D;
-                double phapTuyenY = khoangCachChu > 0.001D
-                        ? cachChuY / khoangCachChu : 0D;
-                xMoiThuc = xChu + phapTuyenX * banKinhAnToanChu;
-                yMoiThuc = yChu + phapTuyenY * banKinhAnToanChu;
-                double tocDoHienTai = Math.max(1D, Math.hypot(vanTocX, vanTocY));
-                double thanhPhanHuongVao = vanTocX * phapTuyenX + vanTocY * phapTuyenY;
-                if (thanhPhanHuongVao < 0D) {
-                    vanTocX -= thanhPhanHuongVao * phapTuyenX;
-                    vanTocY -= thanhPhanHuongVao * phapTuyenY;
-                }
-                double tiepTuyenX = -phapTuyenY;
-                double tiepTuyenY = phapTuyenX;
-                if (vanTocX * tiepTuyenX + vanTocY * tiepTuyenY < 0D) {
-                    tiepTuyenX = -tiepTuyenX;
-                    tiepTuyenY = -tiepTuyenY;
-                }
-                vanTocX += tiepTuyenX * tocDoHienTai * 0.35D
-                        + phapTuyenX * tocDoHienTai * 0.20D;
-                vanTocY += tiepTuyenY * tocDoHienTai * 0.35D
-                        + phapTuyenY * tocDoHienTai * 0.20D;
-                double tocDoSauLech = Math.max(0.001D, Math.hypot(vanTocX, vanTocY));
-                vanTocX = vanTocX / tocDoSauLech * tocDoHienTai;
-                vanTocY = vanTocY / tocDoSauLech * tocDoHienTai;
-            }
+
             int xMoi = (int)Math.round(xMoiThuc);
             int yMoi = (int)Math.round(yMoiThuc);
             boolean raNgoai = xMoi < 0 || xMoi >= this.banDo.getWidth()
@@ -519,10 +482,9 @@ public final class VXLHeThongDan {
             VXLHoSoDan hoSoDan, byte gioX, byte gioY, int mucTieuBoQua, double buocThoiGian,
             int soDiemToiDa) {
         int gioiHanDiem = Math.max(24, soDiemToiDa);
+        int gioiHanBayRa = Math.max(12, gioiHanDiem / 2);
         int lucBan = Math.max(8, Byte.toUnsignedInt(luc));
         double dt = Math.max(0.1D, buocThoiGian);
-        short[] xs = new short[gioiHanDiem];
-        short[] ys = new short[gioiHanDiem];
         double radian = Math.toRadians(goc);
         double trongLuong = Math.max(0.25D, hoSoDan.trongLuong());
         double tocDoBan = lucBan * HE_SO_TOC_DO / Math.sqrt(trongLuong);
@@ -544,83 +506,242 @@ public final class VXLHeThongDan {
         double tamBayToiDa = Math.max(60D,
                 quayVe.tamBayCoBan() + lucBan * quayVe.tamBayTheoLuc());
         double tocDoQuayVe = Math.max(10D, tocDoBan * quayVe.heSoTocDoQuayVe());
-        double gocXoayToiDa = Math.toRadians(Math.max(1D,
-                quayVe.tocDoXoayDoMoiGiay())) * dt;
         double quangDuongBayRa = 0D;
         double thoiGianBayRa = 0D;
-        boolean dangQuayVe = false;
-        int doDai = 1;
+        boolean chamDiaHinh = false;
+        boolean raNgoaiBanDo = false;
+        java.util.ArrayList<Short> xs = new java.util.ArrayList<>();
+        java.util.ArrayList<Short> ys = new java.util.ArrayList<>();
         java.util.ArrayList<Integer> cacMucTieu = new java.util.ArrayList<>();
-        java.util.HashSet<Integer> mucTieuDaTrung = new java.util.HashSet<>();
+        java.util.HashSet<Integer> mucTieuDaTrungBayRa = new java.util.HashSet<>();
+        java.util.HashSet<Integer> mucTieuDaTrungQuayVe = new java.util.HashSet<>();
         int xTruoc = (int)Math.round(xHienTai);
         int yTruoc = (int)Math.round(yHienTai);
-        xs[0] = (short)xTruoc;
-        ys[0] = (short)yTruoc;
-        for (int i = 1; i < gioiHanDiem; i++) {
-            if (dangQuayVe) {
-                double denChuX = xThuVe - xHienTai;
-                double denChuY = yThuVe - yHienTai;
-                double khoangCachDenChu = Math.hypot(denChuX, denChuY);
-                if (khoangCachDenChu <= quayVe.banKinhThuVe()) {
-                    xs[doDai] = (short)Math.round(xThuVe);
-                    ys[doDai] = (short)Math.round(yThuVe);
-                    doDai++;
-                    break;
-                }
-                double gocHienTai = Math.atan2(vanTocY, vanTocX);
-                double gocMucTieu = Math.atan2(denChuY, denChuX);
-                double gocMoi = xoayGocToi(gocHienTai, gocMucTieu, gocXoayToiDa);
-                vanTocX = Math.cos(gocMoi) * tocDoQuayVe;
-                vanTocY = Math.sin(gocMoi) * tocDoQuayVe;
-            } else {
-                vanTocX += giaTocGioX * dt;
-                vanTocY += (giaTocTrongLuc + giaTocGioY) * dt;
-            }
+        xs.add((short)xTruoc);
+        ys.add((short)yTruoc);
+        for (int i = 1; i < gioiHanBayRa; i++) {
+            vanTocX += giaTocGioX * dt;
+            vanTocY += (giaTocTrongLuc + giaTocGioY) * dt;
             double xMoiThuc = xHienTai + vanTocX * dt;
             double yMoiThuc = yHienTai + vanTocY * dt;
-            if (!dangQuayVe) {
-                quangDuongBayRa += Math.hypot(xMoiThuc - xHienTai, yMoiThuc - yHienTai);
-                thoiGianBayRa += dt;
-            }
+            quangDuongBayRa += Math.hypot(xMoiThuc - xHienTai, yMoiThuc - yHienTai);
+            thoiGianBayRa += dt;
             int xMoi = (int)Math.round(xMoiThuc);
             int yMoi = (int)Math.round(yMoiThuc);
-            boolean raNgoai = xMoi < 0 || xMoi >= this.banDo.getWidth()
+            raNgoaiBanDo = xMoi < 0 || xMoi >= this.banDo.getWidth()
                     || yMoi < -600 || yMoi >= this.banDo.getHeight();
             xMoi = Math.max(0, Math.min(this.banDo.getWidth() - 1, xMoi));
             yMoi = Math.max(-600, Math.min(this.banDo.getHeight() - 1, yMoi));
             KetQuaVaCham vaCham = this.timVaChamTrenDoan(xTruoc, yTruoc, xMoi, yMoi,
-                    hoSoDan.xuyenDiaHinh(),
-                    hoSoDan.xuyenNguoi(), mucTieuBoQua, mucTieuDaTrung, cacMucTieu);
+                    false, true, mucTieuBoQua, mucTieuDaTrungBayRa, cacMucTieu);
             if (vaCham != null) {
                 xMoi = vaCham.x;
                 yMoi = vaCham.y;
+                chamDiaHinh = true;
             }
-            xs[doDai] = (short)xMoi;
-            ys[doDai] = (short)yMoi;
-            doDai++;
-            if (raNgoai || vaCham != null) {
+            xs.add((short)xMoi);
+            ys.add((short)yMoi);
+            if (raNgoaiBanDo || chamDiaHinh) {
                 break;
             }
             xHienTai = xMoiThuc;
             yHienTai = yMoiThuc;
             xTruoc = xMoi;
             yTruoc = yMoi;
-            if (!dangQuayVe && (quangDuongBayRa >= tamBayToiDa
-                    || thoiGianBayRa >= quayVe.thoiGianBayRaToiDa())) {
-                dangQuayVe = true;
+            if (quangDuongBayRa >= tamBayToiDa
+                    || thoiGianBayRa >= quayVe.thoiGianBayRaToiDa()) {
+                break;
             }
         }
-        return new QuyDao(java.util.Arrays.copyOf(xs, Math.max(1, doDai)),
-                java.util.Arrays.copyOf(ys, Math.max(1, doDai)),
+
+        int doDaiBayRa = xs.size();
+        boolean daTaoVongVe = false;
+        if (!chamDiaHinh && !raNgoaiBanDo) {
+            daTaoVongVe = this.themVongQuayVeMuon(xs, ys, xThuVe, yThuVe,
+                    tocDoQuayVe * dt,
+                    Math.toRadians(quayVe.tocDoXoayDoMoiGiay()) * dt,
+                    gioiHanDiem, mucTieuBoQua, mucTieuDaTrungQuayVe, cacMucTieu);
+        }
+        if (!daTaoVongVe) {
+            this.themDuongQuayNguocMem(xs, ys, doDaiBayRa, xThuVe, yThuVe,
+                    tocDoQuayVe * dt, gioiHanDiem, mucTieuBoQua,
+                    mucTieuDaTrungQuayVe, cacMucTieu);
+        }
+        return new QuyDao(chuyenDanhSachDiem(xs), chuyenDanhSachDiem(ys),
                 chuyenDanhSachMucTieu(cacMucTieu));
     }
 
-    private static double xoayGocToi(double gocHienTai, double gocMucTieu,
-            double gocXoayToiDa) {
-        double doLech = Math.atan2(Math.sin(gocMucTieu - gocHienTai),
-                Math.cos(gocMucTieu - gocHienTai));
-        double doXoay = Math.max(-gocXoayToiDa, Math.min(gocXoayToiDa, doLech));
-        return gocHienTai + doXoay;
+    private void themDuongQuayNguocMem(java.util.ArrayList<Short> xs,
+            java.util.ArrayList<Short> ys, int doDaiBayRa, double xThuVe, double yThuVe,
+            double buocDiem, int gioiHanDiem, int mucTieuBoQua,
+            java.util.Set<Integer> mucTieuDaTrung, java.util.List<Integer> cacMucTieu) {
+        java.util.ArrayList<Double> duongNguocX = new java.util.ArrayList<>();
+        java.util.ArrayList<Double> duongNguocY = new java.util.ArrayList<>();
+        duongNguocX.add((double)xs.get(xs.size() - 1));
+        duongNguocY.add((double)ys.get(ys.size() - 1));
+        for (int chiSo = doDaiBayRa - 2; chiSo >= 0; chiSo--) {
+            duongNguocX.add((double)xs.get(chiSo));
+            duongNguocY.add((double)ys.get(chiSo));
+        }
+        if (Math.hypot(duongNguocX.get(duongNguocX.size() - 1) - xThuVe,
+                duongNguocY.get(duongNguocY.size() - 1) - yThuVe) > 0.5D) {
+            duongNguocX.add(xThuVe);
+            duongNguocY.add(yThuVe);
+        }
+        double[] tongDoDai = new double[duongNguocX.size()];
+        for (int chiSo = 1; chiSo < duongNguocX.size(); chiSo++) {
+            tongDoDai[chiSo] = tongDoDai[chiSo - 1]
+                    + Math.hypot(duongNguocX.get(chiSo) - duongNguocX.get(chiSo - 1),
+                            duongNguocY.get(chiSo) - duongNguocY.get(chiSo - 1));
+        }
+        double doDaiToanBo = tongDoDai[tongDoDai.length - 1];
+        if (doDaiToanBo <= 0.001D) {
+            return;
+        }
+        int xTruoc = xs.get(xs.size() - 1);
+        int yTruoc = ys.get(ys.size() - 1);
+        if (xs.size() < gioiHanDiem - 1) {
+            xs.add((short)xTruoc);
+            ys.add((short)yTruoc);
+        }
+        double buocOnDinh = Math.max(6D, Math.min(12D, buocDiem * 0.65D));
+        double quangDuongDaDi = 0D;
+        int chiSoDoan = 1;
+        int khungTangToc = 0;
+        while (xs.size() < gioiHanDiem && quangDuongDaDi < doDaiToanBo) {
+            int soDiemConLai = Math.max(1, gioiHanDiem - xs.size());
+            double buocCanThiet = (doDaiToanBo - quangDuongDaDi) / soDiemConLai;
+            double buocTangToc = Math.min(buocOnDinh, 2D + khungTangToc * 2D);
+            quangDuongDaDi = Math.min(doDaiToanBo,
+                    quangDuongDaDi + Math.max(buocTangToc, buocCanThiet));
+            while (chiSoDoan < tongDoDai.length - 1
+                    && tongDoDai[chiSoDoan] < quangDuongDaDi) {
+                chiSoDoan++;
+            }
+            int chiSoTruoc = Math.max(0, chiSoDoan - 1);
+            double doDaiDoan = tongDoDai[chiSoDoan] - tongDoDai[chiSoTruoc];
+            double tiLe = doDaiDoan <= 0.0001D ? 0D
+                    : (quangDuongDaDi - tongDoDai[chiSoTruoc]) / doDaiDoan;
+            int xMoi = (int)Math.round(duongNguocX.get(chiSoTruoc)
+                    + (duongNguocX.get(chiSoDoan) - duongNguocX.get(chiSoTruoc)) * tiLe);
+            int yMoi = (int)Math.round(duongNguocY.get(chiSoTruoc)
+                    + (duongNguocY.get(chiSoDoan) - duongNguocY.get(chiSoTruoc)) * tiLe);
+            this.timVaChamTrenDoan(xTruoc, yTruoc, xMoi, yMoi, true, true,
+                    mucTieuBoQua, mucTieuDaTrung, cacMucTieu);
+            xs.add((short)xMoi);
+            ys.add((short)yMoi);
+            xTruoc = xMoi;
+            yTruoc = yMoi;
+            khungTangToc++;
+        }
+        xs.set(xs.size() - 1, (short)Math.round(xThuVe));
+        ys.set(ys.size() - 1, (short)Math.round(yThuVe));
+    }
+
+    private boolean themVongQuayVeMuon(java.util.ArrayList<Short> xs,
+            java.util.ArrayList<Short> ys, double xThuVe, double yThuVe, double buocDiem,
+            double gocXoayToiDa, int gioiHanDiem, int mucTieuBoQua,
+            java.util.Set<Integer> mucTieuDaTrung, java.util.List<Integer> cacMucTieu) {
+        if (xs.size() < 2 || xs.size() >= gioiHanDiem - 1) {
+            return false;
+        }
+        int chiSoCuoi = xs.size() - 1;
+        double incomingX = xs.get(chiSoCuoi) - xs.get(chiSoCuoi - 1);
+        double incomingY = ys.get(chiSoCuoi) - ys.get(chiSoCuoi - 1);
+        if (Math.hypot(incomingX, incomingY) < 0.001D) {
+            return false;
+        }
+        double buocOnDinh = Math.max(6D, Math.min(12D, buocDiem * 0.65D));
+        double gocXoayOnDinh = Math.max(Math.toRadians(8D),
+                Math.min(Math.toRadians(18D), gocXoayToiDa));
+        int soDiemConLai = gioiHanDiem - xs.size();
+        int huongUonLen = incomingX >= 0D ? -1 : 1;
+        short[][] vongVe = this.taoVongQuayVeTheoHuong(xs.get(chiSoCuoi),
+                ys.get(chiSoCuoi), incomingX, incomingY, xThuVe, yThuVe,
+                buocOnDinh, gocXoayOnDinh, huongUonLen, soDiemConLai);
+        if (vongVe == null) {
+            vongVe = this.taoVongQuayVeTheoHuong(xs.get(chiSoCuoi),
+                    ys.get(chiSoCuoi), incomingX, incomingY, xThuVe, yThuVe,
+                    buocOnDinh, gocXoayOnDinh, -huongUonLen, soDiemConLai);
+        }
+        if (vongVe == null) {
+            return false;
+        }
+        int xTruoc = xs.get(chiSoCuoi);
+        int yTruoc = ys.get(chiSoCuoi);
+        for (int chiSo = 0; chiSo < vongVe[0].length; chiSo++) {
+            int xMoi = vongVe[0][chiSo];
+            int yMoi = vongVe[1][chiSo];
+            this.timVaChamTrenDoan(xTruoc, yTruoc, xMoi, yMoi, true, true,
+                    mucTieuBoQua, mucTieuDaTrung, cacMucTieu);
+            xs.add((short)xMoi);
+            ys.add((short)yMoi);
+            xTruoc = xMoi;
+            yTruoc = yMoi;
+        }
+        return true;
+    }
+
+    private short[][] taoVongQuayVeTheoHuong(double xBatDau, double yBatDau,
+            double incomingX, double incomingY, double xThuVe, double yThuVe,
+            double buocDiem, double gocXoayToiDa, int huongUonBanDau,
+            int soDiemToiDa) {
+        java.util.ArrayList<Short> duongX = new java.util.ArrayList<>();
+        java.util.ArrayList<Short> duongY = new java.util.ArrayList<>();
+        double xHienTai = xBatDau;
+        double yHienTai = yBatDau;
+        double gocHienTai = Math.atan2(incomingY, incomingX);
+        for (int chiSo = 0; chiSo < soDiemToiDa; chiSo++) {
+            double denChuX = xThuVe - xHienTai;
+            double denChuY = yThuVe - yHienTai;
+            double khoangCachDenChu = Math.hypot(denChuX, denChuY);
+            if (khoangCachDenChu <= buocDiem) {
+                duongX.add((short)Math.round(xThuVe));
+                duongY.add((short)Math.round(yThuVe));
+                return new short[][]{chuyenDanhSachDiem(duongX), chuyenDanhSachDiem(duongY)};
+            }
+            double gocMucTieu = Math.atan2(denChuY, denChuX);
+            double doLech = Math.atan2(Math.sin(gocMucTieu - gocHienTai),
+                    Math.cos(gocMucTieu - gocHienTai));
+            if (Math.abs(doLech) > gocXoayToiDa) {
+                int huongXoay = doLech >= 0D ? 1 : -1;
+                if (chiSo == 0 && Math.PI - Math.abs(doLech) <= gocXoayToiDa * 2D) {
+                    huongXoay = huongUonBanDau;
+                }
+                gocHienTai += huongXoay * gocXoayToiDa;
+            } else {
+                gocHienTai = gocMucTieu;
+            }
+            double xMoiThuc = xHienTai + Math.cos(gocHienTai) * buocDiem;
+            double yMoiThuc = yHienTai + Math.sin(gocHienTai) * buocDiem;
+            int xMoi = (int)Math.round(xMoiThuc);
+            int yMoi = (int)Math.round(yMoiThuc);
+            if (xMoi < 0 || xMoi >= this.banDo.getWidth()
+                    || yMoi < -600 || yMoi >= this.banDo.getHeight()
+                    || this.doanChamDiaHinh((int)Math.round(xHienTai),
+                            (int)Math.round(yHienTai), xMoi, yMoi)) {
+                return null;
+            }
+            duongX.add((short)xMoi);
+            duongY.add((short)yMoi);
+            xHienTai = xMoiThuc;
+            yHienTai = yMoiThuc;
+        }
+        return null;
+    }
+
+    private boolean doanChamDiaHinh(int x1, int y1, int x2, int y2) {
+        int dx = x2 - x1;
+        int dy = y2 - y1;
+        int soBuoc = Math.max(1, Math.max(Math.abs(dx), Math.abs(dy)));
+        for (int buoc = 1; buoc <= soBuoc; buoc++) {
+            int x = x1 + dx * buoc / soBuoc;
+            int y = y1 + dy * buoc / soBuoc;
+            if (y >= 0 && this.banDo.coVaCham((short)x, (short)y)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private KetQuaVaCham timVaChamTrenDoan(int x1, int y1, int x2, int y2,
@@ -657,6 +778,14 @@ public final class VXLHeThongDan {
         int[] ketQua = new int[cacMucTieu.size()];
         for (int i = 0; i < cacMucTieu.size(); i++) {
             ketQua[i] = cacMucTieu.get(i);
+        }
+        return ketQua;
+    }
+
+    private static short[] chuyenDanhSachDiem(java.util.List<Short> cacDiem) {
+        short[] ketQua = new short[cacDiem.size()];
+        for (int i = 0; i < cacDiem.size(); i++) {
+            ketQua[i] = cacDiem.get(i);
         }
         return ketQua;
     }
