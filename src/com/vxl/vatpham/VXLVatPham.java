@@ -10,6 +10,11 @@ import com.alibaba.fastjson2.JSONObject;
 import java.util.Vector;
 
 public class VXLVatPham {
+    private static final int MA_DANG_DUC_LO = 15;
+    private static final int MA_LO_NGOC = 16;
+    private static final int SO_LO_TOI_DA = 3;
+    private static final long MOT_GIO_MILLIS = 60L * 60L * 1000L;
+
     public VXLMauVatPham mau;
     public int ma;
     public int soLuong;
@@ -68,6 +73,7 @@ public class VXLVatPham {
             }
         }
         this.capNhatThongTinSocket();
+        this.hoanTatDucLoNeuDenHan();
     }
 
     public JSONObject toJSONObject() {
@@ -111,6 +117,24 @@ public class VXLVatPham {
         return tong;
     }
 
+    public Vector layThuocTinhHieuLuc() {
+        Vector thuocTinhs = new Vector();
+        for (Object giaTri : this.itemOptions) {
+            if (!(giaTri instanceof VXLThuocTinhVatPham thuocTinh)
+                    || thuocTinh.optionTemplate == null) {
+                continue;
+            }
+            thuocTinhs.add(new VXLThuocTinhVatPham(
+                    thuocTinh.optionTemplate.ma, thuocTinh.thamSo));
+        }
+        thuocTinhs.addAll(VXLChiSoNgoc.layThuocTinh(this));
+        return thuocTinhs;
+    }
+
+    public int tongThamSoHieuLucTheoMa(int ma) {
+        return this.tongThamSoTheoMa(ma) + VXLChiSoNgoc.tongThamSo(this, ma);
+    }
+
     public void datThamSoTheoMa(int ma, int thamSo) {
         for (int i = 0; i < this.itemOptions.size(); ++i) {
             VXLThuocTinhVatPham thuocTinh = (VXLThuocTinhVatPham)this.itemOptions.get(i);
@@ -129,12 +153,51 @@ public class VXLVatPham {
     }
 
     public boolean themLoTrong() {
-        if (!this.isTypeBody() || this.nSocket >= 3 || this.isSocketing) {
+        if (!this.isTypeBody() || this.nSocket >= SO_LO_TOI_DA || this.isSocketing) {
             return false;
         }
-        this.itemOptions.add(new VXLThuocTinhVatPham(16, 0));
+        this.itemOptions.add(new VXLThuocTinhVatPham(MA_LO_NGOC, 0));
         this.capNhatThongTinSocket();
         return true;
+    }
+
+    public boolean batDauDucLo(long thoiLuongMillis) {
+        if (!this.isTypeBody() || this.nSocket >= SO_LO_TOI_DA || this.isSocketing
+                || thoiLuongMillis <= 0L) {
+            return false;
+        }
+        long ketThucMillis = System.currentTimeMillis() + thoiLuongMillis;
+        long ketThucGiay = ketThucMillis / 1000L;
+        if (ketThucGiay > Integer.MAX_VALUE) {
+            return false;
+        }
+        this.itemOptions.add(new VXLThuocTinhVatPham(MA_DANG_DUC_LO, (int)ketThucGiay));
+        this.capNhatThongTinSocket();
+        return true;
+    }
+
+    public boolean hoanTatDucLoNeuDenHan() {
+        return this.isSocketing && this.socketFinishTime <= System.currentTimeMillis()
+                && this.hoanTatDucLo();
+    }
+
+    public boolean hoanTatDucLoNgay() {
+        return this.isSocketing && this.hoanTatDucLo();
+    }
+
+    public long layThoiGianDucLoConLaiMillis() {
+        if (!this.isSocketing) {
+            return 0L;
+        }
+        return Math.max(0L, this.socketFinishTime - System.currentTimeMillis());
+    }
+
+    public int laySoGioDucLoConLai() {
+        long conLai = this.layThoiGianDucLoConLaiMillis();
+        if (conLai <= 0L) {
+            return 0;
+        }
+        return (int)Math.min(Short.MAX_VALUE, (conLai + MOT_GIO_MILLIS - 1L) / MOT_GIO_MILLIS);
     }
 
     public boolean dinhNgoc(int maNgoc) {
@@ -143,7 +206,7 @@ public class VXLVatPham {
         }
         for (int i = 0; i < this.itemOptions.size(); ++i) {
             VXLThuocTinhVatPham thuocTinh = (VXLThuocTinhVatPham)this.itemOptions.get(i);
-            if (thuocTinh.optionTemplate != null && thuocTinh.optionTemplate.ma == 16
+            if (thuocTinh.optionTemplate != null && thuocTinh.optionTemplate.ma == MA_LO_NGOC
                     && thuocTinh.thamSo == 0) {
                 thuocTinh.thamSo = maNgoc;
                 this.capNhatThongTinSocket();
@@ -157,7 +220,7 @@ public class VXLVatPham {
         java.util.ArrayList<Integer> cacMaNgoc = new java.util.ArrayList<>();
         for (int i = 0; i < this.itemOptions.size(); ++i) {
             VXLThuocTinhVatPham thuocTinh = (VXLThuocTinhVatPham)this.itemOptions.get(i);
-            if (thuocTinh.optionTemplate != null && thuocTinh.optionTemplate.ma == 16
+            if (thuocTinh.optionTemplate != null && thuocTinh.optionTemplate.ma == MA_LO_NGOC
                     && thuocTinh.thamSo > 0) {
                 cacMaNgoc.add(thuocTinh.thamSo);
                 thuocTinh.thamSo = 0;
@@ -171,7 +234,7 @@ public class VXLVatPham {
         java.util.ArrayList<Integer> cacMaNgoc = new java.util.ArrayList<>();
         for (int i = 0; i < this.itemOptions.size(); ++i) {
             VXLThuocTinhVatPham thuocTinh = (VXLThuocTinhVatPham)this.itemOptions.get(i);
-            if (thuocTinh.optionTemplate != null && thuocTinh.optionTemplate.ma == 16
+            if (thuocTinh.optionTemplate != null && thuocTinh.optionTemplate.ma == MA_LO_NGOC
                     && thuocTinh.thamSo > 0) {
                 cacMaNgoc.add(thuocTinh.thamSo);
             }
@@ -219,16 +282,37 @@ public class VXLVatPham {
                     || thuocTinh.optionTemplate == null) {
                 continue;
             }
-            if (thuocTinh.optionTemplate.ma == 15) {
+            if (thuocTinh.optionTemplate.ma == MA_DANG_DUC_LO) {
                 this.isSocketing = true;
                 this.socketFinishTime = (long)thuocTinh.thamSo * 1000L;
-            } else if (thuocTinh.optionTemplate.ma == 16) {
+            } else if (thuocTinh.optionTemplate.ma == MA_LO_NGOC) {
                 this.nSocket++;
                 if (thuocTinh.thamSo != 0) {
                     this.nGem++;
                 }
             }
         }
+    }
+
+    private boolean hoanTatDucLo() {
+        boolean coTienTrinh = false;
+        for (int i = this.itemOptions.size() - 1; i >= 0; --i) {
+            Object giaTri = this.itemOptions.get(i);
+            if (giaTri instanceof VXLThuocTinhVatPham thuocTinh
+                    && thuocTinh.optionTemplate != null
+                    && thuocTinh.optionTemplate.ma == MA_DANG_DUC_LO) {
+                this.itemOptions.remove(i);
+                coTienTrinh = true;
+            }
+        }
+        if (!coTienTrinh) {
+            return false;
+        }
+        if (this.nSocket < SO_LO_TOI_DA) {
+            this.itemOptions.add(new VXLThuocTinhVatPham(MA_LO_NGOC, 0));
+        }
+        this.capNhatThongTinSocket();
+        return true;
     }
 }
 

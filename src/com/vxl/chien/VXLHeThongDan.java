@@ -23,9 +23,15 @@ public final class VXLHeThongDan {
         public final int[] mucTieuTheoQuyDao;
         public final int[][] cacMucTieuTheoQuyDao;
         public final int chiSoTach;
+        public final boolean truotRaNgoaiBanDo;
 
         private KetQuaPhatBan(short[][] duongX, short[][] duongY, int[][] cacMucTieuTheoQuyDao,
                 int chiSoTach) {
+            this(duongX, duongY, cacMucTieuTheoQuyDao, chiSoTach, false);
+        }
+
+        private KetQuaPhatBan(short[][] duongX, short[][] duongY, int[][] cacMucTieuTheoQuyDao,
+                int chiSoTach, boolean truotRaNgoaiBanDo) {
             this.duongX = duongX;
             this.duongY = duongY;
             this.cacMucTieuTheoQuyDao = cacMucTieuTheoQuyDao;
@@ -37,6 +43,7 @@ public final class VXLHeThongDan {
                 }
             }
             this.chiSoTach = chiSoTach;
+            this.truotRaNgoaiBanDo = truotRaNgoaiBanDo;
         }
 
         public int demSoVienTrung(int mucTieu) {
@@ -76,11 +83,17 @@ public final class VXLHeThongDan {
         private final short[] x;
         private final short[] y;
         private final int[] cacMucTieu;
+        private final boolean truotRaNgoaiBanDo;
 
         private QuyDao(short[] x, short[] y, int[] cacMucTieu) {
+            this(x, y, cacMucTieu, false);
+        }
+
+        private QuyDao(short[] x, short[] y, int[] cacMucTieu, boolean truotRaNgoaiBanDo) {
             this.x = x;
             this.y = y;
             this.cacMucTieu = cacMucTieu;
+            this.truotRaNgoaiBanDo = truotRaNgoaiBanDo;
         }
     }
 
@@ -148,7 +161,7 @@ public final class VXLHeThongDan {
             QuyDao nhanVatLao = this.taoQuyDaoNhanVatLao(batDauX, batDauY, goc, luc,
                     mucTieuBoQua, buocThoiGian, soDiemToiDa);
             return new KetQuaPhatBan(new short[][]{nhanVatLao.x}, new short[][]{nhanVatLao.y},
-                    new int[][]{nhanVatLao.cacMucTieu}, -1);
+                    new int[][]{nhanVatLao.cacMucTieu}, -1, nhanVatLao.truotRaNgoaiBanDo);
         }
 
         double[] cacDoLech = Byte.toUnsignedInt(loaiDan) == 2
@@ -185,61 +198,113 @@ public final class VXLHeThongDan {
     private QuyDao taoQuyDaoNhanVatLao(short batDauX, short batDauY, short goc,
             byte luc, int mucTieuBoQua, double buocThoiGian, int soDiemToiDa) {
         int gioiHanDiem = Math.max(80, soDiemToiDa);
-        double dt = Math.max(0.1D, buocThoiGian);
+        double dt = Math.max(0.2D, Math.min(0.35D, buocThoiGian));
         int lucBan = Math.max(8, Byte.toUnsignedInt(luc));
         double radian = Math.toRadians(goc);
-        double buocX = Math.cos(radian) * Math.max(5D, lucBan * HE_SO_TOC_DO) * dt;
-        double buocY = -Math.sin(radian) * Math.max(5D, lucBan * HE_SO_TOC_DO) * dt;
-        double tamBayToiDa = Math.max(90D, 80D + lucBan * 4.5D);
+        double tocDo = Math.max(12D, lucBan * 0.95D);
+        double vanTocX = Math.cos(radian) * tocDo;
+        double vanTocY = -Math.max(8D, Math.abs(Math.sin(radian)) * tocDo);
+        double trongLucHulk = 1.0D;
+        double tamBayToiDa = Math.max(150D, 130D + lucBan * 13D);
         double xHienTai = batDauX;
-        double yHienTai = batDauY - DO_CAO_DAU_SUNG;
-        double quangDuong = 0D;
+        double yHienTai = batDauY;
+        double quangDuongNgang = 0D;
+        boolean daChamGioiHanTamBay = false;
         java.util.ArrayList<Short> xs = new java.util.ArrayList<>();
         java.util.ArrayList<Short> ys = new java.util.ArrayList<>();
         java.util.ArrayList<Integer> cacMucTieu = new java.util.ArrayList<>();
         java.util.HashSet<Integer> mucTieuDaTrung = new java.util.HashSet<>();
-        int xTruoc = (int)Math.round(xHienTai);
-        int yTruoc = (int)Math.round(yHienTai);
-        xs.add((short)xTruoc);
-        ys.add((short)yTruoc);
+        int xTruoc = batDauX;
+        int yTruoc = batDauY;
+        xs.add(batDauX);
+        ys.add(batDauY);
 
-        for (int i = 1; i < gioiHanDiem / 2; i++) {
-            double xMoiThuc = xHienTai + buocX;
-            double yMoiThuc = yHienTai + buocY;
-            quangDuong += Math.hypot(xMoiThuc - xHienTai, yMoiThuc - yHienTai);
+        for (int i = 1; i < gioiHanDiem; i++) {
+            if (daChamGioiHanTamBay) {
+                vanTocX *= 0.72D;
+                if (Math.abs(vanTocX) < 0.25D) {
+                    vanTocX = 0D;
+                }
+            }
+            double xMoiThuc = xHienTai + vanTocX * dt;
+            double yMoiThuc = yHienTai + vanTocY * dt;
+            double doDoiX = Math.abs(xMoiThuc - xHienTai);
+            if (!daChamGioiHanTamBay && quangDuongNgang + doDoiX >= tamBayToiDa) {
+                daChamGioiHanTamBay = true;
+                double phanConLai = Math.max(0D, tamBayToiDa - quangDuongNgang);
+                if (doDoiX > 0D) {
+                    xMoiThuc = xHienTai + (xMoiThuc - xHienTai) * phanConLai / doDoiX;
+                }
+                doDoiX = phanConLai;
+            }
+            quangDuongNgang += doDoiX;
             int xMoi = (int)Math.round(xMoiThuc);
             int yMoi = (int)Math.round(yMoiThuc);
-            boolean raNgoai = xMoi < 0 || xMoi >= this.banDo.getWidth()
-                    || yMoi < -200 || yMoi >= this.banDo.getHeight();
-            xMoi = Math.max(0, Math.min(this.banDo.getWidth() - 1, xMoi));
-            yMoi = Math.max(-200, Math.min(this.banDo.getHeight() - 1, yMoi));
-            KetQuaVaCham vaCham = this.timVaChamTrongBanDoTrenDoan(xTruoc, yTruoc,
-                    xMoi, yMoi, false, false, mucTieuBoQua, mucTieuDaTrung, cacMucTieu);
-            if (vaCham != null) {
-                xMoi = vaCham.x;
-                yMoi = vaCham.y;
+            if (xMoi < 0 || xMoi >= this.banDo.getWidth()) {
+                xMoi = Math.max(0, Math.min(this.banDo.getWidth() - 1, xMoi));
+                yMoi = Math.max(-200, Math.min(this.banDo.getHeight() - 1, yMoi));
+                if (xs.get(xs.size() - 1) != (short)xMoi
+                        || ys.get(ys.size() - 1) != (short)yMoi) {
+                    xs.add((short)xMoi);
+                    ys.add((short)yMoi);
+                }
+                cacMucTieu.clear();
+                int doDaiBayRa = xs.size();
+                for (int chiSo = doDaiBayRa - 2; chiSo >= 0; chiSo--) {
+                    short xVe = xs.get(chiSo);
+                    short yVe = ys.get(chiSo);
+                    if (xs.get(xs.size() - 1) != xVe || ys.get(ys.size() - 1) != yVe) {
+                        xs.add(xVe);
+                        ys.add(yVe);
+                    }
+                }
+                return new QuyDao(chuyenDanhSachDiem(xs), chuyenDanhSachDiem(ys),
+                        new int[0], true);
             }
+            if (yMoi < -200) {
+                yMoi = -200;
+                yMoiThuc = yMoi;
+                vanTocY = Math.max(0D, vanTocY);
+            }
+            if (yMoi >= this.banDo.getHeight()) {
+                yMoi = this.banDo.getHeight() - 1;
+            }
+
+            int doCaoVaCham = vanTocY < 0D ? (int)DO_CAO_DAU_SUNG : 0;
+            int soMucTieuTruoc = cacMucTieu.size();
+            KetQuaVaCham vaCham = this.timVaChamTrongBanDoTrenDoan(xTruoc,
+                    yTruoc - doCaoVaCham, xMoi, yMoi - doCaoVaCham,
+                    false, false, mucTieuBoQua, mucTieuDaTrung, cacMucTieu);
+            if (vaCham != null) {
+                boolean trungMucTieu = cacMucTieu.size() > soMucTieuTruoc;
+                int xDap = vaCham.x;
+                int yVaChamTheoChan = vaCham.y + doCaoVaCham;
+                int yDap;
+                if (trungMucTieu || vanTocY >= 0D) {
+                    yDap = this.banDo.timViTriDat((short)xDap,
+                            (short)Math.max(0, Math.min(this.banDo.getHeight() - 1,
+                                    yVaChamTheoChan)));
+                } else {
+                    xDap = xTruoc;
+                    yDap = yTruoc;
+                }
+                if (xs.get(xs.size() - 1) != (short)xDap
+                        || ys.get(ys.size() - 1) != (short)yDap) {
+                    xs.add((short)xDap);
+                    ys.add((short)yDap);
+                }
+                break;
+            }
+
             if (xs.get(xs.size() - 1) != (short)xMoi || ys.get(ys.size() - 1) != (short)yMoi) {
                 xs.add((short)xMoi);
                 ys.add((short)yMoi);
-            }
-            if (vaCham != null || raNgoai || quangDuong >= tamBayToiDa) {
-                break;
             }
             xHienTai = xMoiThuc;
             yHienTai = yMoiThuc;
             xTruoc = xMoi;
             yTruoc = yMoi;
-        }
-
-        int doDaiBayRa = xs.size();
-        for (int i = doDaiBayRa - 2; i >= 0 && xs.size() < gioiHanDiem; i--) {
-            short xVe = xs.get(i);
-            short yVe = ys.get(i);
-            if (xs.get(xs.size() - 1) != xVe || ys.get(ys.size() - 1) != yVe) {
-                xs.add(xVe);
-                ys.add(yVe);
-            }
+            vanTocY += trongLucHulk * dt;
         }
         return new QuyDao(chuyenDanhSachDiem(xs), chuyenDanhSachDiem(ys),
                 chuyenDanhSachMucTieu(cacMucTieu));

@@ -4,7 +4,9 @@ import com.alibaba.fastjson2.JSONObject;
 import com.vxl.chien.VXLCauHinhVatPhamChienDau;
 import com.vxl.chien.VXLChienBinh;
 import com.vxl.chien.VXLHeThongDan;
+import com.vxl.chien.VXLHoSoDan;
 import com.vxl.chien.VXLTinhSatThuong;
+import com.vxl.loi.VXLQuanLyMayChu;
 import com.vxl.mang.VXLTinNhan;
 import com.vxl.mohinh.VXLNguoiChoi;
 import com.vxl.vatpham.VXLVatPham;
@@ -26,7 +28,14 @@ public final class VXLQuanLyLuyenTap {
     private static final short NON_PHIEN_QUAN = 159;
     private static final short CANH_PHIEN_QUAN = 160;
     private static final short VU_KHI_PHIEN_QUAN = 27;
+    private static final int KHOANG_BAY_PHIEN_QUAN = 280;
+    private static final int LE_BIEN_BAY_PHIEN_QUAN = 48;
+    private static final int BUOC_TIM_DIEM_DAP = 12;
+    private static final int NUA_RONG_THAN_PHIEN_QUAN = 7;
+    private static final int CHIEU_CAO_THAN_PHIEN_QUAN = 34;
     private static final long TRE_CHUAN_BI_DAN_BOT = 450L;
+    private static final long TRE_BAY_PHIEN_QUAN_TOI_THIEU = 800L;
+    private static final long TRE_BAY_PHIEN_QUAN_TOI_DA = 2000L;
     private static final long THOI_GIAN_MOI_DIEM_DAN_BOT = 22L;
     private static final long TRE_SAU_VA_CHAM_DAN_BOT = 700L;
     private static final long TRE_KET_THUC_DAN_BOT_TOI_THIEU = 1700L;
@@ -185,8 +194,9 @@ public final class VXLQuanLyLuyenTap {
                     QUAN_PHIEN_QUAN, AO_PHIEN_QUAN, NON_PHIEN_QUAN,
                     CANH_PHIEN_QUAN, vuKhiPhienQuan, (byte)0, this.nguoiChoi.ma);
             this.nguoiChoi.dichVu.guiBatDauLuyenTap(maBanDo, vuKhiNguoiChoi,
-                    this.mauNguoiChoi, this.phienQuanX, this.phienQuanY,
-                    this.mauPhienQuan, this.boVuKhiPhienQuanTrongTran);
+                    this.mauNguoiChoi, this.chiSoNguoiChoi.layTamDiChuyen(50),
+                    this.phienQuanX, this.phienQuanY, this.mauPhienQuan,
+                    this.boVuKhiPhienQuanTrongTran);
         }
         catch (Exception ex) {
             this.resetTrangThai();
@@ -273,9 +283,10 @@ public final class VXLQuanLyLuyenTap {
         int tranSatThuong = satThuongCoBan
                 * VXLCauHinhVatPhamChienDau.layTranPhanTramSatThuong(
                         loaiDan, this.nguoiChoi.avenger) / 100;
-        this.satThuongNguocNguoiChoi = VXLCauHinhVatPhamChienDau.tinhSatThuongNoTaiViTri(
-                phatBan.duongX, phatBan.duongY, this.nguoiChoiX, this.nguoiChoiY,
-                loaiDan, this.nguoiChoi.avenger, satThuongMoiVien, tranSatThuong);
+        this.satThuongNguocNguoiChoi = phatBan.truotRaNgoaiBanDo ? 0
+                : VXLCauHinhVatPhamChienDau.tinhSatThuongNoTaiViTri(
+                        phatBan.duongX, phatBan.duongY, this.nguoiChoiX, this.nguoiChoiY,
+                        loaiDan, this.nguoiChoi.avenger, satThuongMoiVien, tranSatThuong);
         this.duKienTrungPhienQuan = this.phienQuanDangBiBan >= 0;
         this.dangChoKetThucPhatBan = true;
         this.choKyNangDacBiet = false;
@@ -292,7 +303,27 @@ public final class VXLQuanLyLuyenTap {
                 (byte)(sieuCaoTrungMucTieu ? 1 : 0),
                 sieuCaoTrungMucTieu ? diemSieuCao.x() : (short)-1,
                 sieuCaoTrungMucTieu ? diemSieuCao.y() : (short)-1);
+        this.capNhatViTriHulkSauPhatBan(loaiDan, this.nguoiChoi.avenger, phatBan);
         this.lapDuPhongPhatBan(this.duKienTrungPhienQuan, loaiDan == 80 ? 3000L : 10000L);
+    }
+
+    private void capNhatViTriHulkSauPhatBan(byte loaiDan, byte avenger,
+            VXLHeThongDan.KetQuaPhatBan phatBan) {
+        if (phatBan == null || phatBan.duongX.length == 0 || phatBan.duongY.length == 0
+                || phatBan.duongX[0].length == 0 || phatBan.duongY[0].length == 0
+                || VXLCauHinhVatPhamChienDau.layHoSoDan(loaiDan,
+                        avenger).kieuBan() != VXLHoSoDan.KieuBan.NHAN_VAT_LAO) {
+            return;
+        }
+        int chiSoCuoi = Math.min(phatBan.duongX[0].length, phatBan.duongY[0].length) - 1;
+        this.nguoiChoiX = phatBan.duongX[0][chiSoCuoi];
+        this.nguoiChoiY = phatBan.duongY[0][chiSoCuoi];
+        if (this.chiSoNguoiChoi != null) {
+            this.chiSoNguoiChoi.x = this.nguoiChoiX;
+            this.chiSoNguoiChoi.y = this.nguoiChoiY;
+        }
+        VXLQuanLyMayChu.log("[TRAINING-FIRE] Hulk landed player=" + this.nguoiChoi.ten
+                + " x=" + this.nguoiChoiX + " y=" + this.nguoiChoiY);
     }
 
     public synchronized void dungVatPham(VXLTinNhan tinNhan) throws IOException {
@@ -574,25 +605,62 @@ public final class VXLQuanLyLuyenTap {
         try {
             synchronized (this) {
                 this.tacVuPhienQuan = null;
-                if (!this.nguoiChoi.inTraining || this.dangChoKetThucPhatBan || this.phienQuanDangHoatDong) {
+                if (!this.nguoiChoi.inTraining || this.dangChoKetThucPhatBan
+                        || this.phienQuanDangHoatDong) {
+                    return;
+                }
+                int chiSoPhienQuan = this.layPhienQuanTiepTheo();
+                if (chiSoPhienQuan < 0) {
+                    this.hoanThanhPhienQuan();
                     return;
                 }
                 this.phienQuanDangHoatDong = true;
-                long treKetThucLuot = this.phienQuanBanTra();
-                if (!this.nguoiChoi.inTraining) {
-                    this.phienQuanDangHoatDong = false;
+                long treBay = this.phienQuanDungVatPhamNeuCan(chiSoPhienQuan);
+                if (treBay > 0L) {
+                    this.tacVuPhienQuan = BO_LAP_LICH.schedule(
+                            () -> this.phienQuanBanSauKhiBay(chiSoPhienQuan),
+                            treBay, TimeUnit.MILLISECONDS);
                     return;
                 }
-                if (this.tacVuKetThucPhienQuan != null) {
-                    this.tacVuKetThucPhienQuan.cancel(false);
-                }
-                this.tacVuKetThucPhienQuan = BO_LAP_LICH.schedule(this::ketThucLuotPhienQuan,
-                        treKetThucLuot, TimeUnit.MILLISECONDS);
+                this.phienQuanBanVaLapLichKetThuc(chiSoPhienQuan);
             }
         }
         catch (Exception ex) {
-            Logger.getLogger(VXLQuanLyLuyenTap.class.getName()).log(Level.SEVERE, "Lỗi Phiến quân luyện tập bắn trả.", ex);
+            this.phienQuanDangHoatDong = false;
+            Logger.getLogger(VXLQuanLyLuyenTap.class.getName()).log(Level.SEVERE,
+                    "Lỗi Phiến quân luyện tập bắn trả.", ex);
         }
+    }
+
+    private void phienQuanBanSauKhiBay(int chiSoPhienQuan) {
+        try {
+            synchronized (this) {
+                this.tacVuPhienQuan = null;
+                if (!this.nguoiChoi.inTraining || this.dangChoKetThucPhatBan) {
+                    this.phienQuanDangHoatDong = false;
+                    return;
+                }
+                this.phienQuanBanVaLapLichKetThuc(chiSoPhienQuan);
+            }
+        }
+        catch (Exception ex) {
+            this.phienQuanDangHoatDong = false;
+            Logger.getLogger(VXLQuanLyLuyenTap.class.getName()).log(Level.SEVERE,
+                    "Lỗi Phiến quân bắn sau khi bay.", ex);
+        }
+    }
+
+    private void phienQuanBanVaLapLichKetThuc(int chiSoPhienQuan) throws IOException {
+        long treKetThucLuot = this.phienQuanBanTra(chiSoPhienQuan);
+        if (!this.nguoiChoi.inTraining) {
+            this.phienQuanDangHoatDong = false;
+            return;
+        }
+        if (this.tacVuKetThucPhienQuan != null) {
+            this.tacVuKetThucPhienQuan.cancel(false);
+        }
+        this.tacVuKetThucPhienQuan = BO_LAP_LICH.schedule(this::ketThucLuotPhienQuan,
+                treKetThucLuot, TimeUnit.MILLISECONDS);
     }
 
     private void ketThucLuotPhienQuan() {
@@ -624,13 +692,7 @@ public final class VXLQuanLyLuyenTap {
         }
     }
 
-    private long phienQuanBanTra() throws IOException {
-        int chiSoPhienQuan = this.layPhienQuanTiepTheo();
-        if (chiSoPhienQuan < 0) {
-            this.hoanThanhPhienQuan();
-            return TRE_KET_THUC_DAN_BOT_TOI_THIEU;
-        }
-        this.phienQuanDungVatPhamNeuCan(chiSoPhienQuan);
+    private long phienQuanBanTra(int chiSoPhienQuan) throws IOException {
         byte loaiDan = VXLCauHinhVatPhamChienDau.layLoaiDanTheoVuKhi(
                 this.vuKhiPhienQuanHienTai, (byte)0);
         boolean duKienNgamTrung = this.phienQuanDuKienNgamTrung();
@@ -935,21 +997,28 @@ public final class VXLQuanLyLuyenTap {
                 this.phienQuanX[chiSoPhienQuan], this.phienQuanY[chiSoPhienQuan]);
     }
 
-    private void phienQuanDungVatPhamNeuCan(int chiSoPhienQuan) throws IOException {
+    private long phienQuanDungVatPhamNeuCan(int chiSoPhienQuan) throws IOException {
         this.soLuotPhienQuan++;
         int khoangCach = Math.abs(this.phienQuanX[chiSoPhienQuan] - this.nguoiChoiX);
         if (khoangCach <= 150 && this.soLuotPhienQuan % 2 == 0) {
-            int huong = this.phienQuanX[chiSoPhienQuan] >= this.nguoiChoiX ? 1 : -1;
-            short xMoi = this.tinhDuongDan.gioiHan(
-                    (short)(this.phienQuanX[chiSoPhienQuan] + huong * 280), 80,
-                    this.tinhDuongDan.layBanDo().getWidth() - 80);
-            this.phienQuanX[chiSoPhienQuan] = xMoi;
-            this.phienQuanY[chiSoPhienQuan] = this.tinhDuongDan.layBanDo().timViTriDat(xMoi, (short)180);
-            this.nguoiChoi.dichVu.guiDungVatPhamLuyenTap((byte)(chiSoPhienQuan + 1),
-                    (byte)20, (short)0);
-            this.nguoiChoi.dichVu.guiCapNhatXYLuyenTap((byte)(chiSoPhienQuan + 1),
-                    this.phienQuanX[chiSoPhienQuan], this.phienQuanY[chiSoPhienQuan]);
-            return;
+            short[] diemDap = this.timDiemDapBayPhienQuan(chiSoPhienQuan);
+            if (diemDap != null) {
+                short xCu = this.phienQuanX[chiSoPhienQuan];
+                short yCu = this.phienQuanY[chiSoPhienQuan];
+                this.phienQuanX[chiSoPhienQuan] = diemDap[0];
+                this.phienQuanY[chiSoPhienQuan] = diemDap[1];
+                this.nguoiChoi.dichVu.guiDungVatPhamLuyenTap(
+                        (byte)(chiSoPhienQuan + 1), (byte)20, (short)0);
+                this.nguoiChoi.dichVu.guiBayLuyenTap((byte)(chiSoPhienQuan + 1),
+                        this.phienQuanX[chiSoPhienQuan], this.phienQuanY[chiSoPhienQuan]);
+                VXLQuanLyMayChu.log("[TRAINING-ITEM] rebel fly from=(" + xCu + ',' + yCu
+                        + ") to=(" + this.phienQuanX[chiSoPhienQuan] + ','
+                        + this.phienQuanY[chiSoPhienQuan] + ") map="
+                        + this.tinhDuongDan.layBanDo().getWidth() + 'x'
+                        + this.tinhDuongDan.layBanDo().getHeight());
+                return this.tinhTreBayPhienQuan(xCu, yCu,
+                        this.phienQuanX[chiSoPhienQuan], this.phienQuanY[chiSoPhienQuan]);
+            }
         }
         int nguongHoiMau = this.mauToiDaPhienQuan * 60 / 100;
         if (this.mauPhienQuan[chiSoPhienQuan] <= nguongHoiMau && this.soLuotPhienQuan % 2 == 1) {
@@ -958,18 +1027,118 @@ public final class VXLQuanLyLuyenTap {
             this.nguoiChoi.dichVu.guiDungVatPhamLuyenTap((byte)(chiSoPhienQuan + 1), (byte)10, (short)0);
             this.nguoiChoi.dichVu.guiCapNhatMauLuyenTap((byte)(chiSoPhienQuan + 1),
                     this.mauPhienQuan[chiSoPhienQuan], this.mauToiDaPhienQuan, (byte)0);
-            return;
+            return 0L;
         }
         if (this.soLuotPhienQuan % 3 == 0) {
             this.khienPhienQuan = Math.min(this.mauToiDaPhienQuan / 2,
                     this.khienPhienQuan + VXLCauHinhPhienQuan.tinhLuongKhien(this.chiSoPhienQuan));
             this.nguoiChoi.dichVu.guiDungVatPhamLuyenTap((byte)(chiSoPhienQuan + 1), (byte)0, (short)0);
-            return;
+            return 0L;
         }
         if (this.soLuotPhienQuan % 2 == 0) {
             this.danManhPhienQuan = true;
             this.nguoiChoi.dichVu.guiDungVatPhamLuyenTap((byte)(chiSoPhienQuan + 1), (byte)5, (short)0);
         }
+        return 0L;
+    }
+
+    private long tinhTreBayPhienQuan(int xBatDau, int yBatDau, int xDap, int yDap) {
+        long treTheoKhoangCach = Math.round(Math.hypot(xDap - xBatDau,
+                yDap - yBatDau) * 6D);
+        return Math.max(TRE_BAY_PHIEN_QUAN_TOI_THIEU,
+                Math.min(TRE_BAY_PHIEN_QUAN_TOI_DA, treTheoKhoangCach));
+    }
+
+    private short[] timDiemDapBayPhienQuan(int chiSoPhienQuan) {
+        int chieuRong = this.tinhDuongDan.layBanDo().getWidth();
+        int chieuCao = this.tinhDuongDan.layBanDo().getHeight();
+        if (chieuRong < 40 || chieuCao < CHIEU_CAO_THAN_PHIEN_QUAN + 4) {
+            return null;
+        }
+        int leBien = Math.min(LE_BIEN_BAY_PHIEN_QUAN,
+                Math.max(12, (chieuRong - 1) / 4));
+        int xNhoNhat = leBien;
+        int xLonNhat = chieuRong - 1 - leBien;
+        if (xLonNhat <= xNhoNhat) {
+            return null;
+        }
+        int xHienTai = this.phienQuanX[chiSoPhienQuan];
+        int yHienTai = this.phienQuanY[chiSoPhienQuan];
+        int huong = xHienTai >= this.nguoiChoiX ? 1 : -1;
+        int xMongMuon = Math.max(xNhoNhat, Math.min(xLonNhat,
+                xHienTai + huong * KHOANG_BAY_PHIEN_QUAN));
+        for (int khoangLech = 0; khoangLech <= chieuRong; khoangLech += BUOC_TIM_DIEM_DAP) {
+            int xCungHuong = xMongMuon + huong * khoangLech;
+            short[] diemCungHuong = this.kiemTraDiemDapBay(xHienTai, yHienTai,
+                    xCungHuong, huong, xNhoNhat, xLonNhat);
+            if (diemCungHuong != null) {
+                return diemCungHuong;
+            }
+            if (khoangLech == 0) {
+                continue;
+            }
+            int xNguocLai = xMongMuon - huong * khoangLech;
+            short[] diemNguocLai = this.kiemTraDiemDapBay(xHienTai, yHienTai,
+                    xNguocLai, huong, xNhoNhat, xLonNhat);
+            if (diemNguocLai != null) {
+                return diemNguocLai;
+            }
+        }
+        return null;
+    }
+
+    private short[] kiemTraDiemDapBay(int xBatDau, int yBatDau, int xDap,
+            int huong, int xNhoNhat, int xLonNhat) {
+        if (xDap < xNhoNhat || xDap > xLonNhat
+                || (xDap - xBatDau) * huong < 40) {
+            return null;
+        }
+        short xDapNgan = (short)xDap;
+        short yDap = this.tinhDuongDan.layBanDo().timViTriDat(xDapNgan, (short)0);
+        if (!this.laDiemDapBayAnToan(xDap, yDap)
+                || !this.duongBayKhongBiChan(xBatDau, yBatDau, xDap, yDap)) {
+            return null;
+        }
+        return new short[]{xDapNgan, yDap};
+    }
+
+    private boolean duongBayKhongBiChan(int xBatDau, int yBatDau, int xDap, int yDap) {
+        int dx = xDap - xBatDau;
+        int dy = yDap - yBatDau;
+        int soBuoc = Math.max(1, Math.max(Math.abs(dx), Math.abs(dy)));
+        for (int buoc = 1; buoc <= soBuoc; buoc++) {
+            int x = xBatDau + dx * buoc / soBuoc;
+            int y = yBatDau + dy * buoc / soBuoc;
+            if (this.thanPhienQuanChamDiaHinh(x, y)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private boolean laDiemDapBayAnToan(int x, int y) {
+        int chieuCao = this.tinhDuongDan.layBanDo().getHeight();
+        if (y < CHIEU_CAO_THAN_PHIEN_QUAN || y >= chieuCao - 2
+                || !this.tinhDuongDan.layBanDo().coVaCham((short)x, (short)(y + 1))) {
+            return false;
+        }
+        return !this.thanPhienQuanChamDiaHinh(x, y);
+    }
+
+    private boolean thanPhienQuanChamDiaHinh(int x, int y) {
+        int[] cacLechX = new int[]{-NUA_RONG_THAN_PHIEN_QUAN, 0,
+                NUA_RONG_THAN_PHIEN_QUAN};
+        int[] cacLechY = new int[]{0, -CHIEU_CAO_THAN_PHIEN_QUAN / 2,
+                -CHIEU_CAO_THAN_PHIEN_QUAN};
+        for (int lechX : cacLechX) {
+            for (int lechY : cacLechY) {
+                if (this.tinhDuongDan.layBanDo().coVaCham(
+                        (short)(x + lechX), (short)(y + lechY))) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     private boolean laDanDoi(byte loaiDan) {

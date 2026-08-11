@@ -3,6 +3,7 @@ package com.vxl.vatpham;
 import com.vxl.loi.VXLQuanLyMayChu;
 import com.vxl.mang.VXLTinNhan;
 import com.vxl.mohinh.VXLNguoiChoi;
+import com.vxl.quantri.VXLMenuQuanTri;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -16,7 +17,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ThreadLocalRandom;
 
 public final class VXLDichVuNgocTrangBi {
-    private static final int MA_BUA_DUC_LO = 349;
     private static final int MA_BAO_HIEM = 353;
     private static final int MA_NGOC_DAU = 299;
     private static final int MA_NGOC_CUOI = 348;
@@ -30,25 +30,44 @@ public final class VXLDichVuNgocTrangBi {
         return nguoiChoi != null && LUA_CHON.containsKey(nguoiChoi.ma);
     }
 
+    public static void huyMenu(VXLNguoiChoi nguoiChoi) {
+        if (nguoiChoi != null) {
+            LUA_CHON.remove(nguoiChoi.ma);
+        }
+    }
+
     public static void moMenu(VXLNguoiChoi nguoiChoi, boolean trongTui, int chiSo,
-            VXLVatPham trangBi) {
+            VXLVatPham trangBi) throws IOException {
         if (nguoiChoi == null || trangBi == null || trangBi.mau == null
                 || !trangBi.isTypeBody()) {
             return;
         }
+        VXLMenuQuanTri.huyMenu(nguoiChoi);
+        if (trangBi.hoanTatDucLoNeuDenHan()) {
+            VXLTienTrinhDucLo.capNhatThongTinBua(nguoiChoi);
+            lamMoiTrangBi(nguoiChoi, !trongTui);
+        }
         Vector<String> tenHanhDong = new Vector<>();
         List<HanhDong> hanhDongs = new ArrayList<>();
-        if (trangBi.nSocket < 3 && !trangBi.isSocketing) {
-            tenHanhDong.add("Đục lỗ");
-            hanhDongs.add(HanhDong.DUC_LO);
-        }
-        if (trangBi.nGem < trangBi.nSocket && !trangBi.isSocketing) {
-            tenHanhDong.add("Đính ngọc");
-            hanhDongs.add(HanhDong.DINH_NGOC);
-        }
-        if (trangBi.nGem > 0) {
-            tenHanhDong.add("Tháo ngọc");
-            hanhDongs.add(HanhDong.THAO_NGOC);
+        if (trangBi.isSocketing) {
+            int chiPhiNgoc = VXLTienTrinhDucLo.layChiPhiHoanThanhNgay(trangBi);
+            tenHanhDong.add("Xem thời gian còn lại");
+            hanhDongs.add(HanhDong.XEM_TIEN_TRINH);
+            tenHanhDong.add("Hoàn thành ngay (" + chiPhiNgoc + " ngọc)");
+            hanhDongs.add(HanhDong.HOAN_THANH_NGAY);
+        } else {
+            if (trangBi.nSocket < 3) {
+                tenHanhDong.add("Đục lỗ");
+                hanhDongs.add(HanhDong.DUC_LO);
+            }
+            if (trangBi.nGem < trangBi.nSocket) {
+                tenHanhDong.add("Đính ngọc");
+                hanhDongs.add(HanhDong.DINH_NGOC);
+            }
+            if (trangBi.nGem > 0) {
+                tenHanhDong.add("Tháo ngọc");
+                hanhDongs.add(HanhDong.THAO_NGOC);
+            }
         }
         if (hanhDongs.isEmpty()) {
             nguoiChoi.startOKDlg2("Trang bị này không còn thao tác ngọc phù hợp.");
@@ -71,6 +90,8 @@ public final class VXLDichVuNgocTrangBi {
         }
         switch (luaChon.hanhDongs.get(chiSoHanhDong)) {
             case DUC_LO -> ducLo(nguoiChoi, trangBi, luaChon.trongTui);
+            case XEM_TIEN_TRINH -> xemTienTrinh(nguoiChoi, trangBi, luaChon.trongTui);
+            case HOAN_THANH_NGAY -> hoanThanhNgay(nguoiChoi, trangBi, luaChon.trongTui);
             case DINH_NGOC -> nguoiChoi.startOKDlg2(
                     "Mở mục Ghép ngọc tại NPC Quân nhu, chọn trang bị và ngọc rồi bấm Đính ngọc.");
             case THAO_NGOC -> thaoNgoc(nguoiChoi, trangBi, luaChon.trongTui);
@@ -83,6 +104,9 @@ public final class VXLDichVuNgocTrangBi {
         }
         int chiSoTrangBi = ms.boDoc().readUnsignedByte();
         VXLVatPham trangBi = layTrangBi(nguoiChoi, true, chiSoTrangBi);
+        if (trangBi != null && trangBi.hoanTatDucLoNeuDenHan()) {
+            VXLTienTrinhDucLo.capNhatThongTinBua(nguoiChoi);
+        }
         if (trangBi == null || trangBi.mau == null || !trangBi.isTypeBody()
                 || trangBi.isSocketing) {
             nguoiChoi.startOKDlg2("Trang bị khảm ngọc không hợp lệ.");
@@ -221,25 +245,83 @@ public final class VXLDichVuNgocTrangBi {
 
     private static void ducLo(VXLNguoiChoi nguoiChoi, VXLVatPham trangBi,
             boolean trongTui) throws IOException {
-        VXLVatPham bua = timVatPhamTheoMa(nguoiChoi, MA_BUA_DUC_LO);
-        if (bua == null || bua.soLuong <= 0) {
-            nguoiChoi.startOKDlg2("Cần 1 Búa chuyên dụng để đục lỗ.");
+        if (trangBi.hoanTatDucLoNeuDenHan()) {
+            VXLTienTrinhDucLo.capNhatThongTinBua(nguoiChoi);
+        }
+        if (trangBi.isSocketing) {
+            nguoiChoi.startOKDlg2("Trang bị đang đục lỗ, không thể bắt đầu lỗ tiếp theo.");
+            return;
+        }
+        VXLTienTrinhDucLo.capNhat(nguoiChoi);
+        if (Byte.toUnsignedInt(nguoiChoi.nHammer) <= 0) {
+            nguoiChoi.startOKDlg2("Bạn chưa kích hoạt Búa chuyên dụng.");
+            return;
+        }
+        if (!VXLTienTrinhDucLo.coBuaRanh(nguoiChoi)) {
+            nguoiChoi.startOKDlg2("Tất cả Búa chuyên dụng đang bận đục trang bị khác.");
             return;
         }
         int loTiepTheo = trangBi.nSocket + 1;
-        int chiPhi = loTiepTheo * loTiepTheo * 5000;
+        int chiPhi = VXLTienTrinhDucLo.layChiPhiVang(loTiepTheo);
+        long thoiGian = VXLTienTrinhDucLo.layThoiGianDucLo(loTiepTheo);
         if (nguoiChoi.vang < chiPhi) {
             nguoiChoi.startOKDlg2("Không đủ " + chiPhi + " vàng để đục lỗ.");
             return;
         }
-        if (!trangBi.themLoTrong()) {
-            nguoiChoi.startOKDlg2("Không thể đục thêm lỗ cho trang bị này.");
+        if (!trangBi.batDauDucLo(thoiGian)) {
+            nguoiChoi.startOKDlg2("Không thể bắt đầu đục lỗ cho trang bị này.");
             return;
         }
         nguoiChoi.vang -= chiPhi;
-        nguoiChoi.removeItem(bua.chiSo, 1);
+        VXLTienTrinhDucLo.capNhatThongTinBua(nguoiChoi);
         lamMoiTrangBi(nguoiChoi, !trongTui);
-        nguoiChoi.startOKDlg2("Đục lỗ thứ " + loTiepTheo + " thành công.");
+        nguoiChoi.startOKDlg2("Bắt đầu đục lỗ thứ " + loTiepTheo + ". Thời gian: "
+                + VXLTienTrinhDucLo.dinhDangThoiGianConLai(trangBi)
+                + ". Búa không bị tiêu hao.");
+    }
+
+    private static void xemTienTrinh(VXLNguoiChoi nguoiChoi, VXLVatPham trangBi,
+            boolean trongTui) throws IOException {
+        if (trangBi.hoanTatDucLoNeuDenHan()) {
+            VXLTienTrinhDucLo.capNhatThongTinBua(nguoiChoi);
+            lamMoiTrangBi(nguoiChoi, !trongTui);
+            nguoiChoi.startOKDlg2("Đục lỗ đã hoàn thành.");
+            return;
+        }
+        if (!trangBi.isSocketing) {
+            nguoiChoi.startOKDlg2("Trang bị hiện không có tiến trình đục lỗ.");
+            return;
+        }
+        int chiPhiNgoc = VXLTienTrinhDucLo.layChiPhiHoanThanhNgay(trangBi);
+        nguoiChoi.startOKDlg2("Còn " + VXLTienTrinhDucLo.dinhDangThoiGianConLai(trangBi)
+                + ". Có thể hoàn thành ngay bằng " + chiPhiNgoc + " ngọc.");
+    }
+
+    private static void hoanThanhNgay(VXLNguoiChoi nguoiChoi, VXLVatPham trangBi,
+            boolean trongTui) throws IOException {
+        if (trangBi.hoanTatDucLoNeuDenHan()) {
+            VXLTienTrinhDucLo.capNhatThongTinBua(nguoiChoi);
+            lamMoiTrangBi(nguoiChoi, !trongTui);
+            nguoiChoi.startOKDlg2("Đục lỗ đã hoàn thành, không tốn ngọc.");
+            return;
+        }
+        if (!trangBi.isSocketing) {
+            nguoiChoi.startOKDlg2("Trang bị hiện không có tiến trình đục lỗ.");
+            return;
+        }
+        int chiPhiNgoc = VXLTienTrinhDucLo.layChiPhiHoanThanhNgay(trangBi);
+        if (nguoiChoi.ngoc < chiPhiNgoc) {
+            nguoiChoi.startOKDlg2("Không đủ " + chiPhiNgoc + " ngọc để hoàn thành ngay.");
+            return;
+        }
+        if (!trangBi.hoanTatDucLoNgay()) {
+            nguoiChoi.startOKDlg2("Không thể hoàn thành tiến trình đục lỗ.");
+            return;
+        }
+        nguoiChoi.ngoc -= chiPhiNgoc;
+        VXLTienTrinhDucLo.capNhatThongTinBua(nguoiChoi);
+        lamMoiTrangBi(nguoiChoi, !trongTui);
+        nguoiChoi.startOKDlg2("Hoàn thành đục lỗ, đã dùng " + chiPhiNgoc + " ngọc.");
     }
 
     private static void thaoNgoc(VXLNguoiChoi nguoiChoi, VXLVatPham trangBi,
@@ -334,6 +416,8 @@ public final class VXLDichVuNgocTrangBi {
 
     private enum HanhDong {
         DUC_LO,
+        XEM_TIEN_TRINH,
+        HOAN_THANH_NGAY,
         DINH_NGOC,
         THAO_NGOC
     }

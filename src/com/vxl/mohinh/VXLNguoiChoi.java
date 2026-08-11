@@ -7,6 +7,7 @@ import com.vxl.quantri.VXLBoLenhQuanTri;
 import com.vxl.luyentap.VXLQuanLyLuyenTap;
 import com.vxl.vatpham.VXLDichVuNangCapVatPham;
 import com.vxl.vatpham.VXLDichVuNgocTrangBi;
+import com.vxl.vatpham.VXLTienTrinhDucLo;
 import com.vxl.vatpham.VXLVatPham;
 import com.vxl.vatpham.VXLThuocTinhVatPham;
 import com.vxl.vatpham.VXLMauVatPham;
@@ -502,6 +503,10 @@ public class VXLNguoiChoi {
                 if (vatPham != null && vatPham.mau != null && vatPham.soLuong > 0) {
                     byte t = vatPham.mau.loai;
                     int ma = vatPham.ma;
+                    if (ma == VXLTienTrinhDucLo.MA_BUA_DUC_LO) {
+                        this.kichHoatBua(Byte.toUnsignedInt(chiSo));
+                        return;
+                    }
                     if (t == 12) {
                         this.startOKDlg2("Bạn có muốn nhập 5 viên ngọc này, hãy vào menu Bắt dầu -> ghép ngọc");
                         return;
@@ -763,8 +768,45 @@ public class VXLNguoiChoi {
         return vuKhiCu;
     }
 
+    private void kichHoatBua(int chiSo) throws IOException {
+        if (chiSo < 0 || chiSo >= this.itemBag.length) {
+            return;
+        }
+        VXLVatPham bua = this.itemBag[chiSo];
+        if (bua == null || bua.ma != VXLTienTrinhDucLo.MA_BUA_DUC_LO || bua.soLuong <= 0) {
+            this.startOKDlg2("Không tìm thấy Búa chuyên dụng.");
+            return;
+        }
+        VXLTienTrinhDucLo.capNhat(this);
+        int tongBua = Byte.toUnsignedInt(this.nHammer);
+        if (tongBua >= VXLTienTrinhDucLo.SO_BUA_TOI_DA) {
+            this.startOKDlg2("Bạn đã kích hoạt tối đa 3 búa.");
+            return;
+        }
+        this.nHammer = (byte)(tongBua + 1);
+        this.removeItem(chiSo, 1);
+        VXLTienTrinhDucLo.capNhatThongTinBua(this);
+        this.dichVu.capNhat();
+        this.flushCache();
+        this.startOKDlg2("Kích hoạt Búa chuyên dụng thành công. Tổng búa: "
+                + Byte.toUnsignedInt(this.nHammer) + "/" + VXLTienTrinhDucLo.SO_BUA_TOI_DA + ".");
+    }
+    private boolean gioiHanSoLuongBuaNhan(VXLVatPham vatPham) {
+        if (vatPham == null || vatPham.ma != VXLTienTrinhDucLo.MA_BUA_DUC_LO) {
+            return true;
+        }
+        int soLuongCoTheNhan = VXLTienTrinhDucLo.laySoLuongBuaCoTheNhan(this, vatPham);
+        if (soLuongCoTheNhan <= 0) {
+            return false;
+        }
+        vatPham.soLuong = Math.min(vatPham.soLuong, soLuongCoTheNhan);
+        return vatPham.soLuong > 0;
+    }
     public boolean themVatPhamVaoTui(VXLVatPham vatPham) {
         if (vatPham == null || vatPham.mau == null || vatPham.soLuong <= 0 || this.itemBag == null) {
+            return false;
+        }
+        if (!this.gioiHanSoLuongBuaNhan(vatPham)) {
             return false;
         }
         try {
@@ -794,6 +836,9 @@ public class VXLNguoiChoi {
 
     public boolean themVatPhamVaoRuong(VXLVatPham vatPham) {
         if (vatPham == null || vatPham.mau == null || vatPham.soLuong <= 0 || this.itemBox == null) {
+            return false;
+        }
+        if (!this.gioiHanSoLuongBuaNhan(vatPham)) {
             return false;
         }
         try {

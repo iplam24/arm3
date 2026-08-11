@@ -1,6 +1,7 @@
 package com.vxl.vatpham;
 
 import com.vxl.loi.VXLQuanLyMayChu;
+import java.util.Vector;
 
 public final class VXLChiSoNgoc {
     private static final int MA_NGOC_DAU = 299;
@@ -9,31 +10,44 @@ public final class VXLChiSoNgoc {
     private VXLChiSoNgoc() {
     }
 
-    public static int tongThamSo(VXLVatPham trangBi, int maThuocTinh) {
+    public static Vector layThuocTinh(VXLVatPham trangBi) {
+        Vector thuocTinhs = new Vector();
         if (trangBi == null || trangBi.mau == null || !trangBi.isTypeBody()) {
-            return 0;
+            return thuocTinhs;
         }
-        int tong = 0;
         for (int maNgoc : trangBi.layCacMaNgocDaDinh()) {
             VXLMauVatPham mauNgoc = VXLQuanLyMayChu.itemTemplates != null
                     ? VXLQuanLyMayChu.itemTemplates.get(maNgoc) : null;
             if (mauNgoc == null || mauNgoc.loai != 12) {
                 continue;
             }
-            int giaTri = 0;
-            for (Object giaTriThuocTinh : mauNgoc.thuocTinhs) {
-                if (!(giaTriThuocTinh instanceof VXLThuocTinhVatPham thuocTinh)
-                        || thuocTinh.optionTemplate == null
-                        || thuocTinh.optionTemplate.ma != maThuocTinh) {
+            boolean coThuocTinh = false;
+            for (Object giaTri : mauNgoc.thuocTinhs) {
+                if (!(giaTri instanceof VXLThuocTinhVatPham thuocTinh)
+                        || thuocTinh.optionTemplate == null) {
                     continue;
                 }
-                giaTri += thuocTinh.thamSo;
+                thuocTinhs.add(new VXLThuocTinhVatPham(
+                        thuocTinh.optionTemplate.ma, thuocTinh.thamSo));
+                coThuocTinh = true;
             }
-            if (giaTri == 0 && maNgoc >= MA_NGOC_DAU && maNgoc <= MA_NGOC_CUOI
-                    && maThuocTinh == maThuocTinhTheoMau(maNgoc)) {
-                giaTri = 1 + (maNgoc - MA_NGOC_DAU) / 5;
+            if (!coThuocTinh && maNgoc >= MA_NGOC_DAU && maNgoc <= MA_NGOC_CUOI) {
+                thuocTinhs.add(new VXLThuocTinhVatPham(
+                        maThuocTinhTheoMau(maNgoc), 1 + (maNgoc - MA_NGOC_DAU) / 5));
             }
-            tong += giaTri;
+        }
+        return thuocTinhs;
+    }
+
+    public static int tongThamSo(VXLVatPham trangBi, int maThuocTinh) {
+        int tong = 0;
+        Vector thuocTinhs = layThuocTinh(trangBi);
+        for (Object giaTri : thuocTinhs) {
+            VXLThuocTinhVatPham thuocTinh = (VXLThuocTinhVatPham)giaTri;
+            if (thuocTinh.optionTemplate != null
+                    && thuocTinh.optionTemplate.ma == maThuocTinh) {
+                tong += thuocTinh.thamSo;
+            }
         }
         return tong;
     }

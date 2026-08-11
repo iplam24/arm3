@@ -2,7 +2,6 @@ package com.vxl.chien;
 
 import com.vxl.mohinh.VXLNguoiChoi;
 import com.vxl.vatpham.VXLVatPham;
-import com.vxl.vatpham.VXLChiSoNgoc;
 
 public class VXLChienBinh {
     private static final int GIOI_HAN_CHI_SO = 30000;
@@ -83,18 +82,15 @@ public class VXLChienBinh {
                 if (vatPham == null || vatPham.mau == null || vatPham.HP <= 0) {
                     continue;
                 }
-                hpCong += vatPham.tongThamSoTheoMa(0);
-                tanCongCong += vatPham.tongThamSoTheoMa(1);
-                giapCong += vatPham.tongThamSoTheoMa(2);
-                hpPhanTram += vatPham.tongThamSoTheoMa(6)
-                        + VXLChiSoNgoc.tongThamSo(vatPham, 6);
-                tanCongPhanTram += vatPham.tongThamSoTheoMa(7)
-                        + VXLChiSoNgoc.tongThamSo(vatPham, 7);
-                giapPhanTram += vatPham.tongThamSoTheoMa(8)
-                        + VXLChiSoNgoc.tongThamSo(vatPham, 8);
-                tatCaPhanTram += vatPham.tongThamSoTheoMa(18);
-                diChuyenPhanTram += vatPham.tongThamSoTheoMa(26);
-                tatCaPhanTram += Math.max(0, vatPham.tongThamSoTheoMa(17)) * 2;
+                hpCong += vatPham.tongThamSoHieuLucTheoMa(0);
+                tanCongCong += vatPham.tongThamSoHieuLucTheoMa(1);
+                giapCong += vatPham.tongThamSoHieuLucTheoMa(2);
+                hpPhanTram += vatPham.tongThamSoHieuLucTheoMa(6);
+                tanCongPhanTram += vatPham.tongThamSoHieuLucTheoMa(7);
+                giapPhanTram += vatPham.tongThamSoHieuLucTheoMa(8);
+                tatCaPhanTram += vatPham.tongThamSoHieuLucTheoMa(18);
+                diChuyenPhanTram += vatPham.tongThamSoHieuLucTheoMa(26);
+                tatCaPhanTram += Math.max(0, vatPham.tongThamSoHieuLucTheoMa(17)) * 2;
             }
         }
 
@@ -144,11 +140,10 @@ public class VXLChienBinh {
                 if (vatPham == null || vatPham.mau == null || vatPham.HP <= 0) {
                     continue;
                 }
-                tanCongCong += vatPham.tongThamSoTheoMa(1);
-                tanCongPhanTram += vatPham.tongThamSoTheoMa(7)
-                        + VXLChiSoNgoc.tongThamSo(vatPham, 7);
-                tatCaPhanTram += vatPham.tongThamSoTheoMa(18);
-                tatCaPhanTram += Math.max(0, vatPham.tongThamSoTheoMa(17)) * 2L;
+                tanCongCong += vatPham.tongThamSoHieuLucTheoMa(1);
+                tanCongPhanTram += vatPham.tongThamSoHieuLucTheoMa(7);
+                tatCaPhanTram += vatPham.tongThamSoHieuLucTheoMa(18);
+                tatCaPhanTram += Math.max(0, vatPham.tongThamSoHieuLucTheoMa(17)) * 2L;
             }
         }
         this.tanCong = gioiHan((tanCongGoc + tanCongCong)
@@ -184,7 +179,7 @@ public class VXLChienBinh {
                 && this.nguoiChoi.itemBody.length > 5) {
             VXLVatPham vuKhi = this.nguoiChoi.itemBody[5];
             if (vuKhi != null && vuKhi.mau != null && vuKhi.HP > 0) {
-                int theoVuKhi = vuKhi.getParamById(MA_THUOC_TINH_THOI_GIAN_NAP_DAN);
+                int theoVuKhi = vuKhi.tongThamSoHieuLucTheoMa(MA_THUOC_TINH_THOI_GIAN_NAP_DAN);
                 if (theoVuKhi > 0) {
                     thoiGianNap = Math.max(50, Math.min(5000, theoVuKhi));
                 }

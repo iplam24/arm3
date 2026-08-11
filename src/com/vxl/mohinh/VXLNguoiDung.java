@@ -4,6 +4,7 @@ package com.vxl.mohinh;
 import com.vxl.loi.VXLCoSoDuLieu;
 import com.vxl.loi.VXLQuanLyMayChu;
 import com.vxl.vatpham.VXLVatPham;
+import com.vxl.vatpham.VXLTienTrinhDucLo;
 import com.vxl.vatpham.VXLMauVatPham;
 import com.vxl.mohinh.VXLNguoiChoi;
 import com.vxl.mang.VXLDichVuGame;
@@ -460,6 +461,7 @@ public class VXLNguoiDung {
                         Logger.getLogger(VXLNguoiDung.class.getName()).log(Level.WARNING, "Bỏ qua vật phẩm trong rương bị lỗi.", itemEx);
                     }
                 }
+                VXLTienTrinhDucLo.capNhat(this.nguoiChoi);
                 this.nguoiChoi.dichVu.datNguoiChoi(this.nguoiChoi);
                 return;
             }

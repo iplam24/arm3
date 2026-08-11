@@ -36,9 +36,15 @@ public final class VXLBoLenhQuanTri {
     private VXLBoLenhQuanTri() {
     }
 
+    static String huongDan() {
+        return HUONG_DAN;
+    }
+
     public static boolean xuLy(VXLNguoiChoi nguoiChoi, String noiDung) {
         String lenh = noiDung == null ? "" : noiDung.trim();
-        String phanConLai = layPhanLenh(lenh);
+        boolean lenhMoMenu = "/menu".equalsIgnoreCase(lenh)
+                || "menu".equalsIgnoreCase(lenh);
+        String phanConLai = lenhMoMenu ? "menu" : layPhanLenh(lenh);
         if (phanConLai == null) {
             return false;
         }
@@ -46,6 +52,11 @@ public final class VXLBoLenhQuanTri {
             if (nguoiChoi != null) {
                 nguoiChoi.moHopThoaiOK("Bạn không có quyền sử dụng lệnh admin.");
             }
+            return true;
+        }
+        if (lenhMoMenu || "menu".equalsIgnoreCase(phanConLai)) {
+            VXLMenuQuanTri.mo(nguoiChoi);
+            VXLKhoQuanTri.ghiNhatKy(nguoiChoi, lenh, true, "Đã mở menu admin.");
             return true;
         }
 
@@ -78,7 +89,8 @@ public final class VXLBoLenhQuanTri {
         String[] thamSo = phanConLai.split("\s+");
         String lenh = thamSo[0].toLowerCase(Locale.ROOT);
         return switch (lenh) {
-            case "help", "menu" -> HUONG_DAN;
+            case "help" -> HUONG_DAN;
+            case "menu" -> HUONG_DAN;
             case "online" -> VXLKhoQuanTri.danhSachTrucTuyen();
             case "server" -> thongTinMayChu();
             case "threads", "thread", "luong" -> thongTinLuong();
@@ -119,7 +131,7 @@ public final class VXLBoLenhQuanTri {
         return "Đã gửi thông báo tới toàn máy chủ.";
     }
 
-    private static String kick(VXLNguoiChoi quanTri, String ten) {
+    static String kick(VXLNguoiChoi quanTri, String ten) {
         VXLNguoiChoi mucTieu = VXLKhoQuanTri.timNguoiChoiTrucTuyen(ten);
         if (mucTieu == null) {
             return "Người chơi " + ten + " không trực tuyến.";
@@ -132,7 +144,7 @@ public final class VXLBoLenhQuanTri {
         return "Đã ngắt kết nối " + tenMucTieu + ".";
     }
 
-    private static String thongTinMayChu() {
+    static String thongTinMayChu() {
         Runtime runtime = Runtime.getRuntime();
         RuntimeMXBean runtimeBean = ManagementFactory.getRuntimeMXBean();
         long boNhoDaDung = runtime.totalMemory() - runtime.freeMemory();
@@ -145,7 +157,7 @@ public final class VXLBoLenhQuanTri {
                 + "Luồng: " + Thread.getAllStackTraces().size();
     }
 
-    private static String thongTinLuong() {
+    static String thongTinLuong() {
         List<Thread> luongs = new ArrayList<>(Thread.getAllStackTraces().keySet());
         luongs.sort(Comparator.comparing(Thread::getName, String.CASE_INSENSITIVE_ORDER));
         Map<Thread.State, Integer> theoTrangThai = new EnumMap<>(Thread.State.class);
@@ -203,7 +215,7 @@ public final class VXLBoLenhQuanTri {
 
     private static String layPhanLenh(String noiDung) {
         String chuThuong = noiDung.toLowerCase(Locale.ROOT);
-        for (String tienTo : new String[]{"/admin", "/ad", "!admin"}) {
+        for (String tienTo : new String[]{"/admin", "/ad", "!admin", "admin", "ad"}) {
             if (chuThuong.equals(tienTo)) {
                 return "";
             }

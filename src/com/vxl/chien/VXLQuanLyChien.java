@@ -324,7 +324,7 @@ public class VXLQuanLyChien {
         int satThuongCoBan = VXLTinhSatThuong.tinhPhatBan(nguoiBan.tanCong, luc, heSoTong);
         int satThuongMoiVien = VXLCauHinhVatPhamChienDau.tinhSatThuongMoiVien(
                 satThuongCoBan, loaiDan, chiMang, avengerDan);
-        int tranSatThuong = satThuongCoBan
+        int tranSatThuong = phatBan.truotRaNgoaiBanDo ? 0 : satThuongCoBan
                 * VXLCauHinhVatPhamChienDau.layTranPhanTramSatThuong(loaiDan, avengerDan)
                 / 100;
         int[] daPhanBoTheoMucTieu = new int[this.chienBinhs.length];
@@ -666,6 +666,21 @@ public class VXLQuanLyChien {
 
     void phatBan(VXLChienBinh nguoiBan, VXLKetQuaDan ketQua, byte soPhat) {
         this.phatTin.guiPhatBan(nguoiBan, ketQua, soPhat);
+        this.capNhatViTriSauPhatBan(nguoiBan, ketQua);
+    }
+
+    private void capNhatViTriSauPhatBan(VXLChienBinh nguoiBan, VXLKetQuaDan ketQua) {
+        if (nguoiBan == null || ketQua == null || ketQua.duongX.length == 0
+                || ketQua.duongY.length == 0
+                || VXLCauHinhVatPhamChienDau.layHoSoDan(ketQua.loaiDan,
+                        ketQua.avengerDan).kieuBan() != VXLHoSoDan.KieuBan.NHAN_VAT_LAO) {
+            return;
+        }
+        int chiSoCuoi = Math.min(ketQua.duongX.length, ketQua.duongY.length) - 1;
+        nguoiBan.x = ketQua.duongX[chiSoCuoi];
+        nguoiBan.y = ketQua.duongY[chiSoCuoi];
+        VXLQuanLyMayChu.log("[FIRE] Hulk landed player=" + nguoiBan.ten
+                + " x=" + nguoiBan.x + " y=" + nguoiBan.y);
     }
 
     void phatCapNhatMau(VXLChienBinh mucTieu) {

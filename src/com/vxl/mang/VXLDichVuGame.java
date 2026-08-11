@@ -3,6 +3,7 @@ package com.vxl.mang;
 // Vũ Xuân Lâm đẹp trai VCL
 import com.vxl.loi.VXLQuanLyMayChu;
 import com.vxl.vatpham.VXLVatPham;
+import com.vxl.vatpham.VXLTienTrinhDucLo;
 import com.vxl.vatpham.VXLThuocTinhVatPham;
 import com.vxl.vatpham.VXLMauVatPham;
 import com.vxl.chien.VXLChienBinh;
@@ -146,6 +147,7 @@ implements IVXLDichVuGame {
     }
 
     public void guiThongTin() throws IOException {
+        VXLTienTrinhDucLo.capNhat(this.nguoiChoi);
         VXLTinNhan ms = new VXLTinNhan(3);
         DataOutputStream ds = ms.boGhi();
         ds.writeInt(this.nguoiChoi.ma);
@@ -260,6 +262,7 @@ implements IVXLDichVuGame {
     }
 
     public void guiDoTrenNguoi() throws IOException {
+        VXLTienTrinhDucLo.capNhat(this.nguoiChoi);
         VXLVatPham[] vatPhams = this.nguoiChoi.itemBody;
         VXLTinNhan ms = new VXLTinNhan(-34);
         DataOutputStream ds = ms.boGhi();
@@ -272,14 +275,14 @@ implements IVXLDichVuGame {
                 ds.writeByte(vatPham.HP);
                 ds.writeUTF("");
                 ds.writeUTF("");
-                int len = vatPham.itemOptions.size();
+                Vector thuocTinhsHieuLuc = vatPham.layThuocTinhHieuLuc();
+                int len = thuocTinhsHieuLuc.size();
                 ds.writeByte(len);
                 for (int i = 0; i < len; ++i) {
-                    VXLThuocTinhVatPham option = (VXLThuocTinhVatPham)vatPham.itemOptions.get(i);
+                    VXLThuocTinhVatPham option = (VXLThuocTinhVatPham)thuocTinhsHieuLuc.get(i);
                     ds.writeByte(option.optionTemplate.ma);
                     if (option.optionTemplate.ma == 15) {
-                        int thamSo = (int)(((long)option.thamSo - System.currentTimeMillis() / 1000L) / 60L / 60L);
-                        ds.writeShort(thamSo);
+                        ds.writeShort(Math.max(1, vatPham.laySoGioDucLoConLai()));
                         continue;
                     }
                     ds.writeShort(option.thamSo);
@@ -293,6 +296,7 @@ implements IVXLDichVuGame {
     }
 
     public void guiRuongDo() throws IOException {
+        VXLTienTrinhDucLo.capNhat(this.nguoiChoi);
         VXLVatPham[] vatPhams = this.nguoiChoi.itemBox;
         VXLTinNhan ms = new VXLTinNhan(-36);
         DataOutputStream ds = ms.boGhi();
@@ -305,14 +309,14 @@ implements IVXLDichVuGame {
                 ds.writeByte(vatPham.HP);
                 ds.writeUTF("");
                 ds.writeUTF("");
-                int len = vatPham.itemOptions.size();
+                Vector thuocTinhsHieuLuc = vatPham.layThuocTinhHieuLuc();
+                int len = thuocTinhsHieuLuc.size();
                 ds.writeByte(len);
                 for (int i = 0; i < len; ++i) {
-                    VXLThuocTinhVatPham option = (VXLThuocTinhVatPham)vatPham.itemOptions.get(i);
+                    VXLThuocTinhVatPham option = (VXLThuocTinhVatPham)thuocTinhsHieuLuc.get(i);
                     ds.writeByte(option.optionTemplate.ma);
                     if (option.optionTemplate.ma == 15) {
-                        int thamSo = (int)(((long)option.thamSo - System.currentTimeMillis() / 1000L) / 60L / 60L);
-                        ds.writeShort(thamSo);
+                        ds.writeShort(Math.max(1, vatPham.laySoGioDucLoConLai()));
                         continue;
                     }
                     ds.writeShort(option.thamSo);
@@ -326,6 +330,7 @@ implements IVXLDichVuGame {
     }
 
     public void guiTuiDo() throws IOException {
+        VXLTienTrinhDucLo.capNhat(this.nguoiChoi);
         VXLVatPham[] vatPhams = this.nguoiChoi.itemBag;
         VXLTinNhan ms = new VXLTinNhan(-35);
         DataOutputStream ds = ms.boGhi();
@@ -338,14 +343,14 @@ implements IVXLDichVuGame {
                 ds.writeByte(vatPham.HP);
                 ds.writeUTF("");
                 ds.writeUTF("");
-                int len = vatPham.itemOptions.size();
+                Vector thuocTinhsHieuLuc = vatPham.layThuocTinhHieuLuc();
+                int len = thuocTinhsHieuLuc.size();
                 ds.writeByte(len);
                 for (int i = 0; i < len; ++i) {
-                    VXLThuocTinhVatPham option = (VXLThuocTinhVatPham)vatPham.itemOptions.get(i);
+                    VXLThuocTinhVatPham option = (VXLThuocTinhVatPham)thuocTinhsHieuLuc.get(i);
                     ds.writeByte(option.optionTemplate.ma);
                     if (option.optionTemplate.ma == 15) {
-                        int thamSo = (int)(((long)option.thamSo - System.currentTimeMillis() / 1000L) / 60L / 60L);
-                        ds.writeShort(thamSo);
+                        ds.writeShort(Math.max(1, vatPham.laySoGioDucLoConLai()));
                         continue;
                     }
                     ds.writeShort(option.thamSo);
@@ -359,6 +364,7 @@ implements IVXLDichVuGame {
     }
 
     public void guiBalo() throws IOException {
+        VXLTienTrinhDucLo.capNhat(this.nguoiChoi);
         int[] vatPhams = this.nguoiChoi.itemBalo;
         VXLTinNhan ms = new VXLTinNhan(-42);
         DataOutputStream ds = ms.boGhi();
@@ -375,14 +381,14 @@ implements IVXLDichVuGame {
                 ds.writeByte(vatPham.HP);
                 ds.writeUTF("");
                 ds.writeUTF("");
-                int len = vatPham.itemOptions.size();
+                Vector thuocTinhsHieuLuc = vatPham.layThuocTinhHieuLuc();
+                int len = thuocTinhsHieuLuc.size();
                 ds.writeByte(len);
                 for (int i = 0; i < len; ++i) {
-                    VXLThuocTinhVatPham option = (VXLThuocTinhVatPham)vatPham.itemOptions.get(i);
+                    VXLThuocTinhVatPham option = (VXLThuocTinhVatPham)thuocTinhsHieuLuc.get(i);
                     ds.writeByte(option.optionTemplate.ma);
                     if (option.optionTemplate.ma == 15) {
-                        int thamSo = (int)(((long)option.thamSo - System.currentTimeMillis() / 1000L) / 60L / 60L);
-                        ds.writeShort(thamSo);
+                        ds.writeShort(Math.max(1, vatPham.laySoGioDucLoConLai()));
                         continue;
                     }
                     ds.writeShort(option.thamSo);
@@ -574,6 +580,7 @@ implements IVXLDichVuGame {
     }
 
     public void capNhat() {
+        VXLTienTrinhDucLo.capNhat(this.nguoiChoi);
         try {
             VXLTinNhan ms = new VXLTinNhan(105);
             DataOutputStream ds = ms.boGhi();
@@ -690,8 +697,8 @@ implements IVXLDichVuGame {
             }
             ds.writeShort(chienBinh.x);
             ds.writeShort(chienBinh.y);
-            ds.writeShort(chienBinh.hp);
             ds.writeShort(chienBinh.mauToiDa);
+            ds.writeShort(chienBinh.layTamDiChuyen(DIEM_DI_CHUYEN_TOI_DA));
         }
         ds.writeByte(maNen);
         ds.writeByte(this.demSungDau(chienBinhs));
@@ -895,7 +902,8 @@ implements IVXLDichVuGame {
     }
 
     public void guiBatDauLuyenTap(byte maBanDo, short maVuKhi, int hpNguoiChoi,
-            short[] botX, short[] botY, int[] botHp, short[] botWeapons) throws IOException {
+            int tamDiChuyenNguoiChoi, short[] botX, short[] botY,
+            int[] botHp, short[] botWeapons) throws IOException {
         ArrayList<Short> cacVuKhiCanTai = new ArrayList<>();
         cacVuKhiCanTai.add(maVuKhi);
         if (botWeapons != null) {
@@ -914,7 +922,7 @@ implements IVXLDichVuGame {
                 ds.writeShort(220);
                 ds.writeShort(300);
                 ds.writeShort(gioiHanMauLuyenTap(hpNguoiChoi));
-                ds.writeShort(50);
+                ds.writeShort(Math.max(0, Math.min(Short.MAX_VALUE, tamDiChuyenNguoiChoi)));
             } else if (i - 1 >= 0 && i - 1 < botX.length) {
                 int botIndex = i - 1;
                 ds.writeShort(botX[botIndex]);
@@ -1140,6 +1148,16 @@ implements IVXLDichVuGame {
         ds.writeByte(whoUse);
         ds.writeByte(itemId);
         ds.writeShort(iconUse);
+        ds.flush();
+        this.guiTin(ms);
+    }
+
+    public void guiBayLuyenTap(byte chiSo, short x, short y) throws IOException {
+        VXLTinNhan ms = new VXLTinNhan(93);
+        DataOutputStream ds = ms.boGhi();
+        ds.writeByte(chiSo);
+        ds.writeShort(x);
+        ds.writeShort(y);
         ds.flush();
         this.guiTin(ms);
     }
