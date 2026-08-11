@@ -15,7 +15,7 @@ public class VXLPhong {
         }
         this.ma = (byte)ma;
         this.loai = loai;
-        this.ten = "Phòng " + (ma + 1);
+        this.ten = VXLLoaiPhong.layTen(loai);
         this.banChos = new VXLChoDau[boardCount];
         for (int i = 0; i < boardCount; i++) {
             this.banChos[i] = new VXLChoDau(this, (byte)i, maxPlayers, maBanDo);

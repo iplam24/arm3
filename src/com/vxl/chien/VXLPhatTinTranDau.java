@@ -19,8 +19,16 @@ final class VXLPhatTinTranDau {
         this.guiTungNguoi(chienBinh -> chienBinh.nguoiChoi.dichVu.guiHienManHinhGameLuyenTap());
     }
 
-    void guiLuotTiepTheo(byte luotHienTai, short x, short y, byte giay) {
-        this.guiTungNguoi(chienBinh -> chienBinh.nguoiChoi.dichVu.guiLuotDauTiep(luotHienTai, x, y, this.chienBinhs, giay));
+    void guiThemBoss(VXLChienBinh boss, short head, short leg, short body,
+            short hat, short wing, byte loaiBoss) {
+        this.guiTungNguoi(chienBinh -> chienBinh.nguoiChoi.dichVu.guiThemBossDau(
+                boss, head, leg, body, hat, wing, loaiBoss));
+    }
+
+    void guiLuotTiepTheo(byte luotHienTai, short x, short y, int[] napDan,
+            long[] thuTuHanhDongNapDan, byte giay) {
+        this.guiTungNguoi(chienBinh -> chienBinh.nguoiChoi.dichVu.guiLuotDauTiep(
+                luotHienTai, x, y, this.chienBinhs, napDan, thuTuHanhDongNapDan, giay));
     }
 
     void guiGio(byte gioX, byte gioY) {
@@ -41,7 +49,7 @@ final class VXLPhatTinTranDau {
 
     void guiMau(VXLChienBinh mucTieu) {
         this.guiTungNguoi(chienBinh -> chienBinh.nguoiChoi.dichVu.guiCapNhatMauDau(
-                mucTieu.chiSo, mucTieu.hp, mucTieu.phanTramMau(), mucTieu.chet ? (byte)2 : (byte)0));
+                mucTieu.chiSo, mucTieu.hp, mucTieu.mauToiDa, mucTieu.chet ? (byte)2 : (byte)0));
     }
 
     void guiNo(VXLChienBinh chienBinh) {
@@ -56,8 +64,7 @@ final class VXLPhatTinTranDau {
     void guiDoiSung(VXLChienBinh nguoiDoi, short iconVuKhiCu) {
         this.guiTungNguoi(chienBinh -> chienBinh.nguoiChoi.dichVu.guiDoiSungLuyenTap(
                 nguoiDoi.chiSo, nguoiDoi.maVuKhi,
-                chienBinh == nguoiDoi ? iconVuKhiCu : (short)-1,
-                nguoiDoi.layThoiGianNapDan()));
+                chienBinh == nguoiDoi ? iconVuKhiCu : (short)-1));
     }
 
     private void guiTungNguoi(HanhDongGui hanhDong) {

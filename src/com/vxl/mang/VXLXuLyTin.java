@@ -44,7 +44,7 @@ implements IVXLXuLyTin {
                         this.khach.user.nguoiChoi.banDoRPG(mss);
                         break;
                     case -28:
-                        VXLQuanLyPhong.guiPhongTisEmpty(this.khach.user.nguoiChoi);
+                        VXLQuanLyPhong.xuLyYeuCauPhongTrong(this.khach.user.nguoiChoi, mss);
                         break;
                     case 6:
                         VXLQuanLyPhong.yeuCauDanhSachPhong(this.khach.user.nguoiChoi);
@@ -73,7 +73,11 @@ implements IVXLXuLyTin {
                         VXLQuanLyPhong.boLuot(this.khach.user.nguoiChoi);
                         break;
                     case 53:
-                        VXLQuanLyPhong.dauCapNhatXY(this.khach.user.nguoiChoi, mss);
+                        if (this.khach.user.nguoiChoi.inTraining) {
+                            this.khach.user.nguoiChoi.xuLyCapNhatXYSauRoiLuyenTap(mss);
+                        } else {
+                            VXLQuanLyPhong.dauCapNhatXY(this.khach.user.nguoiChoi, mss);
+                        }
                         break;
                     case 69:
                         if (this.khach.user.nguoiChoi.inTraining) {
@@ -210,7 +214,11 @@ implements IVXLXuLyTin {
                         this.khach.user.nguoiChoi.handleTrainingHoleRequest(mss);
                         break;
                     case -91:
-                        this.khach.user.nguoiChoi.xuLyFocusSkill(mss);
+                        if (this.khach.user.nguoiChoi.inTraining) {
+                            this.khach.user.nguoiChoi.xuLyFocusSkill(mss);
+                        } else {
+                            VXLQuanLyPhong.dauFocusSkill(this.khach.user.nguoiChoi, mss);
+                        }
                         break;
                     case -67:
                         VXLQuanLyMayChu.log("[FIGHT] client-ready " + this.khach.moTa()

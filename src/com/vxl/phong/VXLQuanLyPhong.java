@@ -21,10 +21,11 @@ import java.nio.file.Files;
 import javax.imageio.ImageIO;
 
 public class VXLQuanLyPhong {
-    private static final int ROOM_COUNT = 4;
     private static final int BOARD_PER_ROOM = 10;
     private static final ConcurrentMap<Integer, VXLChoDau> playerBoards = new ConcurrentHashMap<>();
     private static byte[] fightMaps = new byte[]{1};
+    private static byte[] normalMaps = new byte[]{1};
+    private static byte[] bossMaps = new byte[]{1};
     public static volatile VXLPhong[] phongs = new VXLPhong[0];
 
     public static void khoiTao() {
@@ -38,11 +39,16 @@ public class VXLQuanLyPhong {
         byte maxPlayers = (byte)configuredMaxPlayers;
         playerBoards.clear();
         fightMaps = taiBanDoDau();
-        phongs = new VXLPhong[ROOM_COUNT];
-        for (int i = 0; i < ROOM_COUNT; i++) {
-            phongs[i] = new VXLPhong(i, BOARD_PER_ROOM, (byte)0, maxPlayers, fightMaps[0]);
+        normalMaps = locBanDoTheoLoai(false);
+        bossMaps = locBanDoTheoLoai(true);
+        byte[] cacLoaiPhong = VXLLoaiPhong.layThuTu();
+        phongs = new VXLPhong[cacLoaiPhong.length];
+        for (int i = 0; i < cacLoaiPhong.length; i++) {
+            byte loaiPhong = cacLoaiPhong[i];
+            byte[] cacBanDo = chonDanhSachBanDo(loaiPhong);
+            phongs[i] = new VXLPhong(i, BOARD_PER_ROOM, loaiPhong, maxPlayers, cacBanDo[0]);
             for (int j = 0; j < phongs[i].banChos.length; j++) {
-                phongs[i].banChos[j].maBanDo = fightMaps[(i * BOARD_PER_ROOM + j) % fightMaps.length];
+                phongs[i].banChos[j].maBanDo = cacBanDo[j % cacBanDo.length];
             }
         }
     }
@@ -105,9 +111,9 @@ public class VXLQuanLyPhong {
         VXLTinNhan ms = new VXLTinNhan(-28);
         DataOutputStream ds = ms.boGhi();
         ds.writeByte(0);
-        ds.writeByte(-1);
-        ds.writeUTF("Đấu thường");
         for (VXLPhong phong : danhSachPhong) {
+            ds.writeByte(-1);
+            ds.writeUTF(phong.ten);
             for (VXLChoDau banCho : phong.banChos) {
                 int soNguoiChoi = banCho.laySoNguoiChoi();
                 if (banCho.started || soNguoiChoi >= banCho.maxPlayers) {
@@ -123,6 +129,57 @@ public class VXLQuanLyPhong {
         }
         ds.flush();
         nguoiChoi.dichVu.guiTin(ms);
+    }
+
+    public static void xuLyYeuCauPhongTrong(VXLNguoiChoi nguoiChoi, VXLTinNhan ms)
+            throws IOException {
+        if (nguoiChoi == null || ms == null || ms.layDuLieu().length == 0) {
+            guiPhongTisEmpty(nguoiChoi);
+            return;
+        }
+        DataInputStream ds = ms.boDoc();
+        int loaiYeuCau = ds.readUnsignedByte();
+        if (loaiYeuCau == 1 && ds.available() > 0) {
+            vaoPhongTrongTheoLoai(nguoiChoi, ds.readByte());
+            return;
+        }
+        if (loaiYeuCau == 2 && ds.available() > 0) {
+            vaoPhongTheoMaTimKiem(nguoiChoi, ds.readUTF());
+            return;
+        }
+        guiPhongTisEmpty(nguoiChoi);
+    }
+
+    private static void vaoPhongTrongTheoLoai(VXLNguoiChoi nguoiChoi, byte loaiPhong)
+            throws IOException {
+        VXLPhong phong = layPhongTheoLoai(loaiPhong);
+        if (phong == null) {
+            nguoiChoi.startOKDlg2("Lo\u1ea1i ph\u00f2ng kh\u00f4ng t\u1ed3n t\u1ea1i.");
+            return;
+        }
+        for (VXLChoDau banCho : phong.banChos) {
+            if (!banCho.started && banCho.laySoNguoiChoi() == 0) {
+                banCho.vao(nguoiChoi, "");
+                return;
+            }
+        }
+        nguoiChoi.startOKDlg2("Kh\u00f4ng c\u00f2n khu v\u1ef1c tr\u1ed1ng trong " + phong.ten + ".");
+    }
+
+    private static void vaoPhongTheoMaTimKiem(VXLNguoiChoi nguoiChoi, String maTimKiem)
+            throws IOException {
+        try {
+            int ma = Integer.parseInt(maTimKiem);
+            int maPhong = ma / 1000;
+            int maBan = ma % 1000;
+            VXLPhong phong = maPhong >= 0 && maPhong < phongs.length ? phongs[maPhong] : null;
+            if (phong != null && maBan >= 0 && maBan < phong.banChos.length) {
+                phong.banChos[maBan].vao(nguoiChoi, "");
+                return;
+            }
+        } catch (NumberFormatException ignored) {
+        }
+        nguoiChoi.startOKDlg2("Kh\u00f4ng t\u00ecm th\u1ea5y khu v\u1ef1c.");
     }
 
     public static void yeuCauDanhSachBan(VXLNguoiChoi nguoiChoi, VXLTinNhan ms) throws IOException {
@@ -232,6 +289,13 @@ public class VXLQuanLyPhong {
         }
     }
 
+    public static void dauFocusSkill(VXLNguoiChoi nguoiChoi, VXLTinNhan ms) throws IOException {
+        VXLQuanLyChien fight = layTranDau(nguoiChoi);
+        if (fight != null) {
+            fight.focusSkill(nguoiChoi, ms);
+        }
+    }
+
     public static void boLuot(VXLNguoiChoi nguoiChoi) throws IOException {
         VXLQuanLyChien fight = layTranDau(nguoiChoi);
         if (fight != null) {
@@ -263,6 +327,58 @@ public class VXLQuanLyPhong {
             return null;
         }
         return danhSachPhong[chiSo];
+    }
+
+    private static VXLPhong layPhongTheoLoai(byte loaiPhong) {
+        for (VXLPhong phong : phongs) {
+            if (phong != null && phong.loai == loaiPhong) {
+                return phong;
+            }
+        }
+        return null;
+    }
+
+    private static byte[] chonDanhSachBanDo(byte loaiPhong) {
+        if (VXLLoaiPhong.laBoss(loaiPhong)) {
+            return bossMaps.length > 0 ? bossMaps : fightMaps;
+        }
+        if (loaiPhong == VXLLoaiPhong.TU_DO) {
+            return fightMaps;
+        }
+        return normalMaps.length > 0 ? normalMaps : fightMaps;
+    }
+
+    private static byte[] locBanDoTheoLoai(boolean boss) {
+        ArrayList<Byte> ketQua = new ArrayList<>();
+        if (VXLDuLieuBanDo.entrys != null) {
+            for (VXLDuLieuBanDo.MapDataEntry muc : VXLDuLieuBanDo.entrys) {
+                if (muc == null || !chuaBanDo(fightMaps, muc.mapID)) {
+                    continue;
+                }
+                boolean laBoss = muc.mapName != null
+                        && muc.mapName.trim().toLowerCase().startsWith("boss");
+                if (laBoss == boss) {
+                    ketQua.add(muc.mapID);
+                }
+            }
+        }
+        if (ketQua.isEmpty()) {
+            return fightMaps.clone();
+        }
+        byte[] mang = new byte[ketQua.size()];
+        for (int i = 0; i < ketQua.size(); i++) {
+            mang[i] = ketQua.get(i);
+        }
+        return mang;
+    }
+
+    private static boolean chuaBanDo(byte[] cacBanDo, byte maBanDo) {
+        for (byte banDo : cacBanDo) {
+            if (banDo == maBanDo) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private static byte[] taiBanDoDau() {

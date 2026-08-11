@@ -7,6 +7,8 @@ public final class VXLCauHinhVatPhamChienDau {
     private static final int DO_CAO_SIEU_CAO_TOI_THIEU = 180;
     private static final int HE_SO_SAT_THUONG_SIEU_CAO = 125;
     private static final int HE_SO_SAT_THUONG_KY_NANG_DAC_BIET = 150;
+    private static final int NUA_RONG_THAN_NHAN_VAT = 10;
+    private static final int CHIEU_CAO_THAN_NHAN_VAT = 35;
     private static final VXLHoSoDan.VatLy VAT_LY_NANG_IT_GIO = vatLy(2.15D, 0.60D, 0.16D);
     private static final VXLHoSoDan.VatLy VAT_LY_THANG_IT_ROI = vatLy(1.80D, 0.25D, 0.10D);
     private static final VXLHoSoDan.VatLy VAT_LY_NHE_TAN_XA = vatLy(0.65D, 0.55D, 0.45D);
@@ -21,7 +23,6 @@ public final class VXLCauHinhVatPhamChienDau {
     private static final VXLHoSoDan.VatLy VAT_LY_NANG_PARABOL_NHE = vatLy(1.80D, 0.70D, 0.15D);
     private static final VXLHoSoDan.VatLy VAT_LY_CUC_NANG = vatLy(2.20D, 1D, 0.50D);
     private static final VXLHoSoDan.VatLy VAT_LY_TRUNG_BINH_NHAY_GIO = vatLy(1.10D, 0.85D, 0.60D);
-    private static final VXLHoSoDan.VatLy VAT_LY_QUAY_VE_IT_GIO = vatLy(1.60D, 0.20D, 0.25D);
     private static final VXLHoSoDan.VatLy VAT_LY_XUYEN_NANG = vatLy(2D, 0.65D, 0.25D);
     private static final VXLHoSoDan.VatLy VAT_LY_TEN_NHE = vatLy(0.80D, 1.10D, 0.80D);
     private static final VXLHoSoDan.VatLy VAT_LY_3_TIA =
@@ -37,8 +38,6 @@ public final class VXLCauHinhVatPhamChienDau {
     private static final VXLHoSoDan.VatLy VAT_LY_MAGENTA =
             vatLyTheoKhung(1.10D, 0.70D, 0.004D);
     private static final VXLHoSoDan.Tarzan VONG_TARZAN = tarzan(1D, 2D, 90);
-    private static final VXLHoSoDan.QuayVe QUAY_VE_CAPTAIN = quayVe(
-            80D, 6.5D, 15D, 1.18D, 30D, 18);
 
     public record DiemSieuCao(boolean kichHoat, short x, short y) {
     }
@@ -91,6 +90,9 @@ public final class VXLCauHinhVatPhamChienDau {
     private static final VXLHoSoDan DAN_IRON_MAN = new VXLHoSoDan("Iron Man", (byte)1,
             VXLHoSoDan.KieuBan.DAN_CHUM, 2, 2, 5D,
             VAT_LY_NANG_PARABOL_NHE, false, false, 60, 120);
+    private static final VXLHoSoDan DAN_SPIDER_MAN = new VXLHoSoDan("Spider-Man", (byte)1,
+            VXLHoSoDan.KieuBan.DAN_CHUM, 1, 3, 5D,
+            VAT_LY_THANG_IT_ROI, false, false, 100, 135);
     private static final VXLHoSoDan DAN_HULK = new VXLHoSoDan("Hulk", (byte)0,
             VXLHoSoDan.KieuBan.NHAN_VAT_LAO, 1, 1, 0D,
             VAT_LY_TUC_THOI, false, false, 100, 100);
@@ -100,9 +102,9 @@ public final class VXLCauHinhVatPhamChienDau {
     private static final VXLHoSoDan DAN_LOKI = new VXLHoSoDan("Loki", (byte)33,
             VXLHoSoDan.KieuBan.DAN_CHUM, 2, 2, 4D,
             VAT_LY_TRUNG_BINH_NHAY_GIO, false, false, 60, 120);
-    private static final VXLHoSoDan DAN_CAPTAIN = new VXLHoSoDan("Captain", (byte)21,
+    private static final VXLHoSoDan DAN_CAPTAIN = new VXLHoSoDan("Captain", (byte)83,
             VXLHoSoDan.KieuBan.VONG_TARZAN, 1, 1, 0D,
-            VAT_LY_TARZAN, false, true, 100, 200, null, VONG_TARZAN);
+            VAT_LY_TARZAN, false, true, 100, 100, null, VONG_TARZAN);
     private static final VXLHoSoDan DAN_WINTER_SOLDIER = new VXLHoSoDan("Winter Soldier", (byte)80,
             VXLHoSoDan.KieuBan.DAN_KEP, 2, 2, 3D,
             VAT_LY_XUYEN_NANG, true, false, 60, 120);
@@ -141,7 +143,7 @@ public final class VXLCauHinhVatPhamChienDau {
     public static byte layLoaiDanTheoVuKhi(int maVuKhi, byte loaiDanMacDinh) {
         return switch (maVuKhi) {
             case 5, 31, 57, 134, 135 -> 0;
-            case 27, 37, 132, 133, 156 -> 1;
+            case 27, 37, 132, 133, 156, 282, 283 -> 1;
             case 123, 124, 125, 126, 127 -> 2;
             case 32, 58, 140, 141, 142 -> 9;
             case 30, 56, 146, 147, 148 -> 10;
@@ -192,6 +194,8 @@ public final class VXLCauHinhVatPhamChienDau {
             case 134 -> 4;
             case 135 -> 5;
             case 27 -> 10;
+            case 282 -> 85;
+            case 283 -> 86;
             case 37 -> 11;
             case 156 -> 12;
             case 132 -> 13;
@@ -284,59 +288,76 @@ public final class VXLCauHinhVatPhamChienDau {
 
     public static int layBanKinhNo(byte loaiDan, byte avenger) {
         VXLHoSoDan hoSoDan = layHoSoDan(loaiDan, avenger);
-        if (hoSoDan.kieuBan() == VXLHoSoDan.KieuBan.LASER
-                || hoSoDan.kieuBan() == VXLHoSoDan.KieuBan.NHAN_VAT_LAO) {
+        if (hoSoDan.kieuBan() == VXLHoSoDan.KieuBan.LASER) {
             return 0;
         }
+        if (hoSoDan.kieuBan() == VXLHoSoDan.KieuBan.NHAN_VAT_LAO) {
+            return 24;
+        }
         return switch (Byte.toUnsignedInt(hoSoDan.loaiClient())) {
-            case 0 -> 46;
-            case 1 -> 24;
-            case 2 -> 16;
-            case 9 -> 28;
-            case 10 -> 38;
-            case 11 -> 20;
-            case 17 -> 28;
-            case 19 -> 38;
+            case 0 -> 24;
+            case 1 -> 14;
+            case 2 -> 18;
+            case 9 -> 18;
+            case 10 -> 19;
+            case 11, 17, 19 -> 13;
             case 21 -> 10;
-            case 33, 79, 80, 82, 83 -> 30;
-            case 49 -> 18;
-            default -> 32;
+            case 33, 79, 80, 82, 83 -> 18;
+            case 49 -> 16;
+            default -> 18;
         };
     }
 
-    public static int tinhSatThuongNoTaiViTri(short[][] cacDuongX, short[][] cacDuongY,
-            short mucTieuX, short mucTieuY, byte loaiDan, byte avenger,
-            int satThuongMoiVien, int tranSatThuong) {
-        if (Byte.toUnsignedInt(loaiDan) == 21 && (avenger == 0 || avenger == 5)) {
+    public static int tinhSatThuongNoTaiViTri(short[] vaChamDiaHinhX,
+            short[] vaChamDiaHinhY, short mucTieuX, short mucTieuY, byte loaiDan,
+            byte avenger, int satThuongMoiVien, int tranSatThuong) {
+        if (Byte.toUnsignedInt(loaiDan) == 21 && avenger == 0) {
             return 0;
         }
         int banKinh = layBanKinhNo(loaiDan, avenger);
         if (banKinh <= 0 || satThuongMoiVien <= 0 || tranSatThuong <= 0
-                || cacDuongX == null || cacDuongY == null) {
+                || vaChamDiaHinhX == null || vaChamDiaHinhY == null) {
             return 0;
         }
         int tongSatThuong = 0;
-        int soQuyDao = Math.min(cacDuongX.length, cacDuongY.length);
-        for (int i = 0; i < soQuyDao && tongSatThuong < tranSatThuong; i++) {
-            if (Byte.toUnsignedInt(loaiDan) == 17 && soQuyDao > 1 && i == 0) {
+        int soDiemNo = Math.min(vaChamDiaHinhX.length, vaChamDiaHinhY.length);
+        for (int i = 0; i < soDiemNo && tongSatThuong < tranSatThuong; i++) {
+            int xNo = vaChamDiaHinhX[i];
+            int yNo = vaChamDiaHinhY[i];
+            if (xNo == VXLHeThongDan.KHONG_CO_VA_CHAM_DIA_HINH
+                    || yNo == VXLHeThongDan.KHONG_CO_VA_CHAM_DIA_HINH) {
                 continue;
             }
-            short[] duongX = cacDuongX[i];
-            short[] duongY = cacDuongY[i];
-            if (duongX == null || duongY == null || duongX.length == 0 || duongY.length == 0) {
+            double khoangCach = tinhKhoangCachHieuDungToiThanNhanVat(
+                    xNo, yNo, mucTieuX, mucTieuY);
+            if (khoangCach >= banKinh) {
                 continue;
             }
-            int chiSoCuoi = Math.min(duongX.length, duongY.length) - 1;
-            double khoangCach = Math.hypot(duongX[chiSoCuoi] - mucTieuX,
-                    duongY[chiSoCuoi] - (mucTieuY - 18));
-            if (khoangCach > banKinh) {
+            int satThuong = satThuongMoiVien
+                    - (int)Math.round(satThuongMoiVien * khoangCach / banKinh);
+            if (satThuong <= 0) {
                 continue;
             }
-            int phanTram = Math.max(25, 100 - (int)Math.round(khoangCach * 75D / banKinh));
-            int satThuong = Math.max(1, satThuongMoiVien * phanTram / 100);
             tongSatThuong += Math.min(satThuong, tranSatThuong - tongSatThuong);
         }
         return tongSatThuong;
+    }
+
+    private static double tinhKhoangCachHieuDungToiThanNhanVat(int xNo, int yNo,
+            short mucTieuX, short mucTieuY) {
+        int lechX = 0;
+        if (xNo < mucTieuX - NUA_RONG_THAN_NHAN_VAT) {
+            lechX = mucTieuX - NUA_RONG_THAN_NHAN_VAT - xNo;
+        } else if (xNo > mucTieuX + NUA_RONG_THAN_NHAN_VAT) {
+            lechX = xNo - mucTieuX - NUA_RONG_THAN_NHAN_VAT;
+        }
+        int lechY = 0;
+        if (yNo < mucTieuY - CHIEU_CAO_THAN_NHAN_VAT) {
+            lechY = mucTieuY - CHIEU_CAO_THAN_NHAN_VAT - yNo;
+        } else if (yNo > mucTieuY) {
+            lechY = yNo - mucTieuY;
+        }
+        return Math.hypot(lechX, lechY);
     }
 
     public static DiemSieuCao timDiemSieuCao(short batDauY, short[][] cacDuongX,
@@ -407,10 +428,11 @@ public final class VXLCauHinhVatPhamChienDau {
             case 2 -> 0;
             case 3 -> 82;
             case 4 -> 33;
-            case 5 -> 21;
+            case 5 -> 83;
             case 6 -> 80;
             case 7 -> 79;
             case 8 -> 49;
+            case 9 -> 1;
             default -> chuanHoaLoaiDan(loaiDanMacDinh);
         };
     }
@@ -420,6 +442,10 @@ public final class VXLCauHinhVatPhamChienDau {
     }
 
     public static VXLHoSoDan layHoSoDan(byte loaiDan, byte avenger) {
+        int loaiDanChuan = Byte.toUnsignedInt(chuanHoaLoaiDan(loaiDan));
+        if (loaiDanChuan == 56) {
+            return DAN_VAT_PHAM_TO_NHEN_X3;
+        }
         switch (Byte.toUnsignedInt(avenger)) {
             case 1:
                 return DAN_IRON_MAN;
@@ -437,10 +463,12 @@ public final class VXLCauHinhVatPhamChienDau {
                 return DAN_HAWKEYE;
             case 8:
                 return DAN_ULTRON;
+            case 9:
+                return DAN_SPIDER_MAN;
             default:
                 break;
         }
-        return switch (Byte.toUnsignedInt(chuanHoaLoaiDan(loaiDan))) {
+        return switch (loaiDanChuan) {
             case 1 -> DAN_K98;
             case 2 -> DAN_HOA_CAI;
             case 9 -> DAN_CHUOI;

@@ -15,6 +15,8 @@ public class VXLKetQuaDan {
     public final short[] duongY;
     public final short[][] cacDuongX;
     public final short[][] cacDuongY;
+    public final short[] vaChamDiaHinhX;
+    public final short[] vaChamDiaHinhY;
     public final VXLChienBinh mucTieu;
     public final int satThuong;
     public final VXLChienBinh[] mucTieuTheoQuyDao;
@@ -28,14 +30,15 @@ public class VXLKetQuaDan {
         this(loaiDan, batDauX, batDauY, goc, luc, (byte)0,
                 (byte)0, (byte)0, (short)-1, (short)-1,
                 new short[][]{duongX}, new short[][]{duongY},
+                taoMangKhongVaCham(1), taoMangKhongVaCham(1),
                 new VXLChienBinh[]{mucTieu}, new int[]{satThuong}, satThuong, satThuong,
                 (byte)0);
     }
 
     public VXLKetQuaDan(byte loaiDan, short batDauX, short batDauY, short goc, byte luc,
             byte lucTach, byte chiMang, byte loaiSieuCao, short xSieuCao, short ySieuCao,
-            short[][] cacDuongX, short[][] cacDuongY,
-            VXLChienBinh[] mucTieuTheoQuyDao, int[] satThuongTheoQuyDao,
+            short[][] cacDuongX, short[][] cacDuongY, short[] vaChamDiaHinhX,
+            short[] vaChamDiaHinhY, VXLChienBinh[] mucTieuTheoQuyDao, int[] satThuongTheoQuyDao,
             int satThuongMoiVien, int tranSatThuong, byte avengerDan) {
         this.loaiDan = loaiDan;
         this.batDauX = batDauX;
@@ -49,6 +52,8 @@ public class VXLKetQuaDan {
         this.ySieuCao = ySieuCao;
         this.cacDuongX = cacDuongX;
         this.cacDuongY = cacDuongY;
+        this.vaChamDiaHinhX = vaChamDiaHinhX;
+        this.vaChamDiaHinhY = vaChamDiaHinhY;
         this.duongX = cacDuongX.length > 0 ? cacDuongX[0] : new short[0];
         this.duongY = cacDuongY.length > 0 ? cacDuongY[0] : new short[0];
         this.mucTieuTheoQuyDao = mucTieuTheoQuyDao;
@@ -80,12 +85,22 @@ public class VXLKetQuaDan {
         short[][] duongYMoi = new short[soQuyDaoMoi][];
         VXLChienBinh[] mucTieuMoi = new VXLChienBinh[soQuyDaoMoi];
         int[] satThuongMoi = new int[soQuyDaoMoi];
+        short[] vaChamXMoi = taoMangKhongVaCham(soQuyDaoMoi);
+        short[] vaChamYMoi = taoMangKhongVaCham(soQuyDaoMoi);
         for (int lan = 0; lan < soBan; lan++) {
             int batDau = lan * this.cacDuongX.length;
             for (int i = 0; i < this.cacDuongX.length; i++) {
                 int dich = batDau + i;
                 duongXMoi[dich] = this.cacDuongX[i].clone();
                 duongYMoi[dich] = this.cacDuongY[i].clone();
+                if (lan == 0) {
+                    if (i < this.vaChamDiaHinhX.length) {
+                        vaChamXMoi[dich] = this.vaChamDiaHinhX[i];
+                    }
+                    if (i < this.vaChamDiaHinhY.length) {
+                        vaChamYMoi[dich] = this.vaChamDiaHinhY[i];
+                    }
+                }
                 if (lan == 0 && i < this.mucTieuTheoQuyDao.length) {
                     mucTieuMoi[dich] = this.mucTieuTheoQuyDao[i];
                     satThuongMoi[dich] = i < this.satThuongTheoQuyDao.length
@@ -95,8 +110,14 @@ public class VXLKetQuaDan {
         }
         return new VXLKetQuaDan(this.loaiDan, this.batDauX, this.batDauY, this.goc,
                 this.luc, this.lucTach, this.chiMang, this.loaiSieuCao,
-                this.xSieuCao, this.ySieuCao, duongXMoi, duongYMoi, mucTieuMoi,
-                satThuongMoi, this.satThuongMoiVien, this.tranSatThuong,
+                this.xSieuCao, this.ySieuCao, duongXMoi, duongYMoi,
+                vaChamXMoi, vaChamYMoi, mucTieuMoi, satThuongMoi, this.satThuongMoiVien, this.tranSatThuong,
                 this.avengerDan);
+    }
+
+    private static short[] taoMangKhongVaCham(int doDai) {
+        short[] ketQua = new short[Math.max(0, doDai)];
+        java.util.Arrays.fill(ketQua, VXLHeThongDan.KHONG_CO_VA_CHAM_DIA_HINH);
+        return ketQua;
     }
 }

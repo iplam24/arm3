@@ -4,12 +4,16 @@ import com.vxl.bando.VXLQuanLyBanDo;
 
 final class VXLTinhDuongDan {
     private static final int BAN_KINH_TRUNG = 42;
+    private static final int NUA_RONG_HITBOX_NHAN_VAT = 12;
+    private static final int CHIEU_CAO_HITBOX_NHAN_VAT = 24;
     private static final int SO_DIEM_TOI_DA = 160;
     private static final double BUOC_THOI_GIAN = 0.5D;
     private static final double HE_SO_TOC_DO = 0.85D;
     private static final double TRONG_LUC = 0.33D;
     private static final double KHOANG_CACH_DAU_SUNG = 16D;
     private static final double DO_CAO_DAU_SUNG = 12D;
+    private static final double GIAM_KHOANG_CACH_DAU_SPIDER_MAN = 12D;
+    private static final double TANG_DO_CAO_DAU_SPIDER_MAN = 3D;
     private static final byte LUC_TOI_THIEU = 12;
     private static final byte LUC_TOI_DA = 30;
     private final VXLQuanLyBanDo banDo;
@@ -38,7 +42,17 @@ final class VXLTinhDuongDan {
     VXLHeThongDan.KetQuaPhatBan taoPhatBan(VXLChienBinh nguoiBan, byte loaiDan, byte chiMang,
             byte avengerDan, short goc, byte luc, byte lucTach, byte gioX, byte gioY,
             boolean epXuyenDiaHinh) {
-        return this.heThongDan.taoPhatBan(nguoiBan.x, nguoiBan.y, goc, luc, lucTach, loaiDan,
+        short batDauX = nguoiBan.x;
+        short batDauY = nguoiBan.y;
+        if (avengerDan == 9) {
+            double radian = Math.toRadians(goc);
+            batDauX = (short)Math.round(nguoiBan.x
+                    - Math.cos(radian) * GIAM_KHOANG_CACH_DAU_SPIDER_MAN);
+            batDauY = (short)Math.round(nguoiBan.y
+                    + Math.sin(radian) * GIAM_KHOANG_CACH_DAU_SPIDER_MAN
+                    - TANG_DO_CAO_DAU_SPIDER_MAN);
+        }
+        return this.heThongDan.taoPhatBan(batDauX, batDauY, goc, luc, lucTach, loaiDan,
                 chiMang, avengerDan, gioX, gioY, Byte.toUnsignedInt(nguoiBan.chiSo), BUOC_THOI_GIAN,
                 SO_DIEM_TOI_DA, epXuyenDiaHinh);
     }
@@ -85,7 +99,7 @@ final class VXLTinhDuongDan {
     }
 
     private int timChiSoMucTieuTaiDiem(int x, int y, int leTrung, int mucTieuBoQua) {
-        int nuaRong = 10 + Math.max(0, leTrung);
+        int nuaRong = NUA_RONG_HITBOX_NHAN_VAT + Math.max(0, leTrung);
         int le = Math.max(0, leTrung);
         for (int i = 0; i < this.chienBinhs.length; i++) {
             VXLChienBinh mucTieu = this.chienBinhs[i];
@@ -94,7 +108,8 @@ final class VXLTinhDuongDan {
                 continue;
             }
             if (x >= mucTieu.x - nuaRong && x < mucTieu.x + nuaRong
-                    && y >= mucTieu.y - 35 - le && y < mucTieu.y + le) {
+                    && y >= mucTieu.y - CHIEU_CAO_HITBOX_NHAN_VAT - le
+                    && y < mucTieu.y + le) {
                 return i;
             }
         }

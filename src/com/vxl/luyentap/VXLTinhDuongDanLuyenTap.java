@@ -18,9 +18,9 @@ final class VXLTinhDuongDanLuyenTap {
         }
     }
 
-    private static final int CHIEU_RONG_NHAN_VAT = 20;
-    private static final int CHIEU_CAO_NHAN_VAT = 35;
-    private static final int LE_TRUNG_MAC_DINH = 5;
+    private static final int CHIEU_RONG_NHAN_VAT = 24;
+    private static final int CHIEU_CAO_NHAN_VAT = 24;
+    private static final int LE_TRUNG_MAC_DINH = 0;
     private static final int SO_DIEM_TOI_DA = 220;
     private static final double BUOC_THOI_GIAN_DAN_BOT = 0.72D;
     private static final double BUOC_THOI_GIAN_DAN_NGUOI_CHOI = 1.0D;
@@ -28,6 +28,8 @@ final class VXLTinhDuongDanLuyenTap {
     private static final double TRONG_LUC = 0.33D;
     private static final double KHOANG_CACH_DAU_SUNG = 30D;
     private static final double DO_CAO_DAU_SUNG = 17D;
+    private static final double GIAM_KHOANG_CACH_DAU_SPIDER_MAN = 12D;
+    private static final double TANG_DO_CAO_DAU_SPIDER_MAN = 3D;
     private static final byte LUC_TOI_THIEU = 12;
     private static final byte LUC_TOI_DA = 30;
     private final short[] botX;
@@ -83,7 +85,17 @@ final class VXLTinhDuongDanLuyenTap {
 
     VXLHeThongDan.KetQuaPhatBan taoPhatBanNguoiChoi(short batDauX, short batDauY, short goc,
             byte luc, byte lucTach, byte loaiDan, byte chiMang, byte avenger) {
-        return this.taoPhatBan(batDauX, batDauY, goc, luc, lucTach, loaiDan, chiMang, avenger,
+        short xDauDan = batDauX;
+        short yDauDan = batDauY;
+        if (avenger == 9) {
+            double radian = Math.toRadians(goc);
+            xDauDan = (short)Math.round(batDauX
+                    - Math.cos(radian) * GIAM_KHOANG_CACH_DAU_SPIDER_MAN);
+            yDauDan = (short)Math.round(batDauY
+                    + Math.sin(radian) * GIAM_KHOANG_CACH_DAU_SPIDER_MAN
+                    - TANG_DO_CAO_DAU_SPIDER_MAN);
+        }
+        return this.taoPhatBan(xDauDan, yDauDan, goc, luc, lucTach, loaiDan, chiMang, avenger,
                 -1, BUOC_THOI_GIAN_DAN_NGUOI_CHOI);
     }
 

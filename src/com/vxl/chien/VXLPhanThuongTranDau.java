@@ -23,7 +23,7 @@ public record VXLPhanThuongTranDau(int kinhNghiem, int vang, int ngoc, int cupTh
         }
         if (cheDoCamTu && chienBinh.haCamTuTrongTran > 0) {
             int soCamTu = chienBinh.haCamTuTrongTran;
-            kinhNghiem += 200 * soCamTu + 10 * soCamTu * (soCamTu - 1);
+            kinhNghiem += 200 * soCamTu + 5 * soCamTu * (soCamTu - 1);
             vang += soCamTu * 100;
         }
         return new VXLPhanThuongTranDau(kinhNghiem, vang, 0, cupThayDoi);

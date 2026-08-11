@@ -19,9 +19,9 @@ final class VXLCauHinhPhienQuan {
     private static final int LOAI_VU_KHI = 5;
     private static final int MA_AVENGER_DAU = 391;
     private static final int MA_AVENGER_CUOI = 400;
-    private static final byte[] BAN_DO_SAU_CAP_BON = new byte[]{
-        1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 12, 13, 14, 15, 16
-    };
+    private static final int MA_SPIDER_MAN = 413;
+    private static final byte BAN_DO_CO_BAN_DAU_TRAN = 1;
+    private static final byte[] BAN_DO_CO_BAN_AN_TOAN = new byte[]{3, 1};
 
     private VXLCauHinhPhienQuan() {
     }
@@ -60,10 +60,10 @@ final class VXLCauHinhPhienQuan {
     static byte layBanDoChoTran(int cap) {
         int capHopLe = gioiHanCap(cap);
         if (capHopLe <= 4) {
-            return 0;
+            return BAN_DO_CO_BAN_DAU_TRAN;
         }
         int nhomHaiCap = (capHopLe - 5) / 2;
-        return BAN_DO_SAU_CAP_BON[nhomHaiCap % BAN_DO_SAU_CAP_BON.length];
+        return BAN_DO_CO_BAN_AN_TOAN[nhomHaiCap % BAN_DO_CO_BAN_AN_TOAN.length];
     }
 
     static int tinhPhanThuongVang(int cap) {
@@ -100,7 +100,8 @@ final class VXLCauHinhPhienQuan {
         List<Short> ungVien = new ArrayList<>();
         if (VXLQuanLyMayChu.itemTemplates != null) {
             for (VXLMauVatPham mau : VXLQuanLyMayChu.itemTemplates.values()) {
-                if (mau == null || mau.loai != LOAI_VU_KHI || !laVuKhiDanHoTro(mau.part)) {
+                if (mau == null || mau.loai != LOAI_VU_KHI
+                        || !laVuKhiDanHoTro(mau.part) || tongThamSo(mau, 14) <= 0) {
                     continue;
                 }
                 int capMau = Math.max(1, Byte.toUnsignedInt(mau.cap));
@@ -218,7 +219,8 @@ final class VXLCauHinhPhienQuan {
 
     private static boolean laMauHopLe(VXLMauVatPham mau) {
         if (mau == null || mau.loai < 0 || mau.loai >= SO_LOAI_TRANG_BI || mau.part < 0
-                || mau.ma >= MA_AVENGER_DAU && mau.ma <= MA_AVENGER_CUOI) {
+                || mau.ma >= MA_AVENGER_DAU && mau.ma <= MA_AVENGER_CUOI
+                || mau.ma == MA_SPIDER_MAN) {
             return false;
         }
         if (mau.loai == LOAI_VU_KHI) {

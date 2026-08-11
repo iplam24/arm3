@@ -447,9 +447,17 @@ public class VXLNguoiChoi {
             this.hat = (short)-1;
             this.wing = (short)-1;
             this.avenger = (byte)8;
+        } else if (ma == 413) {
+            this.head = (short)278;
+            this.body = (short)279;
+            this.leg = (short)280;
+            this.wp = (short)283;
+            this.hat = (short)-1;
+            this.wing = (short)-1;
+            this.avenger = (byte)0;
         } else {
             VXLVatPham t = this.itemBody[5];
-            if (t == null || t.ma < 391 || t.ma > 400) {
+            if (t == null || t.ma != 413 && (t.ma < 391 || t.ma > 400)) {
                 byte loai = vatPham.mau.loai;
                 short part = vatPham.mau.part;
                 if (loai == 0) {
@@ -467,6 +475,10 @@ public class VXLNguoiChoi {
                 }
             }
         }
+    }
+
+    public void dongBoTrangBiNhanVat() {
+        this.lamMoiTrangBiNhanVat();
     }
 
     private void lamMoiTrangBiNhanVat() {
@@ -1055,6 +1067,11 @@ public class VXLNguoiChoi {
         return this.avenger == 1 || this.avenger == 8;
     }
 
+    public byte layAvengerDan() {
+        return this.head == 278 && this.body == 279 && this.leg == 280
+                ? (byte)9 : this.avenger;
+    }
+
     public static void onChatFromToAllPlayer(String ten, String noiDung) {
         try {
             VXLTinNhan mss = new VXLTinNhan(5);
@@ -1295,6 +1312,10 @@ public class VXLNguoiChoi {
 
     public void handleTrainingMove(VXLTinNhan ms) throws IOException {
         this.luyenTap.diChuyen(ms);
+    }
+
+    public void xuLyCapNhatXYSauRoiLuyenTap(VXLTinNhan ms) throws IOException {
+        this.luyenTap.capNhatXYSauRoi(ms);
     }
 
     public void xuLyBanLuyenTap(VXLTinNhan ms) throws IOException {

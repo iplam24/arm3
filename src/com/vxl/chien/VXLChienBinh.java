@@ -1,12 +1,17 @@
 package com.vxl.chien;
 
+import com.vxl.loi.VXLQuanLyMayChu;
 import com.vxl.mohinh.VXLNguoiChoi;
+import com.vxl.vatpham.VXLMauVatPham;
+import com.vxl.vatpham.VXLThuocTinhVatPham;
 import com.vxl.vatpham.VXLVatPham;
 
 public class VXLChienBinh {
     private static final int GIOI_HAN_CHI_SO = 30000;
     private static final int MA_THUOC_TINH_THOI_GIAN_NAP_DAN = 14;
-    private static final int THOI_GIAN_NAP_DAN_MAC_DINH = 300;
+    public static final int THOI_GIAN_NAP_DAN_TOI_THIEU = 250;
+    public static final int THOI_GIAN_NAP_DAN_MAC_DINH = THOI_GIAN_NAP_DAN_TOI_THIEU;
+    public static final int THOI_GIAN_NAP_DAN_TOI_DA = Short.MAX_VALUE;
     public final VXLNguoiChoi nguoiChoi;
     public final byte chiSo;
     public final boolean bot;
@@ -15,6 +20,8 @@ public class VXLChienBinh {
     public final int ma;
     public short maVuKhi;
     public final byte avenger;
+    public final byte avengerDan;
+    public final VXLKyNangAvenger kyNangAvenger;
     public int tanCong;
     public final int giap;
     public short x;
@@ -30,6 +37,7 @@ public class VXLChienBinh {
     public int luotDongBang;
     public int luotMu;
     public int luotVoHinh;
+    public int luotMacTo;
     public int luotMaCaRong;
     public int vatPhamDanDacBiet = -1;
     public int heSoPhatBan = 100;
@@ -45,6 +53,7 @@ public class VXLChienBinh {
     public int no;
     public boolean daDungVatPhamTrongLuot;
     public boolean kyNangDacBiet;
+    public boolean skillRiengPhatToi;
     public boolean chet;
     public boolean daRoiTran;
     public boolean daQuyetToan;
@@ -53,6 +62,7 @@ public class VXLChienBinh {
     private long thoiDiemSanSangBan;
 
     public VXLChienBinh(VXLNguoiChoi nguoiChoi, byte chiSo, short x, short y) {
+        nguoiChoi.dongBoTrangBiNhanVat();
         this.nguoiChoi = nguoiChoi;
         this.chiSo = chiSo;
         this.bot = false;
@@ -61,6 +71,8 @@ public class VXLChienBinh {
         this.ma = nguoiChoi.ma;
         this.maVuKhi = nguoiChoi.wp;
         this.avenger = nguoiChoi.avenger;
+        this.avengerDan = nguoiChoi.layAvengerDan();
+        this.kyNangAvenger = VXLKyNangAvenger.tao(this.avengerDan);
         this.x = x;
         this.y = y;
 
@@ -106,6 +118,17 @@ public class VXLChienBinh {
     }
 
     public VXLChienBinh(byte chiSo, short x, short y, String ten, short maVuKhi, byte avenger, boolean camTu) {
+        this(chiSo, x, y, ten, maVuKhi, avenger, camTu,
+                camTu ? 140 : 220, camTu ? 45 : 35, camTu ? 8 : 15);
+    }
+
+    public VXLChienBinh(byte chiSo, short x, short y, String ten, short maVuKhi, byte avenger,
+            int mauToiDa, int tanCong, int giap) {
+        this(chiSo, x, y, ten, maVuKhi, avenger, false, mauToiDa, tanCong, giap);
+    }
+
+    public VXLChienBinh(byte chiSo, short x, short y, String ten, short maVuKhi, byte avenger,
+            boolean camTu, int mauToiDa, int tanCong, int giap) {
         this.nguoiChoi = null;
         this.chiSo = chiSo;
         this.bot = true;
@@ -114,11 +137,13 @@ public class VXLChienBinh {
         this.ma = -9000 - chiSo;
         this.maVuKhi = maVuKhi;
         this.avenger = avenger;
+        this.avengerDan = avenger;
+        this.kyNangAvenger = VXLKyNangAvenger.tao(this.avengerDan);
         this.x = x;
         this.y = y;
-        this.mauToiDa = camTu ? 140 : 220;
-        this.tanCong = camTu ? 45 : 35;
-        this.giap = camTu ? 8 : 15;
+        this.mauToiDa = gioiHan(mauToiDa, 1, GIOI_HAN_CHI_SO);
+        this.tanCong = gioiHan(tanCong, 1, GIOI_HAN_CHI_SO);
+        this.giap = gioiHan(giap, 0, GIOI_HAN_CHI_SO);
         this.hp = this.mauToiDa;
     }
 
@@ -174,21 +199,59 @@ public class VXLChienBinh {
     }
 
     public int layThoiGianNapDan() {
-        int thoiGianNap = THOI_GIAN_NAP_DAN_MAC_DINH;
+        int thoiGianNap = layThoiGianNapDanTheoMaVuKhi(this.maVuKhi);
         if (this.nguoiChoi != null && this.nguoiChoi.itemBody != null
                 && this.nguoiChoi.itemBody.length > 5) {
             VXLVatPham vuKhi = this.nguoiChoi.itemBody[5];
             if (vuKhi != null && vuKhi.mau != null && vuKhi.HP > 0) {
-                int theoVuKhi = vuKhi.tongThamSoHieuLucTheoMa(MA_THUOC_TINH_THOI_GIAN_NAP_DAN);
-                if (theoVuKhi > 0) {
-                    thoiGianNap = Math.max(50, Math.min(5000, theoVuKhi));
-                }
+                int theoVatPham = layThamSoNapDan(vuKhi.itemOptions);
+                int theoMau = layThamSoNapDan(vuKhi.mau.thuocTinhs);
+                int theoCauHinh = theoVatPham > 0 ? theoVatPham : theoMau;
+                thoiGianNap = theoCauHinh > 0
+                        ? gioiHanNapDan(theoCauHinh) : THOI_GIAN_NAP_DAN_MAC_DINH;
             }
         }
         if (this.luotNapNhanh > 0) {
-            thoiGianNap = Math.max(50, thoiGianNap * 80 / 100);
+            thoiGianNap = gioiHanNapDan((long)thoiGianNap * 80L / 100L);
         }
         return thoiGianNap;
+    }
+
+    public static int layThoiGianNapDanTheoMaVuKhi(short maVuKhi) {
+        if (VXLQuanLyMayChu.itemTemplates == null) {
+            return THOI_GIAN_NAP_DAN_MAC_DINH;
+        }
+        for (VXLMauVatPham mau : VXLQuanLyMayChu.itemTemplates.values()) {
+            if (mau == null || mau.loai != 5 || mau.part != maVuKhi) {
+                continue;
+            }
+            int theoMau = layThamSoNapDan(mau.thuocTinhs);
+            return theoMau > 0 ? gioiHanNapDan(theoMau) : THOI_GIAN_NAP_DAN_MAC_DINH;
+        }
+        return THOI_GIAN_NAP_DAN_MAC_DINH;
+    }
+
+    private static int layThamSoNapDan(java.util.Vector thuocTinhs) {
+        if (thuocTinhs == null) {
+            return -1;
+        }
+        for (Object giaTri : thuocTinhs) {
+            if (giaTri instanceof VXLThuocTinhVatPham thuocTinh
+                    && thuocTinh.optionTemplate != null
+                    && thuocTinh.optionTemplate.ma == MA_THUOC_TINH_THOI_GIAN_NAP_DAN
+                    && thuocTinh.thamSo > 0) {
+                return thuocTinh.thamSo;
+            }
+        }
+        return -1;
+    }
+
+    private static int gioiHanNapDan(long giaTri) {
+        if (giaTri <= 0L) {
+            return THOI_GIAN_NAP_DAN_MAC_DINH;
+        }
+        return (int)Math.max(THOI_GIAN_NAP_DAN_TOI_THIEU,
+                Math.min(THOI_GIAN_NAP_DAN_TOI_DA, giaTri));
     }
 
     public int layTamDiChuyen(int tamCoBan) {
@@ -220,7 +283,8 @@ public class VXLChienBinh {
     }
 
     public boolean tangNo(int giaTri) {
-        if (this.bot || this.chet || giaTri <= 0) {
+        if (this.bot || this.chet || giaTri <= 0
+                || this.kyNangAvenger != null && this.kyNangAvenger.laSkillRieng()) {
             return false;
         }
         int truoc = this.no;
@@ -230,7 +294,13 @@ public class VXLChienBinh {
     }
 
     public boolean kichHoatKyNangDacBiet() {
-        if (this.bot || this.chet || this.no < 100 || this.kyNangDacBiet) {
+        if (this.bot || this.chet || this.kyNangDacBiet) {
+            return false;
+        }
+        if (this.kyNangAvenger != null && this.kyNangAvenger.laSkillRieng()) {
+            return false;
+        }
+        if (this.no < 100) {
             return false;
         }
         this.no = 0;
