@@ -1310,6 +1310,10 @@ public class VXLNguoiChoi {
         return this.luyenTap.roiNeuDangLuyenTap();
     }
 
+    public synchronized void datLaiTienDoPhienQuanHangNgay() {
+        this.luyenTap.datLaiHangNgay();
+        this.flushCache();
+    }
     public void handleTrainingMove(VXLTinNhan ms) throws IOException {
         this.luyenTap.diChuyen(ms);
     }

@@ -1,0 +1,1698 @@
+﻿Compiled from "LoginScr.java"
+public final class chibikun.LoginScr extends chibikun.CScreen implements chibikun.IActionListener {
+  public chibikun.TField tU;
+
+  public chibikun.TField tP;
+
+  private int l;
+
+  private int m;
+
+  private int n;
+
+  private int ah;
+
+  private int ai;
+
+  private int aj;
+
+  private static int ak;
+
+  private boolean al;
+
+  private boolean am;
+
+  private boolean an;
+
+  public static boolean c;
+
+  private java.lang.String ao;
+
+  private int ap;
+
+  private int aq;
+
+  private int ar;
+
+  private chibikun.mCommand as;
+
+  private chibikun.mCommand at;
+
+  public static chibikun.LoginScr d;
+
+  private chibikun.mCommand au;
+
+  private chibikun.mCommand av;
+
+  private chibikun.mCommand aw;
+
+  private chibikun.mCommand ax;
+
+  public boolean e;
+
+  private boolean ay;
+
+  private int[] az;
+
+  public static short f;
+
+  public static long g;
+
+  public static long h;
+
+  public static boolean isLoadDataOk;
+
+  public static int j;
+
+  private static int ba;
+
+  public static java.lang.String k;
+
+  public static chibikun.LoginScr gI();
+    Code:
+       0: getstatic     #95                 // Field d:Lchibikun/LoginScr;
+       3: ifnonnull     16
+       6: new           #36                 // class chibikun/LoginScr
+       9: dup
+      10: invokespecial #198                // Method "<init>":()V
+      13: putstatic     #95                 // Field d:Lchibikun/LoginScr;
+      16: getstatic     #95                 // Field d:Lchibikun/LoginScr;
+      19: areturn
+
+  public final void show();
+    Code:
+       0: aconst_null
+       1: putstatic     #138                // Field coreLG/CCanvas.splashScr:Lchibikun/SplashScr;
+       4: aload_0
+       5: invokespecial #207                // Method resetTF:()V
+       8: aload_0
+       9: invokespecial #154                // Method chibikun/CScreen.show:()V
+      12: aconst_null
+      13: putstatic     #113                // Field chibikun/SplashScr.logo:Ljavax/microedition/lcdui/Image;
+      16: return
+
+  public chibikun.LoginScr();
+    Code:
+       0: aload_0
+       1: invokespecial #148                // Method chibikun/CScreen."<init>":()V
+       4: aload_0
+       5: ldc           #2                  // String
+       7: putfield      #82                 // Field ao:Ljava/lang/String;
+      10: aload_0
+      11: sipush        -1500
+      14: putfield      #85                 // Field ar:I
+      17: aload_0
+      18: iconst_0
+      19: putfield      #96                 // Field e:Z
+      22: iconst_2
+      23: newarray       int
+      25: dup
+      26: iconst_0
+      27: getstatic     #139                // Field coreLG/CCanvas.w:I
+      30: bipush        15
+      32: iadd
+      33: iastore
+      34: dup
+      35: iconst_1
+      36: getstatic     #139                // Field coreLG/CCanvas.w:I
+      39: bipush        15
+      41: iadd
+      42: iastore
+      43: astore_1
+      44: aload_0
+      45: iconst_2
+      46: newarray       int
+      48: putfield      #93                 // Field az:[I
+      51: ldc           #17                 // String sound
+      53: invokestatic  #216                // Method chibikun/Rms.loadRMSInt:(Ljava/lang/String;)I
+      56: putstatic     #94                 // Field ba:I
+      59: aload_0
+      60: iconst_0
+      61: putfield      #79                 // Field al:Z
+      64: getstatic     #71                 // Field chibikun/GameScr.bi:Lchibikun/Army__cv;
+      67: ifnonnull     80
+      70: new           #23                 // class chibikun/Army__cv
+      73: dup
+      74: invokespecial #144                // Method chibikun/Army__cv."<init>":()V
+      77: putstatic     #71                 // Field chibikun/GameScr.bi:Lchibikun/Army__cv;
+      80: getstatic     #71                 // Field chibikun/GameScr.bi:Lchibikun/Army__cv;
+      83: ldc           #1                  // float -100.0f
+      85: ldc           #1                  // float -100.0f
+      87: bipush        19
+      89: invokevirtual #145                // Method chibikun/Army__cv.a:(FFB)V
+      92: new           #41                 // class chibikun/MyVector
+      95: dup
+      96: ldc           #9                  // String GameScr.exs
+      98: invokespecial #212                // Method chibikun/MyVector."<init>":(Ljava/lang/String;)V
+     101: putstatic     #72                 // Field chibikun/GameScr.exs:Lchibikun/MyVector;
+     104: new           #30                 // class chibikun/Explosion
+     107: dup
+     108: bipush        -100
+     110: bipush        -100
+     112: iconst_0
+     113: invokespecial #156                // Method chibikun/Explosion."<init>":(IIB)V
+     116: pop
+     117: aload_0
+     118: getstatic     #131                // Field coreLG/CCanvas.hh:I
+     121: bipush        30
+     123: isub
+     124: putfield      #84                 // Field aq:I
+     127: aload_0
+     128: aload_0
+     129: getfield      #85                 // Field ar:I
+     132: bipush        60
+     134: iadd
+     135: putfield      #75                 // Field ah:I
+     138: aload_0
+     139: aload_0
+     140: getfield      #75                 // Field ah:I
+     143: bipush        120
+     145: iadd
+     146: putfield      #76                 // Field ai:I
+     149: aload_0
+     150: getfield      #93                 // Field az:[I
+     153: iconst_0
+     154: aload_0
+     155: getfield      #76                 // Field ai:I
+     158: bipush        39
+     160: isub
+     161: iastore
+     162: aload_0
+     163: getfield      #93                 // Field az:[I
+     166: iconst_1
+     167: sipush        -1450
+     170: iastore
+     171: getstatic     #131                // Field coreLG/CCanvas.hh:I
+     174: istore_2
+     175: getstatic     #130                // Field coreLG/CCanvas.h:I
+     178: putstatic     #108                // Field chibikun/MM.b:I
+     181: getstatic     #139                // Field coreLG/CCanvas.w:I
+     184: sipush        200
+     187: if_icmplt     196
+     190: sipush        160
+     193: goto          199
+     196: sipush        140
+     199: istore_3
+     200: aload_0
+     201: iload_3
+     202: putfield      #105                // Field n:I
+     205: aload_0
+     206: getstatic     #139                // Field coreLG/CCanvas.w:I
+     209: aload_0
+     210: getfield      #105                // Field n:I
+     213: isub
+     214: iconst_1
+     215: ishr
+     216: bipush        29
+     218: iadd
+     219: putfield      #104                // Field m:I
+     222: aload_0
+     223: new           #47                 // class chibikun/mCommand
+     226: dup
+     227: invokestatic  #183                // Method chibikun/L.db:()Ljava/lang/String;
+     230: aload_0
+     231: sipush        10021
+     234: aconst_null
+     235: invokespecial #230                // Method chibikun/mCommand."<init>":(Ljava/lang/String;Lchibikun/IActionListener;ILjava/lang/Object;)V
+     238: putfield      #87                 // Field at:Lchibikun/mCommand;
+     241: aload_0
+     242: new           #47                 // class chibikun/mCommand
+     245: dup
+     246: invokestatic  #174                // Method chibikun/L.cc:()Ljava/lang/String;
+     249: aload_0
+     250: sipush        1002
+     253: aconst_null
+     254: invokespecial #230                // Method chibikun/mCommand."<init>":(Ljava/lang/String;Lchibikun/IActionListener;ILjava/lang/Object;)V
+     257: putfield      #86                 // Field as:Lchibikun/mCommand;
+     260: aload_0
+     261: new           #46                 // class chibikun/TField
+     264: dup
+     265: invokespecial #223                // Method chibikun/TField."<init>":()V
+     268: putfield      #107                // Field tU:Lchibikun/TField;
+     271: aload_0
+     272: getfield      #107                // Field tU:Lchibikun/TField;
+     275: getstatic     #131                // Field coreLG/CCanvas.hh:I
+     278: getstatic     #63                 // Field chibikun/CScreen.q:I
+     281: isub
+     282: bipush        9
+     284: isub
+     285: putfield      #115                // Field chibikun/TField.b:I
+     288: aload_0
+     289: getfield      #107                // Field tU:Lchibikun/TField;
+     292: aload_0
+     293: getfield      #105                // Field n:I
+     296: putfield      #116                // Field chibikun/TField.c:I
+     299: aload_0
+     300: getfield      #107                // Field tU:Lchibikun/TField;
+     303: getstatic     #63                 // Field chibikun/CScreen.q:I
+     306: iconst_2
+     307: iadd
+     308: putfield      #118                // Field chibikun/TField.d:I
+     311: aload_0
+     312: getfield      #107                // Field tU:Lchibikun/TField;
+     315: iconst_1
+     316: putfield      #120                // Field chibikun/TField.isFocus:Z
+     319: iconst_0
+     320: istore        4
+     322: aload_0
+     323: getfield      #107                // Field tU:Lchibikun/TField;
+     326: iload         4
+     328: putfield      #119                // Field chibikun/TField.iputType:I
+     331: aload_0
+     332: getfield      #107                // Field tU:Lchibikun/TField;
+     335: new           #55                 // class java/lang/StringBuffer
+     338: dup
+     339: invokespecial #247                // Method java/lang/StringBuffer."<init>":()V
+     342: invokestatic  #188                // Method chibikun/L.di:()Ljava/lang/String;
+     345: invokevirtual #249                // Method java/lang/StringBuffer.append:(Ljava/lang/String;)Ljava/lang/StringBuffer;
+     348: ldc           #5                  // String /
+     350: invokevirtual #249                // Method java/lang/StringBuffer.append:(Ljava/lang/String;)Ljava/lang/StringBuffer;
+     353: invokestatic  #187                // Method chibikun/L.dh:()Ljava/lang/String;
+     356: invokevirtual #249                // Method java/lang/StringBuffer.append:(Ljava/lang/String;)Ljava/lang/StringBuffer;
+     359: invokevirtual #250                // Method java/lang/StringBuffer.toString:()Ljava/lang/String;
+     362: putfield      #122                // Field chibikun/TField.name:Ljava/lang/String;
+     365: aload_0
+     366: new           #46                 // class chibikun/TField
+     369: dup
+     370: invokespecial #223                // Method chibikun/TField."<init>":()V
+     373: putfield      #106                // Field tP:Lchibikun/TField;
+     376: aload_0
+     377: getfield      #106                // Field tP:Lchibikun/TField;
+     380: getstatic     #131                // Field coreLG/CCanvas.hh:I
+     383: iconst_4
+     384: isub
+     385: putfield      #115                // Field chibikun/TField.b:I
+     388: aload_0
+     389: getfield      #106                // Field tP:Lchibikun/TField;
+     392: aload_0
+     393: getfield      #105                // Field n:I
+     396: putfield      #116                // Field chibikun/TField.c:I
+     399: aload_0
+     400: getfield      #106                // Field tP:Lchibikun/TField;
+     403: getstatic     #63                 // Field chibikun/CScreen.q:I
+     406: iconst_2
+     407: iadd
+     408: putfield      #118                // Field chibikun/TField.d:I
+     411: aload_0
+     412: getfield      #106                // Field tP:Lchibikun/TField;
+     415: iconst_0
+     416: putfield      #120                // Field chibikun/TField.isFocus:Z
+     419: iconst_2
+     420: istore        4
+     422: aload_0
+     423: getfield      #106                // Field tP:Lchibikun/TField;
+     426: iload         4
+     428: putfield      #119                // Field chibikun/TField.iputType:I
+     431: aload_0
+     432: getfield      #106                // Field tP:Lchibikun/TField;
+     435: invokestatic  #177                // Method chibikun/L.cg:()Ljava/lang/String;
+     438: putfield      #122                // Field chibikun/TField.name:Ljava/lang/String;
+     441: aload_0
+     442: getfield      #107                // Field tU:Lchibikun/TField;
+     445: ldc           #13                 // String armyUser
+     447: invokestatic  #147                // Method chibikun/CRes.b:(Ljava/lang/String;)Ljava/lang/String;
+     450: invokevirtual #228                // Method chibikun/TField.setText:(Ljava/lang/String;)V
+     453: aload_0
+     454: getfield      #106                // Field tP:Lchibikun/TField;
+     457: ldc           #12                 // String armyPass
+     459: invokestatic  #147                // Method chibikun/CRes.b:(Ljava/lang/String;)Ljava/lang/String;
+     462: invokevirtual #228                // Method chibikun/TField.setText:(Ljava/lang/String;)V
+     465: iconst_1
+     466: putstatic     #101                // Field j:I
+     469: aload_0
+     470: invokespecial #207                // Method resetTF:()V
+     473: aload_0
+     474: getstatic     #139                // Field coreLG/CCanvas.w:I
+     477: sipush        200
+     480: if_icmplt     493
+     483: aload_0
+     484: getfield      #84                 // Field aq:I
+     487: bipush        30
+     489: isub
+     490: goto          503
+     493: aload_0
+     494: getfield      #107                // Field tU:Lchibikun/TField;
+     497: getfield      #115                // Field chibikun/TField.b:I
+     500: bipush        20
+     502: isub
+     503: putfield      #77                 // Field aj:I
+     506: aload_0
+     507: iconst_0
+     508: putfield      #103                // Field l:I
+     511: aload_0
+     512: new           #47                 // class chibikun/mCommand
+     515: dup
+     516: invokestatic  #175                // Method chibikun/L.cd:()Ljava/lang/String;
+     519: aload_0
+     520: sipush        1000
+     523: aconst_null
+     524: invokespecial #230                // Method chibikun/mCommand."<init>":(Ljava/lang/String;Lchibikun/IActionListener;ILjava/lang/Object;)V
+     527: putfield      #88                 // Field au:Lchibikun/mCommand;
+     530: aload_0
+     531: new           #47                 // class chibikun/mCommand
+     534: dup
+     535: ldc           #10                 // String Menu
+     537: aload_0
+     538: sipush        1001
+     541: aconst_null
+     542: invokespecial #230                // Method chibikun/mCommand."<init>":(Ljava/lang/String;Lchibikun/IActionListener;ILjava/lang/Object;)V
+     545: putfield      #89                 // Field av:Lchibikun/mCommand;
+     548: getstatic     #133                // Field coreLG/CCanvas.isTouch:Z
+     551: ifeq          682
+     554: aload_0
+     555: getfield      #88                 // Field au:Lchibikun/mCommand;
+     558: getstatic     #139                // Field coreLG/CCanvas.w:I
+     561: iconst_2
+     562: idiv
+     563: bipush        8
+     565: iadd
+     566: putfield      #123                // Field chibikun/mCommand.x:I
+     569: aload_0
+     570: getfield      #89                 // Field av:Lchibikun/mCommand;
+     573: getstatic     #139                // Field coreLG/CCanvas.w:I
+     576: iconst_2
+     577: idiv
+     578: getstatic     #61                 // Field chibikun/CScreen.cmdW:I
+     581: isub
+     582: bipush        8
+     584: isub
+     585: putfield      #123                // Field chibikun/mCommand.x:I
+     588: getstatic     #62                 // Field chibikun/CScreen.h:I
+     591: sipush        200
+     594: if_icmplt     625
+     597: aload_0
+     598: getfield      #88                 // Field au:Lchibikun/mCommand;
+     601: aload_0
+     602: getfield      #84                 // Field aq:I
+     605: bipush        110
+     607: iadd
+     608: putfield      #124                // Field chibikun/mCommand.y:I
+     611: aload_0
+     612: getfield      #89                 // Field av:Lchibikun/mCommand;
+     615: aload_0
+     616: getfield      #84                 // Field aq:I
+     619: bipush        110
+     621: iadd
+     622: putfield      #124                // Field chibikun/mCommand.y:I
+     625: aload_0
+     626: getfield      #87                 // Field at:Lchibikun/mCommand;
+     629: getstatic     #139                // Field coreLG/CCanvas.w:I
+     632: iconst_2
+     633: idiv
+     634: iconst_3
+     635: iadd
+     636: putfield      #123                // Field chibikun/mCommand.x:I
+     639: aload_0
+     640: getfield      #87                 // Field at:Lchibikun/mCommand;
+     643: aload_0
+     644: getfield      #84                 // Field aq:I
+     647: bipush        110
+     649: iadd
+     650: putfield      #124                // Field chibikun/mCommand.y:I
+     653: aload_0
+     654: getfield      #86                 // Field as:Lchibikun/mCommand;
+     657: getstatic     #139                // Field coreLG/CCanvas.w:I
+     660: iconst_2
+     661: idiv
+     662: bipush        84
+     664: isub
+     665: putfield      #123                // Field chibikun/mCommand.x:I
+     668: aload_0
+     669: getfield      #86                 // Field as:Lchibikun/mCommand;
+     672: aload_0
+     673: getfield      #89                 // Field av:Lchibikun/mCommand;
+     676: getfield      #124                // Field chibikun/mCommand.y:I
+     679: putfield      #124                // Field chibikun/mCommand.y:I
+     682: new           #47                 // class chibikun/mCommand
+     685: dup
+     686: invokestatic  #173                // Method chibikun/L.cb:()Ljava/lang/String;
+     689: aload_0
+     690: sipush        1009
+     693: aconst_null
+     694: invokespecial #230                // Method chibikun/mCommand."<init>":(Ljava/lang/String;Lchibikun/IActionListener;ILjava/lang/Object;)V
+     697: pop
+     698: getstatic     #133                // Field coreLG/CCanvas.isTouch:Z
+     701: ifne          730
+     704: getstatic     #126                // Field chibikun/mGraphics.zoomLevel:I
+     707: iconst_1
+     708: if_icmpne     730
+     711: aload_0
+     712: new           #47                 // class chibikun/mCommand
+     715: dup
+     716: invokestatic  #181                // Method chibikun/L.co:()Ljava/lang/String;
+     719: aload_0
+     720: sipush        1010
+     723: aconst_null
+     724: invokespecial #230                // Method chibikun/mCommand."<init>":(Ljava/lang/String;Lchibikun/IActionListener;ILjava/lang/Object;)V
+     727: putfield      #65                 // Field chibikun/CScreen.s:Lchibikun/mCommand;
+     730: new           #47                 // class chibikun/mCommand
+     733: dup
+     734: invokestatic  #195                // Method chibikun/L.s:()Ljava/lang/String;
+     737: aload_0
+     738: sipush        1011
+     741: aconst_null
+     742: invokespecial #230                // Method chibikun/mCommand."<init>":(Ljava/lang/String;Lchibikun/IActionListener;ILjava/lang/Object;)V
+     745: pop
+     746: new           #47                 // class chibikun/mCommand
+     749: dup
+     750: invokestatic  #172                // Method chibikun/L.ca:()Ljava/lang/String;
+     753: aload_0
+     754: sipush        1012
+     757: aconst_null
+     758: invokespecial #230                // Method chibikun/mCommand."<init>":(Ljava/lang/String;Lchibikun/IActionListener;ILjava/lang/Object;)V
+     761: pop
+     762: new           #47                 // class chibikun/mCommand
+     765: dup
+     766: invokestatic  #171                // Method chibikun/L.bn:()Ljava/lang/String;
+     769: aload_0
+     770: sipush        1013
+     773: aconst_null
+     774: invokespecial #230                // Method chibikun/mCommand."<init>":(Ljava/lang/String;Lchibikun/IActionListener;ILjava/lang/Object;)V
+     777: pop
+     778: aload_0
+     779: iconst_0
+     780: putfield      #79                 // Field al:Z
+     783: aload_0
+     784: iconst_1
+     785: putfield      #81                 // Field an:Z
+     788: aload_0
+     789: aload_0
+     790: getfield      #77                 // Field aj:I
+     793: iconst_2
+     794: iadd
+     795: putfield      #76                 // Field ai:I
+     798: aload_0
+     799: iconst_0
+     800: putfield      #85                 // Field ar:I
+     803: getstatic     #133                // Field coreLG/CCanvas.isTouch:Z
+     806: ifne          823
+     809: aload_0
+     810: aload_0
+     811: getfield      #107                // Field tU:Lchibikun/TField;
+     814: getfield      #117                // Field chibikun/TField.cmdClear:Lchibikun/mCommand;
+     817: putfield      #66                 // Field chibikun/CScreen.t:Lchibikun/mCommand;
+     820: goto          828
+     823: aload_0
+     824: aconst_null
+     825: putfield      #66                 // Field chibikun/CScreen.t:Lchibikun/mCommand;
+     828: aload_0
+     829: new           #47                 // class chibikun/mCommand
+     832: dup
+     833: invokestatic  #194                // Method chibikun/L.ok:()Ljava/lang/String;
+     836: aload_0
+     837: sipush        2008
+     840: aconst_null
+     841: invokespecial #230                // Method chibikun/mCommand."<init>":(Ljava/lang/String;Lchibikun/IActionListener;ILjava/lang/Object;)V
+     844: putfield      #90                 // Field aw:Lchibikun/mCommand;
+     847: aload_0
+     848: getfield      #90                 // Field aw:Lchibikun/mCommand;
+     851: getstatic     #139                // Field coreLG/CCanvas.w:I
+     854: iconst_2
+     855: idiv
+     856: bipush        84
+     858: isub
+     859: putfield      #123                // Field chibikun/mCommand.x:I
+     862: aload_0
+     863: getfield      #90                 // Field aw:Lchibikun/mCommand;
+     866: aload_0
+     867: getfield      #88                 // Field au:Lchibikun/mCommand;
+     870: getfield      #124                // Field chibikun/mCommand.y:I
+     873: putfield      #124                // Field chibikun/mCommand.y:I
+     876: aload_0
+     877: new           #47                 // class chibikun/mCommand
+     880: dup
+     881: invokestatic  #197                // Method chibikun/L.w:()Ljava/lang/String;
+     884: aload_0
+     885: sipush        1003
+     888: aconst_null
+     889: invokespecial #230                // Method chibikun/mCommand."<init>":(Ljava/lang/String;Lchibikun/IActionListener;ILjava/lang/Object;)V
+     892: putfield      #91                 // Field ax:Lchibikun/mCommand;
+     895: aload_0
+     896: getfield      #91                 // Field ax:Lchibikun/mCommand;
+     899: getstatic     #139                // Field coreLG/CCanvas.w:I
+     902: iconst_2
+     903: idiv
+     904: iconst_3
+     905: iadd
+     906: putfield      #123                // Field chibikun/mCommand.x:I
+     909: aload_0
+     910: getfield      #91                 // Field ax:Lchibikun/mCommand;
+     913: aload_0
+     914: getfield      #88                 // Field au:Lchibikun/mCommand;
+     917: getfield      #124                // Field chibikun/mCommand.y:I
+     920: putfield      #124                // Field chibikun/mCommand.y:I
+     923: aload_0
+     924: aload_0
+     925: getfield      #90                 // Field aw:Lchibikun/mCommand;
+     928: putfield      #65                 // Field chibikun/CScreen.s:Lchibikun/mCommand;
+     931: aload_0
+     932: aload_0
+     933: getfield      #91                 // Field ax:Lchibikun/mCommand;
+     936: putfield      #64                 // Field chibikun/CScreen.r:Lchibikun/mCommand;
+     939: aload_0
+     940: getstatic     #139                // Field coreLG/CCanvas.w:I
+     943: sipush        200
+     946: if_icmplt     959
+     949: aload_0
+     950: getfield      #84                 // Field aq:I
+     953: bipush        30
+     955: isub
+     956: goto          969
+     959: aload_0
+     960: getfield      #107                // Field tU:Lchibikun/TField;
+     963: getfield      #115                // Field chibikun/TField.b:I
+     966: bipush        30
+     968: isub
+     969: putfield      #76                 // Field ai:I
+     972: ldc           #21                 // String userAo
+     974: invokestatic  #217                // Method chibikun/Rms.loadRMSString:(Ljava/lang/String;)Ljava/lang/String;
+     977: ifnull        1001
+     980: ldc           #21                 // String userAo
+     982: invokestatic  #217                // Method chibikun/Rms.loadRMSString:(Ljava/lang/String;)Ljava/lang/String;
+     985: ldc           #2                  // String
+     987: invokevirtual #243                // Method java/lang/String.equals:(Ljava/lang/Object;)Z
+     990: ifne          1001
+     993: aload_0
+     994: iconst_1
+     995: putfield      #96                 // Field e:Z
+     998: goto          1006
+    1001: aload_0
+    1002: iconst_0
+    1003: putfield      #96                 // Field e:Z
+    1006: return
+
+  public static void connect();
+    Code:
+       0: invokestatic  #222                // Method chibikun/Session_ME.gI:()Lchibikun/Session_ME;
+       3: getfield      #112                // Field chibikun/Session_ME.isConnected:Z
+       6: ifne          21
+       9: invokestatic  #222                // Method chibikun/Session_ME.gI:()Lchibikun/Session_ME;
+      12: getstatic     #140                // Field coreLG/MyMidlet.IP:Ljava/lang/String;
+      15: getstatic     #141                // Field coreLG/MyMidlet.PORT:I
+      18: invokevirtual #221                // Method chibikun/Session_ME.connect:(Ljava/lang/String;I)V
+      21: return
+
+  private void a(java.lang.String);
+    Code:
+       0: aload_0
+       1: sipush        1014
+       4: aload_1
+       5: invokevirtual #206                // Method perform:(ILjava/lang/Object;)V
+       8: return
+
+  public final void f();
+    Code:
+       0: aload_0
+       1: getfield      #107                // Field tU:Lchibikun/TField;
+       4: invokevirtual #226                // Method chibikun/TField.getText:()Ljava/lang/String;
+       7: invokevirtual #245                // Method java/lang/String.toLowerCase:()Ljava/lang/String;
+      10: invokevirtual #246                // Method java/lang/String.trim:()Ljava/lang/String;
+      13: astore_1
+      14: aload_0
+      15: getfield      #106                // Field tP:Lchibikun/TField;
+      18: invokevirtual #226                // Method chibikun/TField.getText:()Ljava/lang/String;
+      21: invokevirtual #245                // Method java/lang/String.toLowerCase:()Ljava/lang/String;
+      24: invokevirtual #246                // Method java/lang/String.trim:()Ljava/lang/String;
+      27: astore_2
+      28: aload_1
+      29: ifnull        41
+      32: aload_1
+      33: ldc           #2                  // String
+      35: invokevirtual #243                // Method java/lang/String.equals:(Ljava/lang/Object;)Z
+      38: ifeq          70
+      41: ldc           #21                 // String userAo
+      43: invokestatic  #217                // Method chibikun/Rms.loadRMSString:(Ljava/lang/String;)Ljava/lang/String;
+      46: ifnull        70
+      49: ldc           #21                 // String userAo
+      51: invokestatic  #217                // Method chibikun/Rms.loadRMSString:(Ljava/lang/String;)Ljava/lang/String;
+      54: ldc           #2                  // String
+      56: invokevirtual #243                // Method java/lang/String.equals:(Ljava/lang/Object;)Z
+      59: ifne          70
+      62: aload_0
+      63: iconst_1
+      64: putfield      #96                 // Field e:Z
+      67: goto          75
+      70: aload_0
+      71: iconst_0
+      72: putfield      #96                 // Field e:Z
+      75: aload_0
+      76: getfield      #96                 // Field e:Z
+      79: ifeq          91
+      82: ldc           #21                 // String userAo
+      84: invokestatic  #217                // Method chibikun/Rms.loadRMSString:(Ljava/lang/String;)Ljava/lang/String;
+      87: astore_1
+      88: ldc           #11                 // String a
+      90: astore_2
+      91: new           #55                 // class java/lang/StringBuffer
+      94: dup
+      95: ldc           #20                 // String user =
+      97: invokespecial #248                // Method java/lang/StringBuffer."<init>":(Ljava/lang/String;)V
+     100: aload_1
+     101: invokevirtual #249                // Method java/lang/StringBuffer.append:(Ljava/lang/String;)Ljava/lang/StringBuffer;
+     104: ldc           #4                  // String  pass=
+     106: invokevirtual #249                // Method java/lang/StringBuffer.append:(Ljava/lang/String;)Ljava/lang/StringBuffer;
+     109: aload_2
+     110: invokevirtual #249                // Method java/lang/StringBuffer.append:(Ljava/lang/String;)Ljava/lang/StringBuffer;
+     113: pop
+     114: aload_1
+     115: ifnull        243
+     118: aload_2
+     119: ifnull        243
+     122: aload_1
+     123: ldc           #2                  // String
+     125: invokevirtual #243                // Method java/lang/String.equals:(Ljava/lang/Object;)Z
+     128: ifne          243
+     131: aload_2
+     132: ldc           #2                  // String
+     134: invokevirtual #243                // Method java/lang/String.equals:(Ljava/lang/Object;)Z
+     137: ifeq          181
+     140: aload_0
+     141: iconst_1
+     142: putfield      #103                // Field l:I
+     145: aload_0
+     146: getfield      #107                // Field tU:Lchibikun/TField;
+     149: iconst_0
+     150: putfield      #120                // Field chibikun/TField.isFocus:Z
+     153: aload_0
+     154: getfield      #106                // Field tP:Lchibikun/TField;
+     157: iconst_1
+     158: putfield      #120                // Field chibikun/TField.isFocus:Z
+     161: getstatic     #133                // Field coreLG/CCanvas.isTouch:Z
+     164: ifne          243
+     167: aload_0
+     168: aload_0
+     169: getfield      #106                // Field tP:Lchibikun/TField;
+     172: getfield      #117                // Field chibikun/TField.cmdClear:Lchibikun/mCommand;
+     175: putfield      #66                 // Field chibikun/CScreen.t:Lchibikun/mCommand;
+     178: goto          243
+     181: invokestatic  #200                // Method connect:()V
+     184: invokestatic  #162                // Method chibikun/GameService.gI:()Lchibikun/GameService;
+     187: aload_1
+     188: aload_2
+     189: ldc           #7                  // String 3.7.1
+     191: aload_0
+     192: getfield      #96                 // Field e:Z
+     195: ifeq          202
+     198: iconst_1
+     199: goto          203
+     202: iconst_0
+     203: i2b
+     204: invokevirtual #164                // Method chibikun/GameService.login:(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;B)V
+     207: new           #55                 // class java/lang/StringBuffer
+     210: dup
+     211: ldc           #14                 // String dang nhap user=
+     213: invokespecial #248                // Method java/lang/StringBuffer."<init>":(Ljava/lang/String;)V
+     216: aload_1
+     217: invokevirtual #249                // Method java/lang/StringBuffer.append:(Ljava/lang/String;)Ljava/lang/StringBuffer;
+     220: pop
+     221: invokestatic  #179                // Method chibikun/L.ci:()Ljava/lang/String;
+     224: invokestatic  #238                // Method coreLG/CCanvas.f:(Ljava/lang/String;)V
+     227: aload_0
+     228: iconst_0
+     229: putfield      #103                // Field l:I
+     232: aload_0
+     233: getfield      #96                 // Field e:Z
+     236: ifne          243
+     239: aload_0
+     240: invokespecial #204                // Method m:()V
+     243: return
+
+  private void m();
+    Code:
+       0: aload_0
+       1: getfield      #96                 // Field e:Z
+       4: ifeq          14
+       7: aload_0
+       8: invokevirtual #201                // Method f:()V
+      11: goto          35
+      14: aload_0
+      15: iconst_0
+      16: putfield      #92                 // Field ay:Z
+      19: aload_0
+      20: getfield      #106                // Field tP:Lchibikun/TField;
+      23: iconst_0
+      24: putfield      #120                // Field chibikun/TField.isFocus:Z
+      27: aload_0
+      28: getfield      #107                // Field tU:Lchibikun/TField;
+      31: iconst_1
+      32: putfield      #120                // Field chibikun/TField.isFocus:Z
+      35: return
+
+  public final void update();
+    Code:
+       0: getstatic     #97                 // Field f:S
+       3: ifle          55
+       6: invokestatic  #179                // Method chibikun/L.ci:()Ljava/lang/String;
+       9: invokestatic  #238                // Method coreLG/CCanvas.f:(Ljava/lang/String;)V
+      12: invokestatic  #251                // Method java/lang/System.currentTimeMillis:()J
+      15: dup2
+      16: putstatic     #99                 // Field h:J
+      19: getstatic     #98                 // Field g:J
+      22: lsub
+      23: ldc2_w        #57                 // long 1000l
+      26: lcmp
+      27: iflt          55
+      30: getstatic     #97                 // Field f:S
+      33: iconst_1
+      34: isub
+      35: i2s
+      36: dup
+      37: putstatic     #97                 // Field f:S
+      40: ifne          49
+      43: invokestatic  #203                // Method gI:()Lchibikun/LoginScr;
+      46: invokevirtual #201                // Method f:()V
+      49: getstatic     #99                 // Field h:J
+      52: putstatic     #98                 // Field g:J
+      55: invokestatic  #157                // Method chibikun/GameScr.s:()Z
+      58: ifeq          86
+      61: invokestatic  #162                // Method chibikun/GameService.gI:()Lchibikun/GameService;
+      64: invokevirtual #163                // Method chibikun/GameService.loadDataOk:()V
+      67: iconst_1
+      68: putstatic     #100                // Field isLoadDataOk:Z
+      71: iconst_0
+      72: putstatic     #68                 // Field chibikun/GameScr.az:Z
+      75: iconst_0
+      76: putstatic     #69                 // Field chibikun/GameScr.ba:Z
+      79: iconst_0
+      80: putstatic     #70                 // Field chibikun/GameScr.bb:Z
+      83: goto          239
+      86: aload_0
+      87: getfield      #85                 // Field ar:I
+      90: ifle          98
+      93: aload_0
+      94: iconst_0
+      95: putfield      #85                 // Field ar:I
+      98: aload_0
+      99: getfield      #96                 // Field e:Z
+     102: ifeq          128
+     105: aload_0
+     106: getfield      #92                 // Field ay:Z
+     109: ifne          128
+     112: aload_0
+     113: getfield      #107                // Field tU:Lchibikun/TField;
+     116: iconst_0
+     117: putfield      #121                // Field chibikun/TField.k:Z
+     120: aload_0
+     121: getfield      #106                // Field tP:Lchibikun/TField;
+     124: iconst_0
+     125: putfield      #121                // Field chibikun/TField.k:Z
+     128: aload_0
+     129: getfield      #107                // Field tU:Lchibikun/TField;
+     132: invokevirtual #229                // Method chibikun/TField.update:()V
+     135: aload_0
+     136: getfield      #106                // Field tP:Lchibikun/TField;
+     139: invokevirtual #229                // Method chibikun/TField.update:()V
+     142: getstatic     #133                // Field coreLG/CCanvas.isTouch:Z
+     145: ifeq          193
+     148: aload_0
+     149: getfield      #92                 // Field ay:Z
+     152: ifeq          174
+     155: aload_0
+     156: aload_0
+     157: getfield      #86                 // Field as:Lchibikun/mCommand;
+     160: putfield      #65                 // Field chibikun/CScreen.s:Lchibikun/mCommand;
+     163: aload_0
+     164: aload_0
+     165: getfield      #87                 // Field at:Lchibikun/mCommand;
+     168: putfield      #64                 // Field chibikun/CScreen.r:Lchibikun/mCommand;
+     171: goto          235
+     174: aload_0
+     175: aload_0
+     176: getfield      #90                 // Field aw:Lchibikun/mCommand;
+     179: putfield      #65                 // Field chibikun/CScreen.s:Lchibikun/mCommand;
+     182: aload_0
+     183: aload_0
+     184: getfield      #91                 // Field ax:Lchibikun/mCommand;
+     187: putfield      #64                 // Field chibikun/CScreen.r:Lchibikun/mCommand;
+     190: goto          235
+     193: aload_0
+     194: getfield      #92                 // Field ay:Z
+     197: ifeq          219
+     200: aload_0
+     201: aload_0
+     202: getfield      #86                 // Field as:Lchibikun/mCommand;
+     205: putfield      #65                 // Field chibikun/CScreen.s:Lchibikun/mCommand;
+     208: aload_0
+     209: aload_0
+     210: getfield      #87                 // Field at:Lchibikun/mCommand;
+     213: putfield      #64                 // Field chibikun/CScreen.r:Lchibikun/mCommand;
+     216: goto          235
+     219: aload_0
+     220: aload_0
+     221: getfield      #90                 // Field aw:Lchibikun/mCommand;
+     224: putfield      #65                 // Field chibikun/CScreen.s:Lchibikun/mCommand;
+     227: aload_0
+     228: aload_0
+     229: getfield      #91                 // Field ax:Lchibikun/mCommand;
+     232: putfield      #64                 // Field chibikun/CScreen.r:Lchibikun/mCommand;
+     235: aload_0
+     236: invokespecial #155                // Method chibikun/CScreen.update:()V
+     239: return
+
+  public final void a(int);
+    Code:
+       0: getstatic     #128                // Field coreLG/CCanvas.currentDialog:Lchibikun/Dialog;
+       3: ifnonnull     34
+       6: aload_0
+       7: getfield      #103                // Field l:I
+      10: ifne          25
+      13: aload_0
+      14: getfield      #107                // Field tU:Lchibikun/TField;
+      17: iload_1
+      18: invokevirtual #227                // Method chibikun/TField.keyPressed:(I)Z
+      21: pop
+      22: goto          34
+      25: aload_0
+      26: getfield      #106                // Field tP:Lchibikun/TField;
+      29: iload_1
+      30: invokevirtual #227                // Method chibikun/TField.keyPressed:(I)Z
+      33: pop
+      34: aload_0
+      35: iload_1
+      36: invokespecial #149                // Method chibikun/CScreen.a:(I)V
+      39: return
+
+  public final void paint(chibikun.mGraphics);
+    Code:
+       0: sipush        184
+       3: istore_2
+       4: sipush        184
+       7: getstatic     #139                // Field coreLG/CCanvas.w:I
+      10: if_icmplt     17
+      13: sipush        152
+      16: istore_2
+      17: aload_0
+      18: getstatic     #139                // Field coreLG/CCanvas.w:I
+      21: iconst_2
+      22: idiv
+      23: iload_2
+      24: iconst_2
+      25: idiv
+      26: isub
+      27: putfield      #83                 // Field ap:I
+      30: aload_0
+      31: getfield      #84                 // Field aq:I
+      34: istore_3
+      35: aload_0
+      36: getfield      #107                // Field tU:Lchibikun/TField;
+      39: aload_0
+      40: getfield      #83                 // Field ap:I
+      43: bipush        10
+      45: iadd
+      46: putfield      #114                // Field chibikun/TField.a:I
+      49: aload_0
+      50: getfield      #107                // Field tU:Lchibikun/TField;
+      53: iload_3
+      54: bipush        20
+      56: iadd
+      57: putfield      #115                // Field chibikun/TField.b:I
+      60: aload_0
+      61: getfield      #106                // Field tP:Lchibikun/TField;
+      64: aload_0
+      65: getfield      #83                 // Field ap:I
+      68: bipush        10
+      70: iadd
+      71: putfield      #114                // Field chibikun/TField.a:I
+      74: aload_0
+      75: getfield      #106                // Field tP:Lchibikun/TField;
+      78: iload_3
+      79: bipush        55
+      81: iadd
+      82: putfield      #115                // Field chibikun/TField.b:I
+      85: getstatic     #67                 // Field chibikun/Camera.c:I
+      88: iconst_1
+      89: iadd
+      90: putstatic     #67                 // Field chibikun/Camera.c:I
+      93: aload_1
+      94: iconst_0
+      95: aload_0
+      96: getfield      #85                 // Field ar:I
+      99: ineg
+     100: invokevirtual #233                // Method chibikun/mGraphics.translate:(II)V
+     103: aload_1
+     104: invokestatic  #146                // Method chibikun/BackgroundNew.paintBGGameScr:(Lchibikun/mGraphics;)V
+     107: getstatic     #139                // Field coreLG/CCanvas.w:I
+     110: sipush        200
+     113: if_icmplt     122
+     116: sipush        180
+     119: goto          125
+     122: sipush        160
+     125: istore        4
+     127: getstatic     #128                // Field coreLG/CCanvas.currentDialog:Lchibikun/Dialog;
+     130: ifnonnull     185
+     133: aload_1
+     134: aload_0
+     135: getfield      #83                 // Field ap:I
+     138: aload_0
+     139: getfield      #84                 // Field aq:I
+     142: bipush        10
+     144: isub
+     145: iload         4
+     147: bipush        105
+     149: invokestatic  #150                // Method chibikun/CScreen.a:(Lchibikun/mGraphics;IIII)V
+     152: aload_1
+     153: getstatic     #73                 // Field chibikun/GameScr.logoGame:Ljavax/microedition/lcdui/Image;
+     156: getstatic     #139                // Field coreLG/CCanvas.w:I
+     159: iconst_2
+     160: idiv
+     161: aload_0
+     162: getfield      #76                 // Field ai:I
+     165: iconst_3
+     166: invokevirtual #232                // Method chibikun/mGraphics.drawImage:(Ljavax/microedition/lcdui/Image;III)V
+     169: aload_0
+     170: getfield      #107                // Field tU:Lchibikun/TField;
+     173: aload_1
+     174: invokevirtual #225                // Method chibikun/TField.a:(Lchibikun/mGraphics;)V
+     177: aload_0
+     178: getfield      #106                // Field tP:Lchibikun/TField;
+     181: aload_1
+     182: invokevirtual #225                // Method chibikun/TField.a:(Lchibikun/mGraphics;)V
+     185: getstatic     #125                // Field chibikun/mFont.tahoma_7b_white:Lchibikun/mFont;
+     188: aload_1
+     189: getstatic     #102                // Field k:Ljava/lang/String;
+     192: getstatic     #139                // Field coreLG/CCanvas.w:I
+     195: iconst_5
+     196: isub
+     197: iconst_5
+     198: iconst_1
+     199: invokevirtual #231                // Method chibikun/mFont.drawString:(Lchibikun/mGraphics;Ljava/lang/String;III)V
+     202: getstatic     #125                // Field chibikun/mFont.tahoma_7b_white:Lchibikun/mFont;
+     205: aload_1
+     206: ldc           #7                  // String 3.7.1
+     208: iconst_5
+     209: iconst_5
+     210: iconst_0
+     211: invokevirtual #231                // Method chibikun/mFont.drawString:(Lchibikun/mGraphics;Ljava/lang/String;III)V
+     214: aload_1
+     215: invokestatic  #234                // Method coreLG/CCanvas.a:(Lchibikun/mGraphics;)V
+     218: aload_0
+     219: aload_1
+     220: invokespecial #153                // Method chibikun/CScreen.paint:(Lchibikun/mGraphics;)V
+     223: return
+
+  private void n();
+    Code:
+       0: aload_0
+       1: getfield      #103                // Field l:I
+       4: ifne          23
+       7: aload_0
+       8: getfield      #107                // Field tU:Lchibikun/TField;
+      11: iconst_1
+      12: putfield      #120                // Field chibikun/TField.isFocus:Z
+      15: aload_0
+      16: getfield      #106                // Field tP:Lchibikun/TField;
+      19: iconst_0
+      20: putfield      #120                // Field chibikun/TField.isFocus:Z
+      23: aload_0
+      24: getfield      #103                // Field l:I
+      27: iconst_1
+      28: if_icmpne     47
+      31: aload_0
+      32: getfield      #107                // Field tU:Lchibikun/TField;
+      35: iconst_0
+      36: putfield      #120                // Field chibikun/TField.isFocus:Z
+      39: aload_0
+      40: getfield      #106                // Field tP:Lchibikun/TField;
+      43: iconst_1
+      44: putfield      #120                // Field chibikun/TField.isFocus:Z
+      47: aload_0
+      48: getfield      #103                // Field l:I
+      51: iconst_2
+      52: if_icmpne     71
+      55: aload_0
+      56: getfield      #107                // Field tU:Lchibikun/TField;
+      59: iconst_0
+      60: putfield      #120                // Field chibikun/TField.isFocus:Z
+      63: aload_0
+      64: getfield      #106                // Field tP:Lchibikun/TField;
+      67: iconst_0
+      68: putfield      #120                // Field chibikun/TField.isFocus:Z
+      71: return
+
+  public final void inputChest();
+    Code:
+       0: getstatic     #133                // Field coreLG/CCanvas.isTouch:Z
+       3: ifne          41
+       6: aload_0
+       7: getfield      #107                // Field tU:Lchibikun/TField;
+      10: getfield      #120                // Field chibikun/TField.isFocus:Z
+      13: ifeq          30
+      16: aload_0
+      17: aload_0
+      18: getfield      #107                // Field tU:Lchibikun/TField;
+      21: getfield      #117                // Field chibikun/TField.cmdClear:Lchibikun/mCommand;
+      24: putfield      #66                 // Field chibikun/CScreen.t:Lchibikun/mCommand;
+      27: goto          41
+      30: aload_0
+      31: aload_0
+      32: getfield      #106                // Field tP:Lchibikun/TField;
+      35: getfield      #117                // Field chibikun/TField.cmdClear:Lchibikun/mCommand;
+      38: putfield      #66                 // Field chibikun/CScreen.t:Lchibikun/mCommand;
+      41: aload_0
+      42: getfield      #81                 // Field an:Z
+      45: ifeq          124
+      48: getstatic     #134                // Field coreLG/CCanvas.keyPressed:[Z
+      51: iconst_2
+      52: baload
+      53: ifeq          85
+      56: aload_0
+      57: dup
+      58: getfield      #103                // Field l:I
+      61: iconst_1
+      62: isub
+      63: putfield      #103                // Field l:I
+      66: aload_0
+      67: getfield      #103                // Field l:I
+      70: ifge          78
+      73: aload_0
+      74: iconst_1
+      75: putfield      #103                // Field l:I
+      78: aload_0
+      79: invokespecial #205                // Method n:()V
+      82: invokestatic  #151                // Method chibikun/CScreen.clearKey:()V
+      85: getstatic     #134                // Field coreLG/CCanvas.keyPressed:[Z
+      88: bipush        8
+      90: baload
+      91: ifeq          124
+      94: aload_0
+      95: dup
+      96: getfield      #103                // Field l:I
+      99: iconst_1
+     100: iadd
+     101: putfield      #103                // Field l:I
+     104: aload_0
+     105: getfield      #103                // Field l:I
+     108: iconst_1
+     109: if_icmple     117
+     112: aload_0
+     113: iconst_0
+     114: putfield      #103                // Field l:I
+     117: invokestatic  #151                // Method chibikun/CScreen.clearKey:()V
+     120: aload_0
+     121: invokespecial #205                // Method n:()V
+     124: aload_0
+     125: getfield      #80                 // Field am:Z
+     128: ifne          135
+     131: aload_0
+     132: invokespecial #152                // Method chibikun/CScreen.inputChest:()V
+     135: return
+
+  private void resetTF();
+    Code:
+       0: aload_0
+       1: getfield      #107                // Field tU:Lchibikun/TField;
+       4: aload_0
+       5: getfield      #104                // Field m:I
+       8: ineg
+       9: putfield      #114                // Field chibikun/TField.a:I
+      12: aload_0
+      13: getfield      #106                // Field tP:Lchibikun/TField;
+      16: getstatic     #139                // Field coreLG/CCanvas.w:I
+      19: aload_0
+      20: getfield      #104                // Field m:I
+      23: iadd
+      24: putfield      #114                // Field chibikun/TField.a:I
+      27: aload_0
+      28: getfield      #107                // Field tU:Lchibikun/TField;
+      31: iconst_1
+      32: putfield      #120                // Field chibikun/TField.isFocus:Z
+      35: aload_0
+      36: getfield      #106                // Field tP:Lchibikun/TField;
+      39: iconst_0
+      40: putfield      #120                // Field chibikun/TField.isFocus:Z
+      43: return
+
+  public final void g();
+    Code:
+       0: invokestatic  #237                // Method coreLG/CCanvas.endDlg:()V
+       3: aload_0
+       4: iconst_1
+       5: putfield      #92                 // Field ay:Z
+       8: aload_0
+       9: getfield      #106                // Field tP:Lchibikun/TField;
+      12: iconst_0
+      13: putfield      #120                // Field chibikun/TField.isFocus:Z
+      16: aload_0
+      17: getfield      #107                // Field tU:Lchibikun/TField;
+      20: iconst_1
+      21: putfield      #120                // Field chibikun/TField.isFocus:Z
+      24: return
+
+  public final void perform(int, java.lang.Object);
+    Code:
+       0: iload_1
+       1: sipush        10020
+       4: if_icmpne     10
+       7: invokestatic  #237                // Method coreLG/CCanvas.endDlg:()V
+      10: iload_1
+      11: sipush        10019
+      14: if_icmpne     51
+      17: invokestatic  #237                // Method coreLG/CCanvas.endDlg:()V
+      20: invokestatic  #222                // Method chibikun/Session_ME.gI:()Lchibikun/Session_ME;
+      23: invokevirtual #220                // Method chibikun/Session_ME.close:()V
+      26: aload_0
+      27: iconst_0
+      28: putfield      #92                 // Field ay:Z
+      31: aload_0
+      32: getfield      #106                // Field tP:Lchibikun/TField;
+      35: iconst_0
+      36: putfield      #120                // Field chibikun/TField.isFocus:Z
+      39: aload_0
+      40: getfield      #107                // Field tU:Lchibikun/TField;
+      43: iconst_1
+      44: putfield      #120                // Field chibikun/TField.isFocus:Z
+      47: aload_0
+      48: invokevirtual #208                // Method show:()V
+      51: iload_1
+      52: sipush        2002
+      55: if_icmpne     122
+      58: invokestatic  #200                // Method connect:()V
+      61: invokestatic  #179                // Method chibikun/L.ci:()Ljava/lang/String;
+      64: invokestatic  #238                // Method coreLG/CCanvas.f:(Ljava/lang/String;)V
+      67: ldc           #21                 // String userAo
+      69: invokestatic  #217                // Method chibikun/Rms.loadRMSString:(Ljava/lang/String;)Ljava/lang/String;
+      72: dup
+      73: astore_3
+      74: ifnull        114
+      77: aload_3
+      78: ldc           #2                  // String
+      80: invokevirtual #243                // Method java/lang/String.equals:(Ljava/lang/Object;)Z
+      83: ifne          114
+      86: invokestatic  #203                // Method gI:()Lchibikun/LoginScr;
+      89: iconst_1
+      90: putfield      #96                 // Field e:Z
+      93: invokestatic  #162                // Method chibikun/GameService.gI:()Lchibikun/GameService;
+      96: aload_3
+      97: ldc           #2                  // String
+      99: ldc           #7                  // String 3.7.1
+     101: iconst_1
+     102: invokevirtual #164                // Method chibikun/GameService.login:(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;B)V
+     105: invokestatic  #179                // Method chibikun/L.ci:()Ljava/lang/String;
+     108: invokestatic  #238                // Method coreLG/CCanvas.f:(Ljava/lang/String;)V
+     111: goto          122
+     114: invokestatic  #162                // Method chibikun/GameService.gI:()Lchibikun/GameService;
+     117: ldc           #2                  // String
+     119: invokevirtual #159                // Method chibikun/GameService.a:(Ljava/lang/String;)V
+     122: iload_1
+     123: sipush        2001
+     126: if_icmpne     132
+     129: invokestatic  #237                // Method coreLG/CCanvas.endDlg:()V
+     132: iload_1
+     133: sipush        1000
+     136: if_icmpne     143
+     139: aload_0
+     140: invokevirtual #201                // Method f:()V
+     143: iload_1
+     144: sipush        1002
+     147: if_icmpne     320
+     150: aload_0
+     151: getfield      #107                // Field tU:Lchibikun/TField;
+     154: invokevirtual #226                // Method chibikun/TField.getText:()Ljava/lang/String;
+     157: ldc           #2                  // String
+     159: invokevirtual #243                // Method java/lang/String.equals:(Ljava/lang/Object;)Z
+     162: ifeq          174
+     165: invokestatic  #184                // Method chibikun/L.de:()Ljava/lang/String;
+     168: invokestatic  #240                // Method coreLG/CCanvas.startOKDlg:(Ljava/lang/String;)V
+     171: goto          320
+     174: aload_0
+     175: getfield      #107                // Field tU:Lchibikun/TField;
+     178: invokevirtual #226                // Method chibikun/TField.getText:()Ljava/lang/String;
+     181: invokevirtual #244                // Method java/lang/String.toCharArray:()[C
+     184: pop
+     185: aload_0
+     186: getfield      #106                // Field tP:Lchibikun/TField;
+     189: invokevirtual #226                // Method chibikun/TField.getText:()Ljava/lang/String;
+     192: ldc           #2                  // String
+     194: invokevirtual #243                // Method java/lang/String.equals:(Ljava/lang/Object;)Z
+     197: ifeq          209
+     200: invokestatic  #185                // Method chibikun/L.df:()Ljava/lang/String;
+     203: invokestatic  #240                // Method coreLG/CCanvas.startOKDlg:(Ljava/lang/String;)V
+     206: goto          320
+     209: getstatic     #136                // Field coreLG/CCanvas.msgdlg:Lchibikun/MsgDlg;
+     212: new           #55                 // class java/lang/StringBuffer
+     215: dup
+     216: invokespecial #247                // Method java/lang/StringBuffer."<init>":()V
+     219: invokestatic  #186                // Method chibikun/L.dg:()Ljava/lang/String;
+     222: invokevirtual #249                // Method java/lang/StringBuffer.append:(Ljava/lang/String;)Ljava/lang/StringBuffer;
+     225: invokestatic  #176                // Method chibikun/L.cf:()Ljava/lang/String;
+     228: invokevirtual #249                // Method java/lang/StringBuffer.append:(Ljava/lang/String;)Ljava/lang/StringBuffer;
+     231: ldc           #8                  // String :
+     233: invokevirtual #249                // Method java/lang/StringBuffer.append:(Ljava/lang/String;)Ljava/lang/StringBuffer;
+     236: aload_0
+     237: getfield      #107                // Field tU:Lchibikun/TField;
+     240: invokevirtual #226                // Method chibikun/TField.getText:()Ljava/lang/String;
+     243: invokevirtual #249                // Method java/lang/StringBuffer.append:(Ljava/lang/String;)Ljava/lang/StringBuffer;
+     246: ldc           #3                  // String \n
+     248: invokevirtual #249                // Method java/lang/StringBuffer.append:(Ljava/lang/String;)Ljava/lang/StringBuffer;
+     251: invokestatic  #189                // Method chibikun/L.dj:()Ljava/lang/String;
+     254: invokevirtual #249                // Method java/lang/StringBuffer.append:(Ljava/lang/String;)Ljava/lang/StringBuffer;
+     257: ldc           #8                  // String :
+     259: invokevirtual #249                // Method java/lang/StringBuffer.append:(Ljava/lang/String;)Ljava/lang/StringBuffer;
+     262: aload_0
+     263: getfield      #106                // Field tP:Lchibikun/TField;
+     266: invokevirtual #226                // Method chibikun/TField.getText:()Ljava/lang/String;
+     269: invokevirtual #249                // Method java/lang/StringBuffer.append:(Ljava/lang/String;)Ljava/lang/StringBuffer;
+     272: invokevirtual #250                // Method java/lang/StringBuffer.toString:()Ljava/lang/String;
+     275: new           #47                 // class chibikun/mCommand
+     278: dup
+     279: invokestatic  #190                // Method chibikun/L.dk:()Ljava/lang/String;
+     282: aload_0
+     283: sipush        4000
+     286: aconst_null
+     287: invokespecial #230                // Method chibikun/mCommand."<init>":(Ljava/lang/String;Lchibikun/IActionListener;ILjava/lang/Object;)V
+     290: aconst_null
+     291: checkcast     #47                 // class chibikun/mCommand
+     294: new           #47                 // class chibikun/mCommand
+     297: dup
+     298: invokestatic  #191                // Method chibikun/L.dl:()Ljava/lang/String;
+     301: getstatic     #129                // Field coreLG/CCanvas.d:LcoreLG/CCanvas;
+     304: sipush        8882
+     307: aconst_null
+     308: invokespecial #230                // Method chibikun/mCommand."<init>":(Ljava/lang/String;Lchibikun/IActionListener;ILjava/lang/Object;)V
+     311: invokevirtual #211                // Method chibikun/MsgDlg.setInfo:(Ljava/lang/String;Lchibikun/mCommand;Lchibikun/mCommand;Lchibikun/mCommand;)V
+     314: getstatic     #136                // Field coreLG/CCanvas.msgdlg:Lchibikun/MsgDlg;
+     317: putstatic     #128                // Field coreLG/CCanvas.currentDialog:Lchibikun/Dialog;
+     320: iload_1
+     321: sipush        1003
+     324: if_icmpne     440
+     327: getstatic     #127                // Field coreLG/CCanvas.curScr:Lchibikun/CScreen;
+     330: getstatic     #95                 // Field d:Lchibikun/LoginScr;
+     333: if_acmpne     430
+     336: getstatic     #132                // Field coreLG/CCanvas.inputDlg:Lchibikun/InputDlg;
+     339: new           #55                 // class java/lang/StringBuffer
+     342: dup
+     343: invokespecial #247                // Method java/lang/StringBuffer."<init>":()V
+     346: invokestatic  #187                // Method chibikun/L.dh:()Ljava/lang/String;
+     349: invokevirtual #249                // Method java/lang/StringBuffer.append:(Ljava/lang/String;)Ljava/lang/StringBuffer;
+     352: ldc           #5                  // String /
+     354: invokevirtual #249                // Method java/lang/StringBuffer.append:(Ljava/lang/String;)Ljava/lang/StringBuffer;
+     357: invokestatic  #188                // Method chibikun/L.di:()Ljava/lang/String;
+     360: invokevirtual #249                // Method java/lang/StringBuffer.append:(Ljava/lang/String;)Ljava/lang/StringBuffer;
+     363: invokevirtual #250                // Method java/lang/StringBuffer.toString:()Ljava/lang/String;
+     366: new           #47                 // class chibikun/mCommand
+     369: dup
+     370: ldc           #2                  // String
+     372: aload_0
+     373: sipush        1004
+     376: aconst_null
+     377: invokespecial #230                // Method chibikun/mCommand."<init>":(Ljava/lang/String;Lchibikun/IActionListener;ILjava/lang/Object;)V
+     380: new           #47                 // class chibikun/mCommand
+     383: dup
+     384: invokestatic  #180                // Method chibikun/L.close:()Ljava/lang/String;
+     387: aload_0
+     388: sipush        1005
+     391: aconst_null
+     392: invokespecial #230                // Method chibikun/mCommand."<init>":(Ljava/lang/String;Lchibikun/IActionListener;ILjava/lang/Object;)V
+     395: iconst_3
+     396: invokevirtual #167                // Method chibikun/InputDlg.setInfo:(Ljava/lang/String;Lchibikun/mCommand;Lchibikun/mCommand;I)V
+     399: getstatic     #132                // Field coreLG/CCanvas.inputDlg:Lchibikun/InputDlg;
+     402: invokevirtual #168                // Method chibikun/InputDlg.show:()V
+     405: getstatic     #133                // Field coreLG/CCanvas.isTouch:Z
+     408: ifeq          440
+     411: getstatic     #126                // Field chibikun/mGraphics.zoomLevel:I
+     414: iconst_1
+     415: if_icmple     440
+     418: getstatic     #132                // Field coreLG/CCanvas.inputDlg:Lchibikun/InputDlg;
+     421: getfield      #74                 // Field chibikun/InputDlg.tfInput:Lchibikun/TField;
+     424: invokevirtual #224                // Method chibikun/TField.a:()V
+     427: goto          440
+     430: aload_0
+     431: getstatic     #143                // Field coreLG/MyMidlet.myInfo:Lchibikun/CPlayer;
+     434: getfield      #60                 // Field chibikun/CPlayer.name:Ljava/lang/String;
+     437: invokespecial #199                // Method a:(Ljava/lang/String;)V
+     440: iload_1
+     441: sipush        1004
+     444: if_icmpne     472
+     447: getstatic     #132                // Field coreLG/CCanvas.inputDlg:Lchibikun/InputDlg;
+     450: getfield      #74                 // Field chibikun/InputDlg.tfInput:Lchibikun/TField;
+     453: invokevirtual #226                // Method chibikun/TField.getText:()Ljava/lang/String;
+     456: dup
+     457: astore_3
+     458: ldc           #2                  // String
+     460: invokevirtual #243                // Method java/lang/String.equals:(Ljava/lang/Object;)Z
+     463: ifeq          467
+     466: return
+     467: aload_0
+     468: aload_3
+     469: invokespecial #199                // Method a:(Ljava/lang/String;)V
+     472: iload_1
+     473: sipush        1005
+     476: if_icmpne     482
+     479: invokestatic  #237                // Method coreLG/CCanvas.endDlg:()V
+     482: iload_1
+     483: sipush        1006
+     486: if_icmpne     581
+     489: aload_0
+     490: getfield      #82                 // Field ao:Ljava/lang/String;
+     493: ldc           #2                  // String
+     495: invokevirtual #243                // Method java/lang/String.equals:(Ljava/lang/Object;)Z
+     498: ifne          543
+     501: getstatic     #142                // Field coreLG/MyMidlet.b:LcoreLG/MyMidlet;
+     504: new           #55                 // class java/lang/StringBuffer
+     507: dup
+     508: invokespecial #247                // Method java/lang/StringBuffer."<init>":()V
+     511: ldc           #18                 // String tel:
+     513: invokevirtual #249                // Method java/lang/StringBuffer.append:(Ljava/lang/String;)Ljava/lang/StringBuffer;
+     516: aload_0
+     517: getfield      #82                 // Field ao:Ljava/lang/String;
+     520: invokevirtual #249                // Method java/lang/StringBuffer.append:(Ljava/lang/String;)Ljava/lang/StringBuffer;
+     523: invokevirtual #250                // Method java/lang/StringBuffer.toString:()Ljava/lang/String;
+     526: invokevirtual #241                // Method coreLG/MyMidlet.platformRequest:(Ljava/lang/String;)Z
+     529: pop
+     530: goto          581
+     533: astore        4
+     535: aload         4
+     537: invokevirtual #242                // Method java/lang/Exception.printStackTrace:()V
+     540: goto          581
+     543: invokestatic  #222                // Method chibikun/Session_ME.gI:()Lchibikun/Session_ME;
+     546: getfield      #112                // Field chibikun/Session_ME.isConnected:Z
+     549: ifne          564
+     552: invokestatic  #178                // Method chibikun/L.ch:()Ljava/lang/String;
+     555: invokestatic  #236                // Method coreLG/CCanvas.e:(Ljava/lang/String;)V
+     558: invokestatic  #200                // Method connect:()V
+     561: goto          570
+     564: invokestatic  #179                // Method chibikun/L.ci:()Ljava/lang/String;
+     567: invokestatic  #236                // Method coreLG/CCanvas.e:(Ljava/lang/String;)V
+     570: invokestatic  #162                // Method chibikun/GameService.gI:()Lchibikun/GameService;
+     573: iconst_5
+     574: aconst_null
+     575: checkcast     #54                 // class java/lang/String
+     578: invokevirtual #158                // Method chibikun/GameService.a:(BLjava/lang/String;)V
+     581: iload_1
+     582: sipush        1007
+     585: if_icmpne     591
+     588: invokestatic  #214                // Method chibikun/Rms.a:()V
+     591: iload_1
+     592: sipush        1008
+     595: if_icmpne     619
+     598: getstatic     #110                // Field chibikun/ServerListScreen.loadScreen:Z
+     601: ifeq          613
+     604: getstatic     #137                // Field coreLG/CCanvas.serverScreen:Lchibikun/ServerListScreen;
+     607: invokevirtual #219                // Method chibikun/ServerListScreen.show:()V
+     610: goto          619
+     613: getstatic     #137                // Field coreLG/CCanvas.serverScreen:Lchibikun/ServerListScreen;
+     616: invokevirtual #218                // Method chibikun/ServerListScreen.init:()V
+     619: iload_1
+     620: sipush        2008
+     623: if_icmpne     677
+     626: ldc           #13                 // String armyUser
+     628: aload_0
+     629: getfield      #107                // Field tU:Lchibikun/TField;
+     632: invokevirtual #226                // Method chibikun/TField.getText:()Ljava/lang/String;
+     635: invokevirtual #246                // Method java/lang/String.trim:()Ljava/lang/String;
+     638: invokestatic  #215                // Method chibikun/Rms.a:(Ljava/lang/String;Ljava/lang/String;)V
+     641: ldc           #12                 // String armyPass
+     643: aload_0
+     644: getfield      #106                // Field tP:Lchibikun/TField;
+     647: invokevirtual #226                // Method chibikun/TField.getText:()Ljava/lang/String;
+     650: invokevirtual #246                // Method java/lang/String.trim:()Ljava/lang/String;
+     653: invokestatic  #215                // Method chibikun/Rms.a:(Ljava/lang/String;Ljava/lang/String;)V
+     656: getstatic     #110                // Field chibikun/ServerListScreen.loadScreen:Z
+     659: ifeq          671
+     662: getstatic     #137                // Field coreLG/CCanvas.serverScreen:Lchibikun/ServerListScreen;
+     665: invokevirtual #219                // Method chibikun/ServerListScreen.show:()V
+     668: goto          677
+     671: getstatic     #137                // Field coreLG/CCanvas.serverScreen:Lchibikun/ServerListScreen;
+     674: invokevirtual #218                // Method chibikun/ServerListScreen.init:()V
+     677: iload_1
+     678: sipush        1001
+     681: if_icmpne     770
+     684: new           #41                 // class chibikun/MyVector
+     687: dup
+     688: ldc           #15                 // String menu
+     690: invokespecial #212                // Method chibikun/MyVector."<init>":(Ljava/lang/String;)V
+     693: dup
+     694: astore        4
+     696: new           #47                 // class chibikun/mCommand
+     699: dup
+     700: invokestatic  #174                // Method chibikun/L.cc:()Ljava/lang/String;
+     703: aload_0
+     704: sipush        1002
+     707: aconst_null
+     708: invokespecial #230                // Method chibikun/mCommand."<init>":(Ljava/lang/String;Lchibikun/IActionListener;ILjava/lang/Object;)V
+     711: invokevirtual #213                // Method chibikun/MyVector.addElement:(Ljava/lang/Object;)V
+     714: aload         4
+     716: new           #47                 // class chibikun/mCommand
+     719: dup
+     720: invokestatic  #193                // Method chibikun/L.k:()Ljava/lang/String;
+     723: aload_0
+     724: sipush        1007
+     727: aconst_null
+     728: invokespecial #230                // Method chibikun/mCommand."<init>":(Ljava/lang/String;Lchibikun/IActionListener;ILjava/lang/Object;)V
+     731: invokevirtual #213                // Method chibikun/MyVector.addElement:(Ljava/lang/Object;)V
+     734: getstatic     #111                // Field chibikun/ServerListScreen.nameServer:[Ljava/lang/String;
+     737: arraylength
+     738: iconst_1
+     739: if_icmple     762
+     742: aload         4
+     744: new           #47                 // class chibikun/mCommand
+     747: dup
+     748: invokestatic  #192                // Method chibikun/L.e:()Ljava/lang/String;
+     751: aload_0
+     752: sipush        1008
+     755: aconst_null
+     756: invokespecial #230                // Method chibikun/mCommand."<init>":(Ljava/lang/String;Lchibikun/IActionListener;ILjava/lang/Object;)V
+     759: invokevirtual #213                // Method chibikun/MyVector.addElement:(Ljava/lang/Object;)V
+     762: getstatic     #135                // Field coreLG/CCanvas.menu:Lchibikun/Menu;
+     765: aload         4
+     767: invokevirtual #209                // Method chibikun/Menu.startAt:(Lchibikun/MyVector;)V
+     770: iload_1
+     771: sipush        1009
+     774: if_icmpne     782
+     777: aload_0
+     778: iconst_1
+     779: putfield      #80                 // Field am:Z
+     782: iload_1
+     783: sipush        1014
+     786: if_icmpne     819
+     789: aload_2
+     790: checkcast     #54                 // class java/lang/String
+     793: astore_3
+     794: invokestatic  #222                // Method chibikun/Session_ME.gI:()Lchibikun/Session_ME;
+     797: getfield      #112                // Field chibikun/Session_ME.isConnected:Z
+     800: ifne          806
+     803: invokestatic  #200                // Method connect:()V
+     806: invokestatic  #179                // Method chibikun/L.ci:()Ljava/lang/String;
+     809: invokestatic  #236                // Method coreLG/CCanvas.e:(Ljava/lang/String;)V
+     812: invokestatic  #162                // Method chibikun/GameService.gI:()Lchibikun/GameService;
+     815: aload_3
+     816: invokevirtual #161                // Method chibikun/GameService.e:(Ljava/lang/String;)V
+     819: iload_1
+     820: sipush        1015
+     823: if_icmpne     832
+     826: invokestatic  #196                // Method chibikun/L.v:()Ljava/lang/String;
+     829: invokestatic  #240                // Method coreLG/CCanvas.startOKDlg:(Ljava/lang/String;)V
+     832: iload_1
+     833: sipush        1016
+     836: if_icmpne     888
+     839: aload_0
+     840: iconst_1
+     841: putfield      #103                // Field l:I
+     844: aload_0
+     845: getfield      #107                // Field tU:Lchibikun/TField;
+     848: iconst_0
+     849: putfield      #120                // Field chibikun/TField.isFocus:Z
+     852: aload_0
+     853: getfield      #106                // Field tP:Lchibikun/TField;
+     856: iconst_1
+     857: putfield      #120                // Field chibikun/TField.isFocus:Z
+     860: getstatic     #133                // Field coreLG/CCanvas.isTouch:Z
+     863: ifne          880
+     866: aload_0
+     867: aload_0
+     868: getfield      #106                // Field tP:Lchibikun/TField;
+     871: getfield      #117                // Field chibikun/TField.cmdClear:Lchibikun/mCommand;
+     874: putfield      #66                 // Field chibikun/CScreen.t:Lchibikun/mCommand;
+     877: goto          885
+     880: aload_0
+     881: aconst_null
+     882: putfield      #66                 // Field chibikun/CScreen.t:Lchibikun/mCommand;
+     885: invokestatic  #237                // Method coreLG/CCanvas.endDlg:()V
+     888: iload_1
+     889: sipush        1018
+     892: if_icmpne     953
+     895: invokestatic  #237                // Method coreLG/CCanvas.endDlg:()V
+     898: aload_0
+     899: iconst_1
+     900: putfield      #103                // Field l:I
+     903: aload_0
+     904: getfield      #106                // Field tP:Lchibikun/TField;
+     907: ldc           #2                  // String
+     909: invokevirtual #228                // Method chibikun/TField.setText:(Ljava/lang/String;)V
+     912: aload_0
+     913: getfield      #107                // Field tU:Lchibikun/TField;
+     916: iconst_0
+     917: putfield      #120                // Field chibikun/TField.isFocus:Z
+     920: aload_0
+     921: getfield      #106                // Field tP:Lchibikun/TField;
+     924: iconst_1
+     925: putfield      #120                // Field chibikun/TField.isFocus:Z
+     928: getstatic     #133                // Field coreLG/CCanvas.isTouch:Z
+     931: ifne          948
+     934: aload_0
+     935: aload_0
+     936: getfield      #106                // Field tP:Lchibikun/TField;
+     939: getfield      #117                // Field chibikun/TField.cmdClear:Lchibikun/mCommand;
+     942: putfield      #66                 // Field chibikun/CScreen.t:Lchibikun/mCommand;
+     945: goto          953
+     948: aload_0
+     949: aconst_null
+     950: putfield      #66                 // Field chibikun/CScreen.t:Lchibikun/mCommand;
+     953: iload_1
+     954: sipush        1019
+     957: if_icmpne     1009
+     960: invokestatic  #237                // Method coreLG/CCanvas.endDlg:()V
+     963: aload_0
+     964: iconst_1
+     965: putfield      #103                // Field l:I
+     968: aload_0
+     969: getfield      #107                // Field tU:Lchibikun/TField;
+     972: iconst_0
+     973: putfield      #120                // Field chibikun/TField.isFocus:Z
+     976: aload_0
+     977: getfield      #106                // Field tP:Lchibikun/TField;
+     980: iconst_1
+     981: putfield      #120                // Field chibikun/TField.isFocus:Z
+     984: getstatic     #133                // Field coreLG/CCanvas.isTouch:Z
+     987: ifne          1004
+     990: aload_0
+     991: aload_0
+     992: getfield      #106                // Field tP:Lchibikun/TField;
+     995: getfield      #117                // Field chibikun/TField.cmdClear:Lchibikun/mCommand;
+     998: putfield      #66                 // Field chibikun/CScreen.t:Lchibikun/mCommand;
+    1001: goto          1009
+    1004: aload_0
+    1005: aconst_null
+    1006: putfield      #66                 // Field chibikun/CScreen.t:Lchibikun/mCommand;
+    1009: iload_1
+    1010: sipush        8882
+    1013: if_icmpne     1019
+    1016: invokestatic  #237                // Method coreLG/CCanvas.endDlg:()V
+    1019: iload_1
+    1020: sipush        4000
+    1023: if_icmpne     1089
+    1026: aload_0
+    1027: getfield      #107                // Field tU:Lchibikun/TField;
+    1030: invokevirtual #226                // Method chibikun/TField.getText:()Ljava/lang/String;
+    1033: astore        4
+    1035: invokestatic  #178                // Method chibikun/L.ch:()Ljava/lang/String;
+    1038: invokestatic  #236                // Method coreLG/CCanvas.e:(Ljava/lang/String;)V
+    1041: invokestatic  #200                // Method connect:()V
+    1044: invokestatic  #179                // Method chibikun/L.ci:()Ljava/lang/String;
+    1047: invokestatic  #236                // Method coreLG/CCanvas.e:(Ljava/lang/String;)V
+    1050: invokestatic  #162                // Method chibikun/GameService.gI:()Lchibikun/GameService;
+    1053: aload         4
+    1055: aload_0
+    1056: getfield      #106                // Field tP:Lchibikun/TField;
+    1059: invokevirtual #226                // Method chibikun/TField.getText:()Ljava/lang/String;
+    1062: ldc           #21                 // String userAo
+    1064: invokestatic  #217                // Method chibikun/Rms.loadRMSString:(Ljava/lang/String;)Ljava/lang/String;
+    1067: invokevirtual #160                // Method chibikun/GameService.a:(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V
+    1070: ldc           #19                 // String user
+    1072: aload         4
+    1074: invokestatic  #215                // Method chibikun/Rms.a:(Ljava/lang/String;Ljava/lang/String;)V
+    1077: ldc           #16                 // String pass
+    1079: aload_0
+    1080: getfield      #106                // Field tP:Lchibikun/TField;
+    1083: invokevirtual #226                // Method chibikun/TField.getText:()Ljava/lang/String;
+    1086: invokestatic  #215                // Method chibikun/Rms.a:(Ljava/lang/String;Ljava/lang/String;)V
+    1089: iload_1
+    1090: sipush        10021
+    1093: if_icmpne     1100
+    1096: aload_0
+    1097: invokespecial #204                // Method m:()V
+    1100: iload_1
+    1101: sipush        3000
+    1104: if_icmpne     1143
+    1107: invokestatic  #182                // Method chibikun/L.d:()Ljava/lang/String;
+    1110: new           #47                 // class chibikun/mCommand
+    1113: dup
+    1114: invokestatic  #170                // Method chibikun/L.bh:()Ljava/lang/String;
+    1117: aload_0
+    1118: sipush        10019
+    1121: aconst_null
+    1122: invokespecial #230                // Method chibikun/mCommand."<init>":(Ljava/lang/String;Lchibikun/IActionListener;ILjava/lang/Object;)V
+    1125: new           #47                 // class chibikun/mCommand
+    1128: dup
+    1129: invokestatic  #169                // Method chibikun/L.bg:()Ljava/lang/String;
+    1132: aload_0
+    1133: sipush        10020
+    1136: aconst_null
+    1137: invokespecial #230                // Method chibikun/mCommand."<init>":(Ljava/lang/String;Lchibikun/IActionListener;ILjava/lang/Object;)V
+    1140: invokestatic  #235                // Method coreLG/CCanvas.a:(Ljava/lang/String;Lchibikun/mCommand;Lchibikun/mCommand;)V
+    1143: iload_1
+    1144: sipush        3001
+    1147: if_icmpne     1164
+    1150: invokestatic  #222                // Method chibikun/Session_ME.gI:()Lchibikun/Session_ME;
+    1153: invokevirtual #220                // Method chibikun/Session_ME.close:()V
+    1156: aload_0
+    1157: invokevirtual #202                // Method g:()V
+    1160: aload_0
+    1161: invokevirtual #208                // Method show:()V
+    1164: iload_1
+    1165: sipush        3002
+    1168: if_icmpne     1257
+    1171: invokestatic  #210                // Method chibikun/MenuScr.g:()Lchibikun/MenuScr;
+    1174: astore        4
+    1176: new           #34                 // class chibikun/InputDlg
+    1179: dup
+    1180: invokespecial #166                // Method chibikun/InputDlg."<init>":()V
+    1183: dup
+    1184: putstatic     #132                // Field coreLG/CCanvas.inputDlg:Lchibikun/InputDlg;
+    1187: aload         4
+    1189: getfield      #109                // Field chibikun/MenuScr.n:[Ljava/lang/String;
+    1192: iconst_0
+    1193: aaload
+    1194: new           #47                 // class chibikun/mCommand
+    1197: dup
+    1198: ldc           #2                  // String
+    1200: aload         4
+    1202: sipush        1007
+    1205: aconst_null
+    1206: invokespecial #230                // Method chibikun/mCommand."<init>":(Ljava/lang/String;Lchibikun/IActionListener;ILjava/lang/Object;)V
+    1209: new           #47                 // class chibikun/mCommand
+    1212: dup
+    1213: invokestatic  #180                // Method chibikun/L.close:()Ljava/lang/String;
+    1216: aload         4
+    1218: sipush        1012
+    1221: aconst_null
+    1222: invokespecial #230                // Method chibikun/mCommand."<init>":(Ljava/lang/String;Lchibikun/IActionListener;ILjava/lang/Object;)V
+    1225: iconst_2
+    1226: invokevirtual #167                // Method chibikun/InputDlg.setInfo:(Ljava/lang/String;Lchibikun/mCommand;Lchibikun/mCommand;I)V
+    1229: getstatic     #132                // Field coreLG/CCanvas.inputDlg:Lchibikun/InputDlg;
+    1232: invokevirtual #168                // Method chibikun/InputDlg.show:()V
+    1235: getstatic     #133                // Field coreLG/CCanvas.isTouch:Z
+    1238: ifeq          1257
+    1241: getstatic     #126                // Field chibikun/mGraphics.zoomLevel:I
+    1244: iconst_1
+    1245: if_icmple     1257
+    1248: getstatic     #132                // Field coreLG/CCanvas.inputDlg:Lchibikun/InputDlg;
+    1251: getfield      #74                 // Field chibikun/InputDlg.tfInput:Lchibikun/TField;
+    1254: invokevirtual #224                // Method chibikun/TField.a:()V
+    1257: iload_1
+    1258: sipush        3003
+    1261: if_icmpne     1274
+    1264: invokestatic  #162                // Method chibikun/GameService.gI:()Lchibikun/GameService;
+    1267: invokevirtual #165                // Method chibikun/GameService.u:()V
+    1270: aload_0
+    1271: invokevirtual #208                // Method show:()V
+    1274: return
+    Exception table:
+       from    to  target type
+         501   530   533   Class java/lang/Exception
+
+  static {};
+    Code:
+       0: iconst_0
+       1: putstatic     #78                 // Field ak:I
+       4: ldc           #6                  // String /gui/remember.png
+       6: invokestatic  #239                // Method coreLG/CCanvas.loadImage:(Ljava/lang/String;)Ljavax/microedition/lcdui/Image;
+       9: pop
+      10: getstatic     #59                 // Field chibikun/Bullet.c:Ljavax/microedition/lcdui/Image;
+      13: astore_0
+      14: bipush        50
+      16: putstatic     #94                 // Field ba:I
+      19: ldc           #2                  // String
+      21: putstatic     #102                // Field k:Ljava/lang/String;
+      24: return
+}

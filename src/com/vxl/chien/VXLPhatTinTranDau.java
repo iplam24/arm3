@@ -19,6 +19,16 @@ final class VXLPhatTinTranDau {
         this.guiTungNguoi(chienBinh -> chienBinh.nguoiChoi.dichVu.guiHienManHinhGameLuyenTap());
     }
 
+    void guiDongBoMauBanDau() {
+        int soOClient = Math.min(8, this.chienBinhs.length);
+        for (int i = 0; i < soOClient; i++) {
+            VXLChienBinh chienBinh = this.chienBinhs[i];
+            if (chienBinh != null) {
+                this.guiMau(chienBinh);
+            }
+        }
+    }
+
     void guiThemBoss(VXLChienBinh boss, short head, short leg, short body,
             short hat, short wing, byte loaiBoss) {
         this.guiTungNguoi(chienBinh -> chienBinh.nguoiChoi.dichVu.guiThemBossDau(

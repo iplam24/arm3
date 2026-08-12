@@ -30,7 +30,7 @@ SET time_zone = "+00:00";
 CREATE TABLE `accounts` (
   `id` int(11) NOT NULL,
   `username` varchar(100) NOT NULL,
-  `password` varchar(20) NOT NULL,
+  `password` varchar(255) NOT NULL,
   `is_banned` int(1) NOT NULL,
   `is_online` int(1) NOT NULL,
   `is_admin` tinyint(1) NOT NULL DEFAULT 0
@@ -41,8 +41,8 @@ CREATE TABLE `accounts` (
 --
 
 INSERT INTO `accounts` (`id`, `username`, `password`, `is_banned`, `is_online`, `is_admin`) VALUES
-(1, 'admin', 'a', 0, 0, 1),
-(2, 'locheo_1782487107955', '', 0, 0, 0);
+(1, 'admin', '$2a$10$IDfnNfrOQrj7KibJIMIGWelxHYmUDRNlM9RDyaBPb9iDztDipQCWO', 0, 0, 1),
+(2, 'locheo_1782487107955', '$2a$10$CXQMJcNtd4cRUVWLugeOW.44tIJD6o7OXXOxUpVo/fTFVx0ksa6Qm', 0, 0, 0);
 
 -- --------------------------------------------------------
 
@@ -3285,7 +3285,8 @@ INSERT INTO `sprite_images` (`id`, `image_id`, `x`, `y`, `width`, `height`) VALU
 -- Chỉ mục cho bảng `accounts`
 --
 ALTER TABLE `accounts`
-  ADD PRIMARY KEY (`id`);
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `uk_accounts_username` (`username`);
 
 --
 -- Chỉ mục cho bảng `avatar_parts`

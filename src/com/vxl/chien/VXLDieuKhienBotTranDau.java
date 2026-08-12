@@ -22,7 +22,13 @@ final class VXLDieuKhienBotTranDau {
     private static final short ICON_BOM_TU_SAT = 1007;
     private static final long TRE_BOT_TOI_THIEU = 900L;
     private static final long TRE_BOT_TOI_DA = 1400L;
-    private static final ScheduledExecutorService BO_LAP_LICH = Executors.newSingleThreadScheduledExecutor(tacVu -> {
+    private static final long TRE_SAU_DI_CHUYEN_CAM_TU = 450L;
+    private static final long TRE_SAU_NO_CAM_TU = 900L;
+    private static final int TI_LE_PHIEN_QUAN_BAN_GOC_CAO = 70;
+    private static final int SO_LUONG_LUONG_BOT = Math.max(2,
+            Math.min(4, Runtime.getRuntime().availableProcessors()));
+    private static final ScheduledExecutorService BO_LAP_LICH = Executors.newScheduledThreadPool(
+            SO_LUONG_LUONG_BOT, tacVu -> {
         Thread thread = new Thread(tacVu, "vxl-bot-tran-dau");
         thread.setDaemon(true);
         return thread;
@@ -81,6 +87,9 @@ final class VXLDieuKhienBotTranDau {
                 this.tranDau.sangLuot(chiSoLuot);
                 return;
             }
+            if (this.tranDau.dangChoKetThucPhatBan(chiSoLuot)) {
+                return;
+            }
             long bayGio = System.currentTimeMillis();
             long hanLuot = this.tranDau.layHanLuot();
             if (chiSoLuot != this.luotDangTheoDoi || hanLuot != this.hanLuotDangTheoDoi) {
@@ -106,20 +115,55 @@ final class VXLDieuKhienBotTranDau {
             this.diChuyenTruocKhiBan(bot);
         }
         VXLChienBinh mucTieu = this.timMucTieuGanNhat(bot);
+        VXLKetQuaDan ketQua = null;
         if (mucTieu == null) {
             System.out.println("[BOT] " + bot.ten + " không tìm thấy mục tiêu, bỏ lượt.");
         }
         if (mucTieu != null) {
-            byte luc = this.tinhDuongDan.lucCanThietToiMucTieu(bot, mucTieu);
-            short goc = this.tinhDuongDan.gocDanDaoToiMucTieu(bot, mucTieu, luc);
-            VXLKetQuaDan ketQua = this.tranDau.xuLyPhatBan(bot, (byte)0, goc, luc, -1);
+            byte loaiDan = VXLCauHinhVatPhamChienDau.layLoaiDanTheoVuKhi(
+                    bot.maVuKhi, (byte)0);
+            byte luc;
+            short goc;
+            if (this.tranDau.laCheDoCamTu()) {
+                boolean banGocCao = ThreadLocalRandom.current().nextInt(100)
+                        < TI_LE_PHIEN_QUAN_BAN_GOC_CAO;
+                VXLTinhDuongDan.CachBanBot cachBan = this.tinhDuongDan.timCachBanBot(
+                        bot, mucTieu, loaiDan, this.tranDau.layGioX(),
+                        this.tranDau.layGioY(), banGocCao);
+                if (cachBan.satThuongDuKien() <= 0) {
+                    VXLChienBinh mucTieuKhac = this.timMucTieuGanNhat(bot, mucTieu);
+                    if (mucTieuKhac != null) {
+                        VXLTinhDuongDan.CachBanBot cachBanKhac =
+                                this.tinhDuongDan.timCachBanBot(
+                                        bot, mucTieuKhac, loaiDan,
+                                        this.tranDau.layGioX(), this.tranDau.layGioY(),
+                                        banGocCao);
+                        if (cachBanKhac.satThuongDuKien() > cachBan.satThuongDuKien()) {
+                            mucTieu = mucTieuKhac;
+                            cachBan = cachBanKhac;
+                        }
+                    }
+                }
+                luc = cachBan.luc();
+                goc = cachBan.goc();
+            } else {
+                luc = this.tinhDuongDan.lucCanThietToiMucTieu(bot, mucTieu);
+                goc = this.tinhDuongDan.gocDanDaoToiMucTieu(bot, mucTieu, luc);
+            }
+            ketQua = this.tranDau.xuLyPhatBan(bot, loaiDan, goc, luc, -1);
             this.tranDau.ghiNhanDiaHinhPhatBan(ketQua);
             this.tranDau.phatBan(bot, ketQua, (byte)1);
             this.tranDau.apDungSatThuongPhatBan(bot, ketQua, -1);
             this.tranDau.ghiNhanNapDanSauPhatBan(bot);
         }
         if (!this.tranDau.kiemTraKetThuc()) {
-            this.tranDau.sangLuot(bot.chiSo);
+            if (ketQua == null) {
+                this.tranDau.sangLuot(bot.chiSo);
+            } else if (this.tranDau.laCheDoCamTu()) {
+                this.tranDau.chuyenLuotBotSauPhatBan(bot, ketQua);
+            } else {
+                this.tranDau.sangLuot(bot.chiSo);
+            }
         }
     }
 
@@ -132,7 +176,8 @@ final class VXLDieuKhienBotTranDau {
         if (!this.daApSatNguoiChoi(camTu, mucTieu)) {
             this.diChuyenCamTu(camTu, mucTieu);
         }
-        if (this.daApSatNguoiChoi(camTu, mucTieu)) {
+        boolean daKichNo = this.daApSatNguoiChoi(camTu, mucTieu);
+        if (daKichNo) {
             this.tranDau.phatDungVatPham(camTu, HIEU_UNG_BOM_TU_SAT, ICON_BOM_TU_SAT);
             this.tranDau.satThuong(camTu, camTu, camTu.mauToiDa, true, true, false);
             for (VXLChienBinh chienBinh : this.chienBinhs) {
@@ -148,7 +193,8 @@ final class VXLDieuKhienBotTranDau {
             }
         }
         if (!this.tranDau.kiemTraKetThuc()) {
-            this.tranDau.sangLuot(camTu.chiSo);
+            this.tranDau.chuyenLuotBotSauHanhDong(camTu,
+                    daKichNo ? TRE_SAU_NO_CAM_TU : TRE_SAU_DI_CHUYEN_CAM_TU);
         }
     }
 
@@ -242,10 +288,16 @@ final class VXLDieuKhienBotTranDau {
     }
 
     private VXLChienBinh timMucTieuGanNhat(VXLChienBinh nguoiBan) {
+        return this.timMucTieuGanNhat(nguoiBan, null);
+    }
+
+    private VXLChienBinh timMucTieuGanNhat(VXLChienBinh nguoiBan,
+            VXLChienBinh mucTieuBoQua) {
         VXLChienBinh ganNhat = null;
         int khoangCachGanNhat = Integer.MAX_VALUE;
         for (VXLChienBinh mucTieu : this.chienBinhs) {
-            if (mucTieu == null || mucTieu == nguoiBan || mucTieu.chet || mucTieu.daRoiTran
+            if (mucTieu == null || mucTieu == nguoiBan || mucTieu == mucTieuBoQua
+                    || mucTieu.chet || mucTieu.daRoiTran
                     || (nguoiBan.bot && mucTieu.bot)) {
                 continue;
             }

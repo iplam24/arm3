@@ -17,6 +17,7 @@ import com.vxl.nhapvai.VXLBanDoRPG;
 import com.vxl.cuahang.VXLCuaHang;
 import com.vxl.tienich.VXLDuLieuJson;
 import com.vxl.tienich.VXLTienIch;
+import com.vxl.luyentap.VXLDatLaiPhienQuanHangNgay;
 import com.alibaba.fastjson2.JSON;
 import com.alibaba.fastjson2.JSONArray;
 import com.alibaba.fastjson2.JSONObject;
@@ -550,6 +551,7 @@ public class VXLQuanLyMayChu {
             ma = 0;
             numClients = 0;
             batDau = true;
+            VXLDatLaiPhienQuanHangNgay.khoiDong();
             nettyServer = new VXLMayChuNetty();
             nettyServer.batDau(mayChu, cong);
             VXLQuanLyMayChu.log(GAME_NAME + " start OK!");
@@ -591,6 +593,7 @@ public class VXLQuanLyMayChu {
                     clients = null;
                 }
             }
+            VXLDatLaiPhienQuanHangNgay.dung();
             VXLCoSoDuLieu.close();
             System.out.println("VXLMayChu stopped");
         }

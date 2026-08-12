@@ -1,0 +1,30 @@
+﻿Compiled from "Session_Cmd.java"
+public class chibikun.Session_Cmd {
+  public chibikun.Session_Cmd();
+    Code:
+       0: aload_0
+       1: invokespecial #3                  // Method java/lang/Object."<init>":()V
+       4: return
+
+  public static boolean isBigMessage(byte);
+    Code:
+       0: iload_0
+       1: bipush        -120
+       3: if_icmpeq     30
+       6: iload_0
+       7: bipush        -31
+       9: if_icmpeq     30
+      12: iload_0
+      13: bipush        -41
+      15: if_icmpeq     30
+      18: iload_0
+      19: bipush        -60
+      21: if_icmpeq     30
+      24: iload_0
+      25: bipush        -92
+      27: if_icmpne     34
+      30: iconst_1
+      31: goto          35
+      34: iconst_0
+      35: ireturn
+}

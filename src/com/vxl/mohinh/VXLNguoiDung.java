@@ -1,6 +1,7 @@
 package com.vxl.mohinh;
 
 // Code by Lọ Thánh Chí Tôn
+import com.vxl.baomat.VXLMaHoaMatKhau;
 import com.vxl.loi.VXLCoSoDuLieu;
 import com.vxl.loi.VXLQuanLyMayChu;
 import com.vxl.vatpham.VXLVatPham;
@@ -84,55 +85,183 @@ public class VXLNguoiDung {
             return null;
         }
         tenDangNhap = tenDangNhap.trim();
+        String matKhauDangNhap;
         VXLNguoiDung us = new VXLNguoiDung(s, (VXLDichVuGame)s.layDichVu());
-        try {
-            if (tenDangNhap.startsWith("nvn_") && matKhau.equals("a")) {
-                matKhau = "";
-            }
-            try (java.sql.Connection conn = VXLCoSoDuLieu.getConnection();
-                 PreparedStatement stmt = conn.prepareStatement("SELECT * FROM `accounts` WHERE `username` = ? AND `password` = ? LIMIT 1;")) {
-                stmt.setString(1, tenDangNhap);
-                stmt.setString(2, matKhau);
-                ResultSet res = stmt.executeQuery();
-                if (res != null && res.next()) {
-                    us.user_id = res.getInt("id");
-                    us.ban = res.getBoolean("is_banned");
-                    us.quanTri = res.getBoolean("is_admin");
-                    if (us.ban) {
-                        us.dichVu.moHopThoaiOK("Tài khoản đã bị khóa.");
-                        res.close();
-                        return null;
-                    }
-                    us.tenDangNhap = res.getString("username");
-                    us.matKhau = res.getString("password");
-                    res.close();
-                    String userKey = khoaNguoiDung(us.tenDangNhap);
-                    VXLNguoiDung user = users.putIfAbsent(userKey, us);
-                    if (user != null) {
-                        us.dichVu.moHopThoaiOK("Tài khoản này đang được đăng nhập ở nơi khác.");
-                        user.khach.guiMaPhien(0);
-                        return null;
-                    }
-                    return us;
+        try (java.sql.Connection conn = VXLCoSoDuLieu.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(
+                     "SELECT `id`, `username`, `password`, `is_banned`, `is_admin` "
+                             + "FROM `accounts` WHERE `username` = ? LIMIT 1;")) {
+            stmt.setString(1, tenDangNhap);
+            try (ResultSet res = stmt.executeQuery()) {
+                if (!res.next()) {
+                    us.dichVu.moHopThoaiOK("Tài khoản hoặc mật khẩu không chính xác.");
+                    return null;
                 }
-                if (res != null) {
-                    res.close();
+                String matKhauDaLuu = res.getString("password");
+                matKhauDangNhap = chuanHoaMatKhauKhach(tenDangNhap, matKhau, matKhauDaLuu);
+                if (!VXLMaHoaMatKhau.khop(matKhauDangNhap, matKhauDaLuu)) {
+                    us.dichVu.moHopThoaiOK("Tài khoản hoặc mật khẩu không chính xác.");
+                    return null;
                 }
+                us.user_id = res.getInt("id");
+                us.ban = res.getBoolean("is_banned");
+                us.quanTri = res.getBoolean("is_admin");
+                if (us.ban) {
+                    us.dichVu.moHopThoaiOK("Tài khoản đã bị khóa.");
+                    return null;
+                }
+                us.tenDangNhap = res.getString("username");
+                String matKhauCanLuu = laBiDanhMatKhauKhach(tenDangNhap, matKhau) ? matKhau : matKhauDangNhap;
+                us.matKhau = nangCapMatKhauNeuCan(conn, us.user_id, matKhauCanLuu, matKhauDaLuu);
             }
-            us.dichVu.moHopThoaiOK("Tài khoản hoặc mật khẩu không chính xác.");
+            String userKey = khoaNguoiDung(us.tenDangNhap);
+            VXLNguoiDung user = users.putIfAbsent(userKey, us);
+            if (user != null) {
+                us.dichVu.moHopThoaiOK("Tài khoản này đang được đăng nhập ở nơi khác.");
+                user.khach.guiMaPhien(0);
+                return null;
+            }
+            return us;
         }
         catch (Exception ex) {
             Logger.getLogger(VXLNguoiDung.class.getName()).log(Level.WARNING,
-                    "Khong the dang nhap tai khoan " + tenDangNhap + ".", ex);
+                    "Không thể đăng nhập tài khoản " + tenDangNhap + ".", ex);
             try {
-                us.dichVu.moHopThoaiOK("");
+                us.dichVu.moHopThoaiOK("Không thể đăng nhập lúc này.");
             }
-            catch (Exception exception) {
+            catch (Exception guiLoi) {
                 Logger.getLogger(VXLNguoiDung.class.getName()).log(Level.FINE,
-                        "Khong the gui thong bao loi dang nhap.", exception);
+                        "Không thể gửi thông báo lỗi đăng nhập.", guiLoi);
             }
         }
         return null;
+    }
+
+    private static String chuanHoaMatKhauKhach(String tenDangNhap, String matKhau, String matKhauDaLuu) {
+        if (laBiDanhMatKhauKhach(tenDangNhap, matKhau) && matKhauDaLuu.isEmpty()) {
+            return "";
+        }
+        return matKhau;
+    }
+
+    private static boolean laBiDanhMatKhauKhach(String tenDangNhap, String matKhau) {
+        return tenDangNhap.startsWith("nvn_") && "a".equals(matKhau);
+    }
+
+    private static String nangCapMatKhauNeuCan(java.sql.Connection conn, int userId,
+            String matKhau, String matKhauDaLuu) {
+        if (!VXLMaHoaMatKhau.canNangCap(matKhauDaLuu)) {
+            return matKhauDaLuu;
+        }
+        String matKhauMoi = VXLMaHoaMatKhau.maHoa(matKhau);
+        try (PreparedStatement stmt = conn.prepareStatement(
+                "UPDATE `accounts` SET `password` = ? WHERE `id` = ? AND `password` = ?;")) {
+            stmt.setString(1, matKhauMoi);
+            stmt.setInt(2, userId);
+            stmt.setString(3, matKhauDaLuu);
+            return stmt.executeUpdate() == 1 ? matKhauMoi : matKhauDaLuu;
+        }
+        catch (SQLException ex) {
+            Logger.getLogger(VXLNguoiDung.class.getName()).log(Level.WARNING,
+                    "Không thể nâng cấp mật khẩu BCrypt cho tài khoản id=" + userId + ".", ex);
+            return matKhauDaLuu;
+        }
+    }
+
+    public static String dangKy(String tenDangNhap, String matKhau, String tenDangNhapAo) {
+        if (tenDangNhap == null || matKhau == null) {
+            return "Thông tin đăng ký không hợp lệ.";
+        }
+        String tenMoi = tenDangNhap.trim().toLowerCase(Locale.ROOT);
+        String matKhauMoi = matKhau.trim().toLowerCase(Locale.ROOT);
+        String tenAo = tenDangNhapAo == null ? "" : tenDangNhapAo.trim();
+        if (tenMoi.length() < 5 || tenMoi.length() > 32) {
+            return "Tên đăng nhập phải từ 5 đến 32 ký tự.";
+        }
+        if (!tenMoi.matches("[a-z0-9_]+")) {
+            return "Tên đăng nhập chỉ gồm chữ thường, số và dấu gạch dưới.";
+        }
+        if (matKhauMoi.isEmpty() || !VXLMaHoaMatKhau.coDoDaiHopLe(matKhauMoi)) {
+            return "Mật khẩu phải từ 1 đến 72 byte UTF-8.";
+        }
+        String matKhauDaMaHoa = VXLMaHoaMatKhau.maHoa(matKhauMoi);
+        try (java.sql.Connection conn = VXLCoSoDuLieu.getConnection()) {
+            conn.setAutoCommit(false);
+            try {
+                if (taiKhoanTonTai(conn, tenMoi)) {
+                    conn.rollback();
+                    return "Tên đăng nhập đã tồn tại.";
+                }
+                if (!tenAo.isEmpty()) {
+                    if (!chuyenTaiKhoanKhach(conn, tenAo, tenMoi, matKhauDaMaHoa)) {
+                        conn.rollback();
+                        return "Tài khoản khách không hợp lệ hoặc đã được đăng ký.";
+                    }
+                } else {
+                    try (PreparedStatement stmt = conn.prepareStatement(
+                            "INSERT INTO `accounts` (`username`, `password`, `is_banned`, `is_online`, `is_admin`) "
+                                    + "VALUES (?, ?, 0, 0, 0);")) {
+                        stmt.setString(1, tenMoi);
+                        stmt.setString(2, matKhauDaMaHoa);
+                        stmt.executeUpdate();
+                    }
+                }
+                conn.commit();
+                return null;
+            }
+            catch (SQLException | RuntimeException ex) {
+                conn.rollback();
+                throw ex;
+            }
+            finally {
+                conn.setAutoCommit(true);
+            }
+        }
+        catch (Exception ex) {
+            Logger.getLogger(VXLNguoiDung.class.getName()).log(Level.WARNING,
+                    "Không thể đăng ký tài khoản " + tenMoi + ".", ex);
+            return "Không thể đăng ký lúc này.";
+        }
+    }
+
+    private static boolean taiKhoanTonTai(java.sql.Connection conn, String tenDangNhap) throws SQLException {
+        try (PreparedStatement stmt = conn.prepareStatement(
+                "SELECT 1 FROM `accounts` WHERE `username` = ? LIMIT 1;")) {
+            stmt.setString(1, tenDangNhap);
+            try (ResultSet res = stmt.executeQuery()) {
+                return res.next();
+            }
+        }
+    }
+
+    private static boolean chuyenTaiKhoanKhach(java.sql.Connection conn, String tenDangNhapAo,
+            String tenDangNhapMoi, String matKhauDaMaHoa) throws SQLException {
+        if (!tenDangNhapAo.startsWith("nvn_")) {
+            return false;
+        }
+        int accountId;
+        String matKhauKhach;
+        try (PreparedStatement stmt = conn.prepareStatement(
+                "SELECT `id`, `password` FROM `accounts` WHERE `username` = ? LIMIT 1 FOR UPDATE;")) {
+            stmt.setString(1, tenDangNhapAo);
+            try (ResultSet res = stmt.executeQuery()) {
+                if (!res.next()) {
+                    return false;
+                }
+                accountId = res.getInt("id");
+                matKhauKhach = res.getString("password");
+            }
+        }
+        if (!matKhauKhach.isEmpty() && !VXLMaHoaMatKhau.khop("a", matKhauKhach)) {
+            return false;
+        }
+        try (PreparedStatement stmt = conn.prepareStatement(
+                "UPDATE `accounts` SET `username` = ?, `password` = ? WHERE `id` = ?;")) {
+            stmt.setString(1, tenDangNhapMoi);
+            stmt.setString(2, matKhauDaMaHoa);
+            stmt.setInt(3, accountId);
+            return stmt.executeUpdate() == 1;
+        }
     }
 
     public static void dangNhap2(VXLPhien s, String tenDangNhap) {
@@ -141,7 +270,7 @@ public class VXLNguoiDung {
                  PreparedStatement stmt = conn.prepareStatement("INSERT INTO `accounts`(`username`, `password`, `is_banned`, `is_online`) VALUES (?,?,?,?);")) {
                 String user = "nvn_" + System.currentTimeMillis();
                 stmt.setString(1, user);
-                stmt.setString(2, "");
+                stmt.setString(2, VXLMaHoaMatKhau.maHoa("a"));
                 stmt.setInt(3, 0);
                 stmt.setInt(4, 0);
                 stmt.execute();

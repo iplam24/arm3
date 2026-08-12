@@ -6,7 +6,11 @@ final class VXLTinhDuongDan {
     private static final int BAN_KINH_TRUNG = 42;
     private static final int NUA_RONG_HITBOX_NHAN_VAT = 12;
     private static final int CHIEU_CAO_HITBOX_NHAN_VAT = 24;
+    private static final int DO_CAO_BUOC_LEN_TOI_DA = 4;
+    private static final int LECH_DIEM_VA_CHAM_DI_BO = 5;
+    private static final int KHE_NHO_CO_THE_VUOT_TOI_DA = 16;
     private static final int SO_DIEM_TOI_DA = 160;
+    private static final int SO_DIEM_TOI_DA_DAN_IT_ROI = 340;
     private static final double BUOC_THOI_GIAN = 0.5D;
     private static final double HE_SO_TOC_DO = 0.85D;
     private static final double TRONG_LUC = 0.33D;
@@ -19,6 +23,9 @@ final class VXLTinhDuongDan {
     private final VXLQuanLyBanDo banDo;
     private final VXLChienBinh[] chienBinhs;
     private final VXLHeThongDan heThongDan;
+
+    record CachBanBot(short goc, byte luc, int satThuongDuKien) {
+    }
 
     VXLTinhDuongDan(VXLQuanLyBanDo banDo, VXLChienBinh[] chienBinhs) {
         this.banDo = banDo;
@@ -54,7 +61,17 @@ final class VXLTinhDuongDan {
         }
         return this.heThongDan.taoPhatBan(batDauX, batDauY, goc, luc, lucTach, loaiDan,
                 chiMang, avengerDan, gioX, gioY, Byte.toUnsignedInt(nguoiBan.chiSo), BUOC_THOI_GIAN,
-                SO_DIEM_TOI_DA, epXuyenDiaHinh);
+                this.laySoDiemToiDa(loaiDan, avengerDan), epXuyenDiaHinh);
+    }
+
+    private int laySoDiemToiDa(byte loaiDan, byte avengerDan) {
+        VXLHoSoDan hoSoDan = VXLCauHinhVatPhamChienDau.layHoSoDan(loaiDan, avengerDan);
+        VXLHoSoDan.VatLy vatLy = hoSoDan.vatLy();
+        if (hoSoDan.dungTrongLuc() && !vatLy.dungVatLyTheoKhung()
+                && vatLy.heSoTrongLuc() <= 0.25D) {
+            return SO_DIEM_TOI_DA_DAN_IT_ROI;
+        }
+        return SO_DIEM_TOI_DA;
     }
 
     private boolean coVaChamTrenDoan(short x1, short y1, short x2, short y2) {
@@ -135,6 +152,118 @@ final class VXLTinhDuongDan {
         return (byte)Math.max(LUC_TOI_THIEU, Math.min(LUC_TOI_DA, luc));
     }
 
+    CachBanBot timCachBanBot(VXLChienBinh nguoiBan, VXLChienBinh mucTieu,
+            byte loaiDan, byte gioX, byte gioY, boolean uuTienSieuCao) {
+        if (nguoiBan == null || mucTieu == null) {
+            return new CachBanBot((short)0, LUC_TOI_THIEU, 0);
+        }
+        byte lucMacDinh = this.lucCanThietToiMucTieu(nguoiBan, mucTieu);
+        short gocMacDinh = this.gocDanDaoToiMucTieu(
+                nguoiBan, mucTieu, lucMacDinh);
+        CachBanBot cachTotNhat = new CachBanBot(gocMacDinh, lucMacDinh, 0);
+        CachBanBot cachGaySatThuongThuong = null;
+        CachBanBot cachGaySatThuongSieuCao = null;
+        CachBanBot cachSieuCaoTotNhat = null;
+        int satThuongThuongTotNhat = 0;
+        int satThuongSieuCaoTotNhat = 0;
+        long diemTotNhat = Long.MAX_VALUE;
+        long diemSieuCaoTotNhat = Long.MAX_VALUE;
+        boolean banSangPhai = mucTieu.x >= nguoiBan.x;
+        int gocBatDau = banSangPhai ? 35 : 91;
+        int gocKetThuc = banSangPhai ? 89 : 145;
+        for (int luc = 10; luc <= Byte.toUnsignedInt(LUC_TOI_DA); luc += 2) {
+            for (int goc = gocBatDau; goc <= gocKetThuc; goc += 2) {
+                VXLHeThongDan.KetQuaPhatBan phatBan = this.taoPhatBan(
+                        nguoiBan, loaiDan, (byte)0, (byte)0, (short)goc, (byte)luc,
+                        (byte)0, gioX, gioY);
+                boolean sieuCao = VXLCauHinhVatPhamChienDau.timDiemSieuCao(
+                        nguoiBan.y, phatBan.duongX, phatBan.duongY,
+                        loaiDan, (byte)0).kichHoat();
+                int satThuong = this.tinhSatThuongDuKien(
+                        phatBan, mucTieu, loaiDan);
+                CachBanBot cachBan = new CachBanBot((short)goc, (byte)luc, satThuong);
+                if (sieuCao && satThuong > satThuongSieuCaoTotNhat) {
+                    satThuongSieuCaoTotNhat = satThuong;
+                    cachGaySatThuongSieuCao = cachBan;
+                    if (uuTienSieuCao && satThuong >= 100) {
+                        return cachGaySatThuongSieuCao;
+                    }
+                } else if (!sieuCao && satThuong > satThuongThuongTotNhat) {
+                    satThuongThuongTotNhat = satThuong;
+                    cachGaySatThuongThuong = cachBan;
+                    if (!uuTienSieuCao && satThuong >= 100) {
+                        return cachGaySatThuongThuong;
+                    }
+                }
+                long diemLech = this.tinhDiemLechMucTieu(
+                        phatBan.duongX, phatBan.duongY, mucTieu);
+                if (sieuCao && diemLech < diemSieuCaoTotNhat) {
+                    diemSieuCaoTotNhat = diemLech;
+                    cachSieuCaoTotNhat = cachBan;
+                }
+                if (diemLech < diemTotNhat) {
+                    diemTotNhat = diemLech;
+                    cachTotNhat = cachBan;
+                }
+            }
+        }
+        if (uuTienSieuCao && cachGaySatThuongSieuCao != null) {
+            return cachGaySatThuongSieuCao;
+        }
+        if (!uuTienSieuCao && cachGaySatThuongThuong != null) {
+            return cachGaySatThuongThuong;
+        }
+        if (cachGaySatThuongThuong != null) {
+            return cachGaySatThuongThuong;
+        }
+        if (cachGaySatThuongSieuCao != null) {
+            return cachGaySatThuongSieuCao;
+        }
+        return uuTienSieuCao && cachSieuCaoTotNhat != null
+                ? cachSieuCaoTotNhat : cachTotNhat;
+    }
+
+    private int tinhSatThuongDuKien(VXLHeThongDan.KetQuaPhatBan phatBan,
+            VXLChienBinh mucTieu, byte loaiDan) {
+        int satThuongMoiVien = VXLCauHinhVatPhamChienDau.tinhSatThuongMoiVien(
+                100, loaiDan, (byte)0, (byte)0);
+        int tranSatThuong = VXLCauHinhVatPhamChienDau.layTranPhanTramSatThuong(
+                loaiDan, (byte)0);
+        int satThuongTrucTiep = Math.min(tranSatThuong,
+                phatBan.demSoVienTrung(Byte.toUnsignedInt(mucTieu.chiSo))
+                        * satThuongMoiVien);
+        int satThuongNo = VXLCauHinhVatPhamChienDau.tinhSatThuongNoTaiViTri(
+                phatBan.vaChamDiaHinhX, phatBan.vaChamDiaHinhY,
+                mucTieu.x, mucTieu.y, loaiDan, (byte)0,
+                satThuongMoiVien, tranSatThuong);
+        return Math.max(satThuongTrucTiep, satThuongNo);
+    }
+
+    private long tinhDiemLechMucTieu(short[][] cacDuongX, short[][] cacDuongY,
+            VXLChienBinh mucTieu) {
+        long diemTotNhat = Long.MAX_VALUE;
+        int soQuyDao = Math.min(cacDuongX.length, cacDuongY.length);
+        for (int i = 0; i < soQuyDao; i++) {
+            short[] xs = cacDuongX[i];
+            short[] ys = cacDuongY[i];
+            if (xs == null || ys == null) {
+                continue;
+            }
+            int soDiem = Math.min(xs.length, ys.length);
+            for (int j = 0; j < soDiem; j++) {
+                int dx = Math.max(0, Math.abs(xs[j] - mucTieu.x) - NUA_RONG_HITBOX_NHAN_VAT);
+                int dy = 0;
+                if (ys[j] < mucTieu.y - CHIEU_CAO_HITBOX_NHAN_VAT) {
+                    dy = mucTieu.y - CHIEU_CAO_HITBOX_NHAN_VAT - ys[j];
+                } else if (ys[j] > mucTieu.y) {
+                    dy = ys[j] - mucTieu.y;
+                }
+                diemTotNhat = Math.min(diemTotNhat, (long)dx * dx + (long)dy * dy);
+            }
+        }
+        return diemTotNhat;
+    }
+
     short gocDanDaoToiMucTieu(VXLChienBinh nguoiBan, VXLChienBinh mucTieu, byte luc) {
         if (nguoiBan == null || mucTieu == null) {
             return 0;
@@ -190,5 +319,105 @@ final class VXLTinhDuongDan {
             }
         }
         return new short[]{(short)xDich, (short)yDich};
+    }
+
+    short[] gioiHanDiChuyenNguoiChoi(short xCu, short yCu, short xMoi, short yMoi,
+            int khoangCachToiDa, boolean duocPhepBay) {
+        if (duocPhepBay) {
+            return this.gioiHanDiChuyenBay(xCu, yCu, xMoi, yMoi, khoangCachToiDa);
+        }
+        int xBatDau = this.gioiHan(xCu, 0, this.banDo.getWidth() - 1);
+        int yBatDau = this.gioiHan(yCu, 0, this.banDo.getHeight() - 1);
+        int xDich = this.gioiHan(xMoi, 0, this.banDo.getWidth() - 1);
+        int huong = Integer.compare(xDich, xBatDau);
+        int khoangCach = Math.min(Math.abs(xDich - xBatDau), Math.max(0, khoangCachToiDa));
+        if (huong == 0 || khoangCach == 0) {
+            return new short[]{(short)xBatDau, (short)yBatDau};
+        }
+
+        int xServer = xBatDau;
+        int yServer = yBatDau;
+        int soCotTrongLienTiep = 0;
+        for (int buoc = 0; buoc < khoangCach; buoc++) {
+            int xKeTiep = xServer + huong;
+            if (this.coVatCanThanTaiCot((short)xKeTiep, (short)yServer)) {
+                break;
+            }
+            short yKeTiep = this.timViTriDatChoBuocKeTiep((short)xKeTiep, (short)yServer);
+            xServer = xKeTiep;
+            if (yKeTiep == Short.MIN_VALUE) {
+                soCotTrongLienTiep++;
+                if (soCotTrongLienTiep > KHE_NHO_CO_THE_VUOT_TOI_DA) {
+                    break;
+                }
+                continue;
+            }
+            yServer = yKeTiep;
+            soCotTrongLienTiep = 0;
+        }
+        return new short[]{(short)xServer, (short)yServer};
+    }
+
+    short timViTriRoiThang(short x, short yHienTai) {
+        if (x < 0 || x >= this.banDo.getWidth()
+                || yHienTai < 0 || yHienTai >= this.banDo.getHeight()) {
+            return Short.MIN_VALUE;
+        }
+        if (!this.banDo.coVaCham(x, yHienTai)
+                && (yHienTai == this.banDo.getHeight() - 1
+                        || this.banDo.coVaCham(x, (short)(yHienTai + 1)))) {
+            return yHienTai;
+        }
+        int batDau = Math.min(this.banDo.getHeight() - 1, yHienTai + 1);
+        for (int y = batDau; y < this.banDo.getHeight(); y++) {
+            if (this.banDo.coVaCham(x, (short)y)) {
+                return (short)Math.max(0, y - 1);
+            }
+        }
+        return Short.MIN_VALUE;
+    }
+
+    private short[] gioiHanDiChuyenBay(short xCu, short yCu, short xMoi, short yMoi,
+            int khoangCachToiDa) {
+        int xBatDau = this.gioiHan(xCu, 0, this.banDo.getWidth() - 1);
+        int yBatDau = this.gioiHan(yCu, 0, this.banDo.getHeight() - 1);
+        int xDich = this.gioiHan(xMoi, 0, this.banDo.getWidth() - 1);
+        int yDich = this.gioiHan(yMoi, 0, this.banDo.getHeight() - 1);
+        int dx = xDich - xBatDau;
+        int dy = yDich - yBatDau;
+        double khoangCach = Math.hypot(dx, dy);
+        int gioiHan = Math.max(0, khoangCachToiDa);
+        if (khoangCach > gioiHan && khoangCach > 0D) {
+            double tiLe = gioiHan / khoangCach;
+            xDich = (int)Math.round(xBatDau + dx * tiLe);
+            yDich = (int)Math.round(yBatDau + dy * tiLe);
+        }
+        return new short[]{(short)xDich, (short)yDich};
+    }
+
+    private short timViTriDatChoBuocKeTiep(short x, short yHienTai) {
+        int batDauY = Math.max(0, yHienTai - DO_CAO_BUOC_LEN_TOI_DA + 1);
+        for (int y = batDauY; y < this.banDo.getHeight(); y++) {
+            if (this.banDo.coVaCham(x, (short)y)) {
+                return (short)Math.max(0, y - 1);
+            }
+        }
+        return Short.MIN_VALUE;
+    }
+
+    private boolean coVatCanThanTaiCot(short x, short yChan) {
+        int tuY = Math.max(0, yChan - CHIEU_CAO_HITBOX_NHAN_VAT);
+        int denY = Math.min(this.banDo.getHeight() - 1,
+                yChan - LECH_DIEM_VA_CHAM_DI_BO);
+        for (int y = tuY; y <= denY; y++) {
+            if (this.banDo.coVaCham(x, (short)y)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private int gioiHan(int giaTri, int min, int max) {
+        return Math.max(min, Math.min(max, giaTri));
     }
 }

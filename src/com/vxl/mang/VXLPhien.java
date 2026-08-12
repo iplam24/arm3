@@ -515,9 +515,17 @@ implements IVXLPhien {
 
     public void dangKy(VXLTinNhan ms) throws IOException {
         String tenDangNhap = ms.docUTF(32, "tên đăng nhập");
-        ms.docUTF(72, "mật khẩu");
-        String usernameAo = ms.docUTF(32, "tên đăng nhập ảo");
-        System.out.println("Yêu cầu đăng ký tài khoản=" + tenDangNhap + " tài khoản ảo=" + usernameAo);
+        String matKhau = ms.docUTF(72, "mật khẩu");
+        String tenDangNhapAo = ms.docUTF(32, "tên đăng nhập ảo");
+        String loi = VXLNguoiDung.dangKy(tenDangNhap, matKhau, tenDangNhapAo);
+        VXLTinNhan phanHoi = new VXLTinNhan(-71);
+        DataOutputStream ds = phanHoi.boGhi();
+        ds.writeBoolean(loi == null);
+        if (loi != null) {
+            ds.writeUTF(loi);
+        }
+        ds.flush();
+        this.guiTin(phanHoi);
     }
 
     public void guiLaiTinTu(int chiSo) {

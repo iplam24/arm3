@@ -1,0 +1,156 @@
+﻿Compiled from "Army__cc.java"
+final class chibikun.Army__cc implements java.lang.Runnable {
+  private final java.lang.String b;
+
+  private int c;
+
+  final chibikun.Session_ME a;
+
+  chibikun.Army__cc(chibikun.Session_ME, java.lang.String, int);
+    Code:
+       0: aload_0
+       1: invokespecial #40                 // Method java/lang/Object."<init>":()V
+       4: aload_0
+       5: aload_1
+       6: putfield      #15                 // Field a:Lchibikun/Session_ME;
+       9: aload_0
+      10: aload_2
+      11: putfield      #16                 // Field b:Ljava/lang/String;
+      14: aload_0
+      15: iload_3
+      16: putfield      #17                 // Field c:I
+      19: return
+
+  public final void run();
+    Code:
+       0: iconst_0
+       1: putstatic     #29                 // Field chibikun/Session_ME.r:Z
+       4: new           #12                 // class java/lang/Thread
+       7: dup
+       8: new           #3                  // class chibikun/Army__cs
+      11: dup
+      12: aload_0
+      13: invokespecial #34                 // Method chibikun/Army__cs."<init>":(Lchibikun/Army__cc;)V
+      16: invokespecial #41                 // Method java/lang/Thread."<init>":(Ljava/lang/Runnable;)V
+      19: invokevirtual #45                 // Method java/lang/Thread.start:()V
+      22: aload_0
+      23: getfield      #15                 // Field a:Lchibikun/Session_ME;
+      26: iconst_1
+      27: putfield      #22                 // Field chibikun/Session_ME.f:Z
+      30: invokestatic  #42                 // Method java/lang/Thread.currentThread:()Ljava/lang/Thread;
+      33: iconst_1
+      34: invokevirtual #43                 // Method java/lang/Thread.setPriority:(I)V
+      37: aload_0
+      38: getfield      #15                 // Field a:Lchibikun/Session_ME;
+      41: iconst_1
+      42: putfield      #25                 // Field chibikun/Session_ME.isConnected:Z
+      45: aload_0
+      46: getfield      #17                 // Field c:I
+      49: istore_1
+      50: aload_0
+      51: getfield      #16                 // Field b:Ljava/lang/String;
+      54: astore_2
+      55: aload_0
+      56: getfield      #15                 // Field a:Lchibikun/Session_ME;
+      59: new           #1                  // class chibikun/Army__a
+      62: dup
+      63: aload_2
+      64: iload_1
+      65: invokespecial #31                 // Method chibikun/Army__a."<init>":(Ljava/lang/String;I)V
+      68: putfield      #21                 // Field chibikun/Session_ME.d:Lchibikun/Army__a;
+      71: aload_0
+      72: getfield      #15                 // Field a:Lchibikun/Session_ME;
+      75: aload_0
+      76: getfield      #15                 // Field a:Lchibikun/Session_ME;
+      79: getfield      #21                 // Field chibikun/Session_ME.d:Lchibikun/Army__a;
+      82: invokevirtual #32                 // Method chibikun/Army__a.b:()Ljava/io/DataOutputStream;
+      85: putfield      #18                 // Field chibikun/Session_ME.a:Ljava/io/DataOutputStream;
+      88: aload_0
+      89: getfield      #15                 // Field a:Lchibikun/Session_ME;
+      92: aload_0
+      93: getfield      #15                 // Field a:Lchibikun/Session_ME;
+      96: getfield      #21                 // Field chibikun/Session_ME.d:Lchibikun/Army__a;
+      99: invokevirtual #33                 // Method chibikun/Army__a.c:()Ljava/io/DataInputStream;
+     102: putfield      #19                 // Field chibikun/Session_ME.b:Ljava/io/DataInputStream;
+     105: new           #12                 // class java/lang/Thread
+     108: dup
+     109: aload_0
+     110: getfield      #15                 // Field a:Lchibikun/Session_ME;
+     113: getfield      #23                 // Field chibikun/Session_ME.g:Lchibikun/Army__cr;
+     116: invokespecial #41                 // Method java/lang/Thread."<init>":(Ljava/lang/Runnable;)V
+     119: invokevirtual #45                 // Method java/lang/Thread.start:()V
+     122: aload_0
+     123: getfield      #15                 // Field a:Lchibikun/Session_ME;
+     126: new           #12                 // class java/lang/Thread
+     129: dup
+     130: new           #4                  // class chibikun/Army__p
+     133: dup
+     134: aload_0
+     135: getfield      #15                 // Field a:Lchibikun/Session_ME;
+     138: invokespecial #35                 // Method chibikun/Army__p."<init>":(Lchibikun/Session_ME;)V
+     141: invokespecial #41                 // Method java/lang/Thread."<init>":(Ljava/lang/Runnable;)V
+     144: putfield      #24                 // Field chibikun/Session_ME.h:Ljava/lang/Thread;
+     147: aload_0
+     148: getfield      #15                 // Field a:Lchibikun/Session_ME;
+     151: getfield      #24                 // Field chibikun/Session_ME.h:Ljava/lang/Thread;
+     154: invokevirtual #45                 // Method java/lang/Thread.start:()V
+     157: new           #6                  // class chibikun/Message
+     160: dup
+     161: bipush        -27
+     163: invokespecial #36                 // Method chibikun/Message."<init>":(I)V
+     166: astore_3
+     167: aload_0
+     168: getfield      #15                 // Field a:Lchibikun/Session_ME;
+     171: aload_3
+     172: invokevirtual #37                 // Method chibikun/Session_ME.b:(Lchibikun/Message;)V
+     175: aload_0
+     176: getfield      #15                 // Field a:Lchibikun/Session_ME;
+     179: iconst_0
+     180: putfield      #22                 // Field chibikun/Session_ME.f:Z
+     183: aload_0
+     184: getfield      #15                 // Field a:Lchibikun/Session_ME;
+     187: getfield      #20                 // Field chibikun/Session_ME.c:Lchibikun/IMessageHandler;
+     190: invokeinterface #46,  1           // InterfaceMethod chibikun/IMessageHandler.onConnectOK:()V
+     195: aload_0
+     196: getfield      #15                 // Field a:Lchibikun/Session_ME;
+     199: iconst_0
+     200: putfield      #27                 // Field chibikun/Session_ME.o:Z
+     203: aload_0
+     204: getfield      #15                 // Field a:Lchibikun/Session_ME;
+     207: iconst_0
+     208: putfield      #28                 // Field chibikun/Session_ME.q:I
+     211: goto          282
+     214: astore_1
+     215: aload_1
+     216: invokevirtual #39                 // Method java/lang/Exception.printStackTrace:()V
+     219: ldc2_w        #13                 // long 500l
+     222: invokestatic  #44                 // Method java/lang/Thread.sleep:(J)V
+     225: goto          229
+     228: astore_2
+     229: getstatic     #29                 // Field chibikun/Session_ME.r:Z
+     232: ifne          282
+     235: aload_0
+     236: getfield      #15                 // Field a:Lchibikun/Session_ME;
+     239: getfield      #20                 // Field chibikun/Session_ME.c:Lchibikun/IMessageHandler;
+     242: ifnull        282
+     245: aload_0
+     246: getfield      #15                 // Field a:Lchibikun/Session_ME;
+     249: invokevirtual #38                 // Method chibikun/Session_ME.close:()V
+     252: aload_0
+     253: getfield      #15                 // Field a:Lchibikun/Session_ME;
+     256: getfield      #30                 // Field chibikun/Session_ME.t:Z
+     259: ifeq          270
+     262: aload_0
+     263: getfield      #15                 // Field a:Lchibikun/Session_ME;
+     266: getfield      #26                 // Field chibikun/Session_ME.n:Z
+     269: istore_2
+     270: aload_0
+     271: getfield      #15                 // Field a:Lchibikun/Session_ME;
+     274: getfield      #20                 // Field chibikun/Session_ME.c:Lchibikun/IMessageHandler;
+     277: invokeinterface #47,  1           // InterfaceMethod chibikun/IMessageHandler.onConnectionFail:()V
+     282: return
+    Exception table:
+       from    to  target type
+          45   211   214   Class java/lang/Exception
+         219   225   228   Class java/lang/InterruptedException
+}

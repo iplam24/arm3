@@ -26,6 +26,8 @@ dependencies {
     implementation 'com.mysql:mysql-connector-j:9.3.0'
     implementation 'com.zaxxer:HikariCP:6.3.0'
     implementation 'com.alibaba.fastjson2:fastjson2:2.0.57'
+    implementation 'org.springframework.security:spring-security-crypto:7.1.0'
+    implementation 'org.springframework:spring-core:7.0.8'
 }
 
 application {

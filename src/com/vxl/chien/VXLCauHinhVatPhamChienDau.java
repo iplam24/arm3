@@ -9,7 +9,7 @@ public final class VXLCauHinhVatPhamChienDau {
     private static final int HE_SO_SAT_THUONG_KY_NANG_DAC_BIET = 150;
     private static final int NUA_RONG_THAN_NHAN_VAT = 10;
     private static final int CHIEU_CAO_THAN_NHAN_VAT = 35;
-    private static final VXLHoSoDan.VatLy VAT_LY_NANG_IT_GIO = vatLy(2.15D, 0.60D, 0.16D);
+    private static final VXLHoSoDan.VatLy VAT_LY_NANG_IT_GIO = vatLy(2.15D, 0.56D, 0.16D);
     private static final VXLHoSoDan.VatLy VAT_LY_THANG_IT_ROI = vatLy(1.80D, 0.25D, 0.10D);
     private static final VXLHoSoDan.VatLy VAT_LY_NHE_TAN_XA = vatLy(0.65D, 0.55D, 0.45D);
     private static final VXLHoSoDan.VatLy VAT_LY_NHE_CONG = vatLy(1.40D, 0.82D, 0.55D);

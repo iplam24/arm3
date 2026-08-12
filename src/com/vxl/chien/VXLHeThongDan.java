@@ -230,20 +230,20 @@ public final class VXLHeThongDan {
     }
 
     private QuyDao taoQuyDaoNhanVatLao(short batDauX, short batDauY, short goc, byte luc, int mucTieuBoQua, double buocThoiGian, int soDiemToiDa) {
-        int gioiHanDiem = Math.max(220, soDiemToiDa);
+        int gioiHanDiem = Math.max(SO_DIEM_TOI_THIEU_HULK, soDiemToiDa);
         double dt = Math.max(0.2, Math.min(0.35, buocThoiGian));
         int lucBan = Math.max(8, Byte.toUnsignedInt(luc));
         double radian = Math.toRadians(goc);
         double tocDo = Math.max(12.0, (double)lucBan * 0.95);
         boolean nhayTaiCho = goc == 89 && lucBan >= 30;
-        double vanTocX = nhayTaiCho ? 0.0 : Math.cos(radian) * tocDo;
-        double vanTocY = -Math.max(8.0, Math.abs(Math.sin(radian)) * tocDo);
+        double vanTocXBanDau = nhayTaiCho ? 0.0 : Math.cos(radian) * tocDo;
+        double vanTocYBanDau = -Math.max(8.0, Math.abs(Math.sin(radian)) * tocDo);
         double trongLucHulk = 1.0;
-        double tamBayToiDa = Math.max(150.0, 130.0 + (double)lucBan * 13.0);
-        double xHienTai = batDauX;
-        double yHienTai = batDauY;
-        double quangDuongNgang = 0.0;
-        boolean daChamGioiHanTamBay = false;
+        double doRoiToiDayBanDo = Math.max(0.0, (double)this.banDo.getHeight() + 20.0 - (double)batDauY);
+        double thoiGianToiDayBanDo = (-vanTocYBanDau
+                + Math.sqrt(vanTocYBanDau * vanTocYBanDau + 2.0 * trongLucHulk * doRoiToiDayBanDo))
+                / trongLucHulk;
+        gioiHanDiem = Math.max(gioiHanDiem, (int)Math.ceil(thoiGianToiDayBanDo / dt) + 2);
         ArrayList<Short> xs = new ArrayList<Short>();
         ArrayList<Short> ys = new ArrayList<Short>();
         ArrayList<Integer> cacMucTieu = new ArrayList<Integer>();
@@ -258,21 +258,10 @@ public final class VXLHeThongDan {
         ys.add((short)batDauY);
         for (int i = 1; i < gioiHanDiem; ++i) {
             KetQuaVaCham vaCham;
-            if (daChamGioiHanTamBay && Math.abs(vanTocX *= 0.72) < 0.25) {
-                vanTocX = 0.0;
-            }
-            double xMoiThuc = xHienTai + vanTocX * dt;
-            double yMoiThuc = yHienTai + vanTocY * dt;
-            double doDoiX = Math.abs(xMoiThuc - xHienTai);
-            if (!daChamGioiHanTamBay && quangDuongNgang + doDoiX >= tamBayToiDa) {
-                daChamGioiHanTamBay = true;
-                double phanConLai = Math.max(0.0, tamBayToiDa - quangDuongNgang);
-                if (doDoiX > 0.0) {
-                    xMoiThuc = xHienTai + (xMoiThuc - xHienTai) * phanConLai / doDoiX;
-                }
-                doDoiX = phanConLai;
-            }
-            quangDuongNgang += doDoiX;
+            double thoiGian = (double)i * dt;
+            double xMoiThuc = (double)batDauX + vanTocXBanDau * thoiGian;
+            double yMoiThuc = (double)batDauY + vanTocYBanDau * thoiGian
+                    + 0.5 * trongLucHulk * thoiGian * thoiGian;
             int xMoi = (int)Math.round(xMoiThuc);
             int yMoi = (int)Math.round(yMoiThuc);
             if (xMoi < 0 || xMoi >= this.banDo.getWidth()) {
@@ -283,11 +272,6 @@ public final class VXLHeThongDan {
                     ys.add((short)yMoi);
                 }
                 return this.taoKetQuaHulkBanTruot(xs, ys, cacMucTieu);
-            }
-            if (yMoi < -200) {
-                yMoi = -200;
-                yMoiThuc = yMoi;
-                vanTocY = Math.max(0.0, vanTocY);
             }
             if (yMoi >= this.banDo.getHeight()) {
                 yMoi = this.banDo.getHeight() + 20;
@@ -326,11 +310,8 @@ public final class VXLHeThongDan {
                 xs.add((short)xMoi);
                 ys.add((short)yMoi);
             }
-            xHienTai = xMoiThuc;
-            yHienTai = yMoiThuc;
             xTruoc = xMoi;
             yTruoc = yMoi;
-            vanTocY += trongLucHulk * dt;
         }
         return new QuyDao(VXLHeThongDan.chuyenDanhSachDiem(xs), VXLHeThongDan.chuyenDanhSachDiem(ys), VXLHeThongDan.chuyenDanhSachMucTieu(cacMucTieu), vaChamDiaHinhX, vaChamDiaHinhY);
     }
