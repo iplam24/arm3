@@ -48,10 +48,14 @@ sourceSets {
 }
 
 jar {
+    archiveFileName = 'vxldeptrai.jar'
+    preserveFileTimestamps = false
+    reproducibleFileOrder = true
     manifest {
         attributes 'Main-Class': 'com.vxl.VXLMayChu'
     }
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+    exclude 'META-INF/*.SF', 'META-INF/*.RSA', 'META-INF/*.DSA'
     from {
         configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
     }
