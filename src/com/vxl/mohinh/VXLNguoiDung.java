@@ -1,22 +1,6 @@
 package com.vxl.mohinh;
 
 // Code by Lọ Thánh Chí Tôn
-import com.vxl.baomat.VXLMaHoaMatKhau;
-import com.vxl.loi.VXLCoSoDuLieu;
-import com.vxl.loi.VXLQuanLyMayChu;
-import com.vxl.vatpham.VXLVatPham;
-import com.vxl.vatpham.VXLTienTrinhDucLo;
-import com.vxl.vatpham.VXLMauVatPham;
-import com.vxl.mohinh.VXLNguoiChoi;
-import com.vxl.mang.VXLDichVuGame;
-import com.vxl.mang.VXLTinNhan;
-import com.vxl.mang.VXLPhien;
-import com.vxl.tienich.VXLDuLieuJson;
-import com.vxl.tienich.VXLTienIch;
-import com.alibaba.fastjson2.JSON;
-import com.alibaba.fastjson2.JSONArray;
-import com.alibaba.fastjson2.JSONObject;
-import java.io.DataOutputStream;
 import java.io.IOException;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -27,6 +11,21 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import com.alibaba.fastjson2.JSON;
+import com.alibaba.fastjson2.JSONArray;
+import com.alibaba.fastjson2.JSONObject;
+import com.vxl.baomat.VXLMaHoaMatKhau;
+import com.vxl.loi.VXLCoSoDuLieu;
+import com.vxl.loi.VXLQuanLyMayChu;
+import com.vxl.mang.VXLDichVuGame;
+import com.vxl.mang.VXLPhien;
+import com.vxl.mang.VXLTinNhan;
+import com.vxl.tienich.VXLDuLieuJson;
+import com.vxl.tienich.VXLTienIch;
+import com.vxl.vatpham.VXLMauVatPham;
+import com.vxl.vatpham.VXLTienTrinhDucLo;
+import com.vxl.vatpham.VXLVatPham;
 
 public class VXLNguoiDung {
     public static final ConcurrentMap<String, VXLNguoiDung> users = new ConcurrentHashMap<>();
@@ -336,9 +335,9 @@ public class VXLNguoiDung {
                 try (PreparedStatement stmt2 = conn.prepareStatement("INSERT INTO `players` (`account_id`, `name`, `gold`, `cup`, `gem`, `stats_json`, `inventory_json`, `equipped_json`, `pocket_json`, `storage_json`) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);", Statement.RETURN_GENERATED_KEYS)) {
                     stmt2.setInt(1, this.user_id);
                     stmt2.setString(2, ten);
-                    stmt2.setInt(3, 1000000);
+                    stmt2.setInt(3, 10000000);
                     stmt2.setInt(4, 0);
-                    stmt2.setInt(5, 1000);
+                    stmt2.setInt(5, 100000);
                     stmt2.setString(6, taoDuLieuChiSoMacDinh());
                     stmt2.setString(7, "[]");
                     stmt2.setString(8, "[]");
