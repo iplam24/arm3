@@ -4,7 +4,6 @@ import com.vxl.loi.VXLQuanLyMayChu;
 import com.vxl.vatpham.VXLMauVatPham;
 import com.vxl.vatpham.VXLThuocTinhVatPham;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
@@ -20,6 +19,12 @@ final class VXLCauHinhPhienQuan {
     private static final int MA_AVENGER_DAU = 391;
     private static final int MA_AVENGER_CUOI = 400;
     private static final int MA_SPIDER_MAN = 413;
+    private static final short VU_KHI_AT = 57;
+    private static final short VU_KHI_K98 = 27;
+    private static final short VU_KHI_GRANOS = 54;
+    private static final short[] VU_KHI_PHIEN_QUAN = new short[]{
+            VU_KHI_AT, VU_KHI_K98, VU_KHI_GRANOS
+    };
     private static final byte BAN_DO_CO_BAN_DAU_TRAN = 1;
     private static final byte[] BAN_DO_CO_BAN_AN_TOAN = new byte[]{3, 1};
 
@@ -94,98 +99,39 @@ final class VXLCauHinhPhienQuan {
     }
 
     static short[] chonBoVuKhiChoTran(int cap) {
-        int capHopLe = gioiHanCap(cap);
-        int capVuKhi = 1 + (capHopLe - 1) * 9 / (CAP_TOI_DA - 1);
-        List<Short> ungVienGanCap = new ArrayList<>();
         List<Short> ungVien = new ArrayList<>();
-        if (VXLQuanLyMayChu.itemTemplates != null) {
-            for (VXLMauVatPham mau : VXLQuanLyMayChu.itemTemplates.values()) {
-                if (mau == null || mau.loai != LOAI_VU_KHI
-                        || !laVuKhiDanHoTro(mau.part) || tongThamSo(mau, 14) <= 0) {
-                    continue;
-                }
-                int capMau = Math.max(1, Byte.toUnsignedInt(mau.cap));
-                byte loaiDan = com.vxl.chien.VXLCauHinhVatPhamChienDau.layLoaiDanTheoVuKhi(
-                        mau.part, (byte)0);
-                if (capMau > capVuKhi || capHopLe < capMoKhoaLoaiDan(loaiDan)) {
-                    continue;
-                }
-                if (!ungVien.contains(mau.part)) {
-                    ungVien.add(mau.part);
-                }
-                if (capMau >= Math.max(1, capVuKhi - 1)
-                        && !ungVienGanCap.contains(mau.part)) {
-                    ungVienGanCap.add(mau.part);
-                }
+        for (short maVuKhi : VU_KHI_PHIEN_QUAN) {
+            if (coMauVuKhiHopLe(maVuKhi)) {
+                ungVien.add(maVuKhi);
             }
         }
         if (ungVien.isEmpty()) {
-            return new short[]{27};
+            return new short[]{VU_KHI_K98};
         }
-        Collections.shuffle(ungVienGanCap, ThreadLocalRandom.current());
-        Collections.shuffle(ungVien, ThreadLocalRandom.current());
-        int soLuong = capHopLe >= 24 ? 4 : capHopLe >= 9 ? 3 : 2;
-        List<Short> ketQua = new ArrayList<>(soLuong);
-        themVuKhiDaDang(ketQua, ungVienGanCap, soLuong);
-        themVuKhiDaDang(ketQua, ungVien, soLuong);
-        short[] mangKetQua = new short[Math.max(1, ketQua.size())];
-        if (ketQua.isEmpty()) {
-            mangKetQua[0] = 27;
-            return mangKetQua;
+        short[] ketQua = new short[ungVien.size()];
+        int batDau = ThreadLocalRandom.current().nextInt(ungVien.size());
+        for (int i = 0; i < ungVien.size(); i++) {
+            ketQua[i] = ungVien.get((batDau + i) % ungVien.size());
         }
-        for (int i = 0; i < ketQua.size(); i++) {
-            mangKetQua[i] = ketQua.get(i);
-        }
-        return mangKetQua;
+        return ketQua;
     }
 
-    private static void themVuKhiDaDang(List<Short> ketQua, List<Short> ungVien,
-            int soLuongToiDa) {
-        for (int lan = 0; lan < 2 && ketQua.size() < soLuongToiDa; lan++) {
-            for (short maVuKhi : ungVien) {
-                if (ketQua.size() >= soLuongToiDa || ketQua.contains(maVuKhi)) {
-                    continue;
-                }
-                byte loaiDan = com.vxl.chien.VXLCauHinhVatPhamChienDau.layLoaiDanTheoVuKhi(
-                        maVuKhi, (byte)0);
-                boolean trungLoaiDan = false;
-                for (short vuKhiDaChon : ketQua) {
-                    if (com.vxl.chien.VXLCauHinhVatPhamChienDau.layLoaiDanTheoVuKhi(
-                            vuKhiDaChon, (byte)0) == loaiDan) {
-                        trungLoaiDan = true;
-                        break;
-                    }
-                }
-                if (lan == 0 && trungLoaiDan) {
-                    continue;
-                }
-                ketQua.add(maVuKhi);
+    private static boolean coMauVuKhiHopLe(short maVuKhi) {
+        if (VXLQuanLyMayChu.itemTemplates == null) {
+            return false;
+        }
+        for (VXLMauVatPham mau : VXLQuanLyMayChu.itemTemplates.values()) {
+            if (mau != null && mau.loai == LOAI_VU_KHI && mau.part == maVuKhi
+                    && tongThamSo(mau, 14) > 0) {
+                return true;
             }
         }
-    }
-
-    private static int capMoKhoaLoaiDan(byte loaiDan) {
-        return switch (Byte.toUnsignedInt(loaiDan)) {
-            case 0, 1 -> 1;
-            case 2, 11 -> 5;
-            case 9, 10 -> 9;
-            case 19 -> 13;
-            case 17 -> 18;
-            case 21 -> 24;
-            case 49 -> 30;
-            default -> CAP_TOI_DA + 1;
-        };
+        return false;
     }
 
     private static boolean laVuKhiDanHoTro(short maVuKhi) {
-        return switch (maVuKhi) {
-            case 5, 27, 28, 29, 30, 31, 32, 37, 54, 55, 56, 57, 58,
-                    120, 121, 122, 123, 124, 125, 126, 127, 128, 129, 130, 131,
-                    132, 133, 134, 135, 136, 137, 138, 139, 140, 141, 142, 143,
-                    144, 145, 146, 147, 148, 149, 150, 151, 152, 153, 154, 155,
-                    156 -> true;
-            default -> false;
-        };
+        return maVuKhi == VU_KHI_AT || maVuKhi == VU_KHI_K98
+                || maVuKhi == VU_KHI_GRANOS;
     }
 
     private static List<List<VXLMauVatPham>> taoDanhSachMauTheoLoai() {
@@ -224,7 +170,7 @@ final class VXLCauHinhPhienQuan {
             return false;
         }
         if (mau.loai == LOAI_VU_KHI) {
-            return tinhTanCongRieng(mau) > 0;
+            return laVuKhiDanHoTro(mau.part) && tinhTanCongRieng(mau) > 0;
         }
         return coThuocTinhChienDau(mau);
     }

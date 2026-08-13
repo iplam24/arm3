@@ -30,6 +30,11 @@ public final class VXLDiaHinhPhatBan {
             return;
         }
         VXLHoSoDan hoSoDan = VXLCauHinhVatPhamChienDau.layHoSoDan(loaiDan, avenger);
+        int loaiDanClient = Byte.toUnsignedInt(hoSoDan.loaiClient());
+        if (loaiDanClient == 8 || loaiDanClient == 56) {
+            ghiNhanToNhen(banDo, vaChamDiaHinhX, vaChamDiaHinhY);
+            return;
+        }
         String tenMatNa = layTenMatNa(hoSoDan.loaiClient());
         int soQuyDao = Math.min(vaChamDiaHinhX.length, vaChamDiaHinhY.length);
         for (int i = 0; i < soQuyDao; i++) {
@@ -43,6 +48,19 @@ public final class VXLDiaHinhPhatBan {
                 ghiNhanLoHulk(banDo, xVaCham, yVaCham);
             } else {
                 banDo.taoLoTheoMatNa(xVaCham, yVaCham, tenMatNa);
+            }
+        }
+    }
+
+    private static void ghiNhanToNhen(VXLQuanLyBanDo banDo,
+            short[] vaChamDiaHinhX, short[] vaChamDiaHinhY) {
+        int soDiem = Math.min(vaChamDiaHinhX.length, vaChamDiaHinhY.length);
+        for (int i = 0; i < soDiem; i++) {
+            short x = vaChamDiaHinhX[i];
+            short y = vaChamDiaHinhY[i];
+            if (x != VXLHeThongDan.KHONG_CO_VA_CHAM_DIA_HINH
+                    && y != VXLHeThongDan.KHONG_CO_VA_CHAM_DIA_HINH) {
+                banDo.taoToNhen(x, y);
             }
         }
     }

@@ -30,6 +30,7 @@ public final class VXLHeThongDan {
     private static final double HE_SO_GIO_THEO_KHUNG = 1.5;
     private static final double KHOANG_CACH_DAU_SUNG = 30.0;
     private static final double DO_CAO_DAU_SUNG = 17.0;
+    private static final double LUC_KEO_VOI_RONG_MOI_KHUNG = 2.0;
     public static final short KHONG_CO_VA_CHAM_DIA_HINH = Short.MIN_VALUE;
     private static final int LE_TRUNG_MAC_DINH = 0;
     private static final int NUA_RONG_THAN_HULK = 10;
@@ -42,6 +43,7 @@ public final class VXLHeThongDan {
     private static final double[] MAU_LECH_GOC_MG = new double[]{-0.9, 0.35, -0.2, 0.8, -0.45};
     private final VXLQuanLyBanDo banDo;
     private final BoTimMucTieu boTimMucTieu;
+    private final BoKiemTraVungVoiRong boKiemTraVungVoiRong;
 
     private static short[] taoMangKhongVaCham(int doDai) {
         short[] ketQua = new short[Math.max(0, doDai)];
@@ -50,8 +52,14 @@ public final class VXLHeThongDan {
     }
 
     public VXLHeThongDan(VXLQuanLyBanDo banDo, BoTimMucTieu boTimMucTieu) {
+        this(banDo, boTimMucTieu, null);
+    }
+
+    public VXLHeThongDan(VXLQuanLyBanDo banDo, BoTimMucTieu boTimMucTieu,
+            BoKiemTraVungVoiRong boKiemTraVungVoiRong) {
         this.banDo = banDo;
         this.boTimMucTieu = boTimMucTieu;
+        this.boKiemTraVungVoiRong = boKiemTraVungVoiRong;
     }
 
     public KetQuaPhatBan taoPhatBan(short batDauX, short batDauY, short goc, byte luc, byte lucTach, byte loaiDan, byte chiMang, byte avenger, byte gioX, byte gioY, int mucTieuBoQua, double buocThoiGian, int soDiemToiDa) {
@@ -491,7 +499,9 @@ public final class VXLHeThongDan {
             xTruoc = xMoi;
             yTruoc = yMoi;
             vanTocX += giaTocX * dt;
-            if (!((vanTocY += giaTocY * dt) >= 0.0)) continue;
+            vanTocY += giaTocY * dt;
+            vanTocY = this.apDungLucKeoVoiRong(xMoi, yMoi, vanTocY);
+            if (vanTocY < 0.0) continue;
             datDinh = true;
             break;
         }
@@ -628,12 +638,17 @@ public final class VXLHeThongDan {
         int xTruoc = (int)Math.round(xGoc);
         int yTruoc = (int)Math.round(yGoc);
         int doDai = 0;
+        double dt = Math.max(0.1, buocThoiGian);
+        double vanTocCongThemVoiRongY = 0.0;
+        double doLechVoiRongY = 0.0;
         ArrayList<Integer> cacMucTieu = new ArrayList<Integer>();
         HashSet<Integer> mucTieuDaTrung = new HashSet<Integer>();
         for (int i = 0; i < gioiHanDiem; ++i) {
-            double thoiGian = (double)i * Math.max(0.1, buocThoiGian);
+            double thoiGian = (double)i * dt;
             int x = (int)Math.round(xGoc + Math.cos(radian) * tocDo * thoiGian + (double)gioX * heSoGio * thoiGian * thoiGian);
-            int y = (int)Math.round(yGoc - Math.sin(radian) * tocDo * thoiGian + (trongLuc - (double)gioY * heSoGio) * thoiGian * thoiGian);
+            int y = (int)Math.round(yGoc - Math.sin(radian) * tocDo * thoiGian
+                    + (trongLuc - (double)gioY * heSoGio) * thoiGian * thoiGian
+                    + doLechVoiRongY);
             boolean raNgoai = x < 0 || x >= this.banDo.getWidth() || y < -600 || y >= this.banDo.getHeight();
             x = Math.max(0, Math.min(this.banDo.getWidth() - 1, x));
             KetQuaVaCham vaCham = this.timVaChamTrenDoan(xTruoc, yTruoc, x, y = Math.max(-600, Math.min(this.banDo.getHeight() - 1, y)), hoSoDan.xuyenDiaHinh(), hoSoDan.xuyenNguoi(), mucTieuBoQua, mucTieuDaTrung, cacMucTieu);
@@ -647,6 +662,11 @@ public final class VXLHeThongDan {
             if (raNgoai || vaCham != null) break;
             xTruoc = x;
             yTruoc = y;
+            if (i > 0) {
+                vanTocCongThemVoiRongY = this.apDungLucKeoVoiRong(
+                        x, y, vanTocCongThemVoiRongY);
+                doLechVoiRongY += vanTocCongThemVoiRongY * dt;
+            }
         }
         return new QuyDao(Arrays.copyOf(xs, Math.max(1, doDai)), Arrays.copyOf(ys, Math.max(1, doDai)), VXLHeThongDan.chuyenDanhSachMucTieu(cacMucTieu));
     }
@@ -704,6 +724,7 @@ public final class VXLHeThongDan {
             yTruoc = yMoi;
             vanTocX += giaTocX * dt;
             vanTocY += giaTocY * dt;
+            vanTocY = this.apDungLucKeoVoiRong(xMoi, yMoi, vanTocY);
         }
         return new QuyDao(Arrays.copyOf(xs, Math.max(1, doDai)), Arrays.copyOf(ys, Math.max(1, doDai)), VXLHeThongDan.chuyenDanhSachMucTieu(cacMucTieu));
     }
@@ -761,14 +782,12 @@ public final class VXLHeThongDan {
             if (trangThaiNgoat == 0) {
                 vanTocX += huongNgoat * tarzan.giaTocNgoatBanDau() * dt;
                 trangThaiNgoat = 1;
-                continue;
-            }
-            if (trangThaiNgoat == 1) {
+            } else if (trangThaiNgoat == 1) {
                 vanTocX += huongNgoat * tarzan.giaTocNgoatLienTuc() * dt;
-                continue;
+            } else if (vanTocY > 0.0) {
+                trangThaiNgoat = 0;
             }
-            if (!(vanTocY > 0.0)) continue;
-            trangThaiNgoat = 0;
+            vanTocY = this.apDungLucKeoVoiRong(xMoi, yMoi, vanTocY);
         }
         return new QuyDao(Arrays.copyOf(xs, Math.max(1, doDai)), Arrays.copyOf(ys, Math.max(1, doDai)), VXLHeThongDan.chuyenDanhSachMucTieu(cacMucTieu));
     }
@@ -863,6 +882,7 @@ public final class VXLHeThongDan {
             yHienTai = yMoiThuc;
             xTruoc = xMoi;
             yTruoc = yMoi;
+            vanTocY = this.apDungLucKeoVoiRong(xMoi, yMoi, vanTocY);
             if (quangDuongBayRa >= tamBayToiDa || thoiGianBayRa >= quayVe.thoiGianBayRaToiDa()) break;
         }
         int doDaiBayRa = xs.size();
@@ -1100,9 +1120,22 @@ public final class VXLHeThongDan {
         return vatLy.heSoGioTheoKhung() * HE_SO_GIO_THEO_KHUNG;
     }
 
+    private double apDungLucKeoVoiRong(int x, int y, double vanTocY) {
+        if (this.boKiemTraVungVoiRong != null
+                && this.boKiemTraVungVoiRong.trongVungVoiRong(x, y)) {
+            return vanTocY - LUC_KEO_VOI_RONG_MOI_KHUNG;
+        }
+        return vanTocY;
+    }
+
     @FunctionalInterface
     public static interface BoTimMucTieu {
         public int timMucTieu(int var1, int var2, int var3, int var4);
+    }
+
+    @FunctionalInterface
+    public static interface BoKiemTraVungVoiRong {
+        public boolean trongVungVoiRong(int x, int y);
     }
 
     public static final class KetQuaPhatBan {

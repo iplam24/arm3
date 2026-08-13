@@ -21,6 +21,7 @@ import com.vxl.loi.VXLQuanLyMayChu;
 import com.vxl.mang.VXLDichVuGame;
 import com.vxl.mang.VXLPhien;
 import com.vxl.mang.VXLTinNhan;
+import com.vxl.quantri.VXLBaoTriMayChu;
 import com.vxl.tienich.VXLDuLieuJson;
 import com.vxl.tienich.VXLTienIch;
 import com.vxl.vatpham.VXLMauVatPham;
@@ -70,6 +71,26 @@ public class VXLNguoiDung {
         this.dichVu = dichVu;
     }
 
+    public boolean laQuanTri() {
+        return this.nguoiChoi != null ? this.nguoiChoi.quanTri : this.quanTri;
+    }
+
+    public void thongBao(String noiDung) {
+        try {
+            this.dichVu.moHopThoaiOK(noiDung);
+        }
+        catch (IOException ex) {
+            Logger.getLogger(VXLNguoiDung.class.getName()).log(Level.FINE,
+                    "Không thể gửi thông báo tới người dùng.", ex);
+        }
+    }
+
+    public void dongKetNoi() {
+        if (this.khach != null) {
+            this.khach.dongTin();
+        }
+    }
+
     private static String khoaNguoiDung(String ten) {
         return ten == null ? "" : ten.trim().toLowerCase(Locale.ROOT);
     }
@@ -109,12 +130,20 @@ public class VXLNguoiDung {
                     us.dichVu.moHopThoaiOK("Tài khoản đã bị khóa.");
                     return null;
                 }
+                if (VXLBaoTriMayChu.dangBaoTri() && !us.quanTri) {
+                    us.dichVu.moHopThoaiOK(VXLBaoTriMayChu.thongBaoDangNhap());
+                    return null;
+                }
                 us.tenDangNhap = res.getString("username");
                 String matKhauCanLuu = laBiDanhMatKhauKhach(tenDangNhap, matKhau) ? matKhau : matKhauDangNhap;
                 us.matKhau = nangCapMatKhauNeuCan(conn, us.user_id, matKhauCanLuu, matKhauDaLuu);
             }
             String userKey = khoaNguoiDung(us.tenDangNhap);
-            VXLNguoiDung user = users.putIfAbsent(userKey, us);
+            VXLNguoiDung user = VXLBaoTriMayChu.dangKyDangNhap(userKey, us);
+            if (user == us) {
+                us.dichVu.moHopThoaiOK(VXLBaoTriMayChu.thongBaoDangNhap());
+                return null;
+            }
             if (user != null) {
                 us.dichVu.moHopThoaiOK("Tài khoản này đang được đăng nhập ở nơi khác.");
                 user.khach.guiMaPhien(0);
@@ -278,6 +307,16 @@ public class VXLNguoiDung {
 
     public static void dangNhap2(VXLPhien s, String tenDangNhap) {
         if (s != null && tenDangNhap != null && tenDangNhap.isEmpty()) {
+            if (VXLBaoTriMayChu.dangBaoTri()) {
+                try {
+                    ((VXLDichVuGame)s.layDichVu()).moHopThoaiOK(VXLBaoTriMayChu.thongBaoDangNhap());
+                }
+                catch (IOException ex) {
+                    Logger.getLogger(VXLNguoiDung.class.getName()).log(Level.FINE,
+                            "Không thể gửi thông báo bảo trì cho tài khoản khách.", ex);
+                }
+                return;
+            }
             try (java.sql.Connection conn = VXLCoSoDuLieu.getConnection();
                  PreparedStatement stmt = conn.prepareStatement("INSERT INTO `accounts`(`username`, `password`, `is_banned`, `is_online`) VALUES (?,?,?,?);")) {
                 String user = "nvn_" + System.currentTimeMillis();

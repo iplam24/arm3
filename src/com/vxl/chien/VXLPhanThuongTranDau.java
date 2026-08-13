@@ -1,3 +1,4 @@
+
 package com.vxl.chien;
 
 public record VXLPhanThuongTranDau(int kinhNghiem, int vang, int ngoc, int cupThayDoi) {

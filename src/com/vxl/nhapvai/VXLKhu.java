@@ -51,19 +51,36 @@ public class VXLKhu {
     }
 
     public synchronized boolean roi(VXLNguoiChoi nguoiChoi) {
-        if (nguoiChoi != null && this.players_id.get(nguoiChoi.ma) == nguoiChoi) {
-            this.players_index.remove(nguoiChoi.chiSo);
-            this.players_id.remove(nguoiChoi.ma);
-            this.numPlayer = Math.max(0, this.players_id.size());
-            int chiSo = nguoiChoi.chiSo;
-            nguoiChoi.chiSo = -1;
-            nguoiChoi.zoneId = (byte)-1;
-            nguoiChoi.zone = null;
-            this.datDiem();
-            this.guiNguoiChoiRoiKhu(chiSo);
-            return true;
+        if (nguoiChoi == null || this.players_id.get(nguoiChoi.ma) != nguoiChoi) {
+            return false;
         }
-        return false;
+        int chiSo = this.timChiSo(nguoiChoi);
+        if (chiSo >= 0) {
+            this.players_index.remove(chiSo, nguoiChoi);
+        }
+        this.players_id.remove(nguoiChoi.ma, nguoiChoi);
+        this.numPlayer = Math.max(0, this.players_id.size());
+        nguoiChoi.chiSo = -1;
+        nguoiChoi.zoneId = (byte)-1;
+        nguoiChoi.zone = null;
+        this.datDiem();
+        if (chiSo >= 0) {
+            this.guiNguoiChoiRoiKhu(chiSo);
+        }
+        return true;
+    }
+
+    private int timChiSo(VXLNguoiChoi nguoiChoi) {
+        int chiSoHienTai = nguoiChoi.chiSo;
+        if (this.players_index.get(chiSoHienTai) == nguoiChoi) {
+            return chiSoHienTai;
+        }
+        for (Map.Entry<Integer, VXLNguoiChoi> muc : this.players_index.entrySet()) {
+            if (muc.getValue() == nguoiChoi) {
+                return muc.getKey();
+            }
+        }
+        return -1;
     }
 
     public void datDiem() {

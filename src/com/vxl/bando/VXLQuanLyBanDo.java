@@ -10,12 +10,18 @@ import javax.imageio.ImageIO;
 
 public class VXLQuanLyBanDo {
     private static final int SO_LO_TOI_DA = 512;
+    private static final int SO_VAT_CAN_TAM_THOI_TOI_DA = 96;
+    private static final int LECH_X_TO_NHEN = 21;
+    private static final int LECH_Y_TO_NHEN = 20;
     private static final ConcurrentHashMap<String, MatNaLo> BO_NHO_MAT_NA_LO =
+            new ConcurrentHashMap<>();
+    private static final ConcurrentHashMap<String, MatNaVatCan> BO_NHO_MAT_NA_VAT_CAN =
             new ConcurrentHashMap<>();
     private static final short[] DEFAULT_SPAWN_X = new short[]{220, 600, 320, 720, 150, 850, 460, 980};
     private static final short[] DEFAULT_SPAWN_Y = new short[]{300, 300, 260, 260, 320, 320, 280, 280};
     private final ArrayList<MapEntry> mucs = new ArrayList<>();
     private volatile VungLo[] cacLoDaPha = new VungLo[0];
+    private volatile VatCanTamThoi[] cacVatCanTamThoi = new VatCanTamThoi[0];
     private short[] spawnX = DEFAULT_SPAWN_X;
     private short[] spawnY = DEFAULT_SPAWN_Y;
     private byte maBanDo;
@@ -36,6 +42,7 @@ public class VXLQuanLyBanDo {
         this.spawnY = DEFAULT_SPAWN_Y;
         this.mucs.clear();
         this.cacLoDaPha = new VungLo[0];
+        this.cacVatCanTamThoi = new VatCanTamThoi[0];
         VXLDuLieuBanDo.MapDataEntry muc = this.findEntry(mapID);
         if (muc == null || muc.duLieu == null || muc.duLieu.length < 5) {
             return;
@@ -101,6 +108,11 @@ public class VXLQuanLyBanDo {
         if (x < 0 || y < 0 || x >= this.chieuRong || y >= this.chieuCao) {
             return true;
         }
+        for (VatCanTamThoi vatCan : this.cacVatCanTamThoi) {
+            if (vatCan.coVaCham(x, y)) {
+                return true;
+            }
+        }
         for (VungLo lo : this.cacLoDaPha) {
             if (lo.chua(x, y)) {
                 return false;
@@ -117,6 +129,7 @@ public class VXLQuanLyBanDo {
     public synchronized void taoLo(short tamX, short tamY, int chieuRongLo, int chieuCaoLo) {
         int nuaRong = Math.max(1, chieuRongLo / 2);
         int nuaCao = Math.max(1, chieuCaoLo / 2);
+        this.phaVatCanTheoHinhElip(tamX, tamY, nuaRong, nuaCao);
         this.themLo(new VungLo(tamX, tamY, nuaRong, nuaCao));
     }
 
@@ -127,7 +140,27 @@ public class VXLQuanLyBanDo {
             this.taoLo(tamX, tamY, 32, 26);
             return;
         }
+        this.phaVatCanTheoMatNa(tamX, tamY, matNa);
         this.themLo(new VungLo(tamX, tamY, matNa));
+    }
+
+    public synchronized void taoToNhen(short diemVaChamX, short diemVaChamY) {
+        MatNaVatCan matNa = BO_NHO_MAT_NA_VAT_CAN.computeIfAbsent("mangnhen.png",
+                VXLQuanLyBanDo::taiMatNaVatCan);
+        if (matNa == MatNaVatCan.RONG) {
+            return;
+        }
+        VatCanTamThoi vatCan = new VatCanTamThoi(
+                diemVaChamX - LECH_X_TO_NHEN,
+                diemVaChamY - LECH_Y_TO_NHEN, matNa);
+        VatCanTamThoi[] hienTai = this.cacVatCanTamThoi;
+        int viTriBatDau = hienTai.length >= SO_VAT_CAN_TAM_THOI_TOI_DA
+                ? hienTai.length - SO_VAT_CAN_TAM_THOI_TOI_DA + 1 : 0;
+        VatCanTamThoi[] capNhat = new VatCanTamThoi[hienTai.length - viTriBatDau + 1];
+        System.arraycopy(hienTai, viTriBatDau, capNhat, 0,
+                hienTai.length - viTriBatDau);
+        capNhat[capNhat.length - 1] = vatCan;
+        this.cacVatCanTamThoi = capNhat;
     }
 
     private void themLo(VungLo loMoi) {
@@ -185,6 +218,61 @@ public class VXLQuanLyBanDo {
         catch (Exception ignored) {
             return MatNaLo.RONG;
         }
+    }
+
+    private static MatNaVatCan taiMatNaVatCan(String tenTepAnh) {
+        try {
+            File tep = new File("res/icon/hole/" + tenTepAnh);
+            BufferedImage anh = tep.isFile() ? ImageIO.read(tep) : null;
+            if (anh == null) {
+                return MatNaVatCan.RONG;
+            }
+            int chieuRong = anh.getWidth();
+            int chieuCao = anh.getHeight();
+            boolean[] diemVaCham = new boolean[chieuRong * chieuCao];
+            boolean coVaCham = false;
+            for (int y = 0; y < chieuCao; y++) {
+                for (int x = 0; x < chieuRong; x++) {
+                    int mau = anh.getRGB(x, y);
+                    boolean laVatCan = (mau >>> 24) > 0
+                            && (mau & 0x00FFFFFF) != 0x00FFFFFF;
+                    diemVaCham[y * chieuRong + x] = laVatCan;
+                    coVaCham |= laVatCan;
+                }
+            }
+            return coVaCham
+                    ? new MatNaVatCan(chieuRong, chieuCao, diemVaCham)
+                    : MatNaVatCan.RONG;
+        }
+        catch (Exception ignored) {
+            return MatNaVatCan.RONG;
+        }
+    }
+
+    private void phaVatCanTheoMatNa(short tamX, short tamY, MatNaLo matNa) {
+        VatCanTamThoi[] hienTai = this.cacVatCanTamThoi;
+        ArrayList<VatCanTamThoi> conLai = new ArrayList<>(hienTai.length);
+        for (VatCanTamThoi vatCan : hienTai) {
+            VatCanTamThoi daPha = vatCan.phaTheoMatNa(tamX, tamY, matNa);
+            if (daPha.conVaCham()) {
+                conLai.add(daPha);
+            }
+        }
+        this.cacVatCanTamThoi = conLai.toArray(new VatCanTamThoi[0]);
+    }
+
+    private void phaVatCanTheoHinhElip(short tamX, short tamY,
+            int nuaRong, int nuaCao) {
+        VatCanTamThoi[] hienTai = this.cacVatCanTamThoi;
+        ArrayList<VatCanTamThoi> conLai = new ArrayList<>(hienTai.length);
+        for (VatCanTamThoi vatCan : hienTai) {
+            VatCanTamThoi daPha = vatCan.phaTheoHinhElip(tamX, tamY,
+                    nuaRong, nuaCao);
+            if (daPha.conVaCham()) {
+                conLai.add(daPha);
+            }
+        }
+        this.cacVatCanTamThoi = conLai.toArray(new VatCanTamThoi[0]);
     }
 
     private VXLDuLieuBanDo.MapDataEntry findEntry(int mapID) {
@@ -281,6 +369,109 @@ public class VXLQuanLyBanDo {
             this.chieuRong = chieuRong;
             this.chieuCao = chieuCao;
             this.diemBiPha = diemBiPha;
+        }
+    }
+
+    private static final class MatNaVatCan {
+        private static final MatNaVatCan RONG = new MatNaVatCan(0, 0,
+                new boolean[0]);
+        private final int chieuRong;
+        private final int chieuCao;
+        private final boolean[] diemVaCham;
+
+        private MatNaVatCan(int chieuRong, int chieuCao, boolean[] diemVaCham) {
+            this.chieuRong = chieuRong;
+            this.chieuCao = chieuCao;
+            this.diemVaCham = diemVaCham;
+        }
+    }
+
+    private static final class VatCanTamThoi {
+        private final int x;
+        private final int y;
+        private final int chieuRong;
+        private final int chieuCao;
+        private final boolean[] diemVaCham;
+
+        private VatCanTamThoi(int x, int y, MatNaVatCan matNa) {
+            this(x, y, matNa.chieuRong, matNa.chieuCao,
+                    matNa.diemVaCham.clone());
+        }
+
+        private VatCanTamThoi(int x, int y, int chieuRong, int chieuCao,
+                boolean[] diemVaCham) {
+            this.x = x;
+            this.y = y;
+            this.chieuRong = chieuRong;
+            this.chieuCao = chieuCao;
+            this.diemVaCham = diemVaCham;
+        }
+
+        private boolean coVaCham(int px, int py) {
+            int localX = px - this.x;
+            int localY = py - this.y;
+            return localX >= 0 && localY >= 0 && localX < this.chieuRong
+                    && localY < this.chieuCao
+                    && this.diemVaCham[localY * this.chieuRong + localX];
+        }
+
+        private VatCanTamThoi phaTheoMatNa(short tamX, short tamY,
+                MatNaLo matNa) {
+            boolean[] capNhat = this.diemVaCham.clone();
+            int matNaX = tamX - matNa.chieuRong / 2;
+            int matNaY = tamY - matNa.chieuCao / 2;
+            for (int localY = 0; localY < this.chieuCao; localY++) {
+                int yTheGioi = this.y + localY;
+                int yMatNa = yTheGioi - matNaY;
+                if (yMatNa < 0 || yMatNa >= matNa.chieuCao) {
+                    continue;
+                }
+                for (int localX = 0; localX < this.chieuRong; localX++) {
+                    int viTri = localY * this.chieuRong + localX;
+                    if (!capNhat[viTri]) {
+                        continue;
+                    }
+                    int xMatNa = this.x + localX - matNaX;
+                    if (xMatNa >= 0 && xMatNa < matNa.chieuRong
+                            && matNa.diemBiPha[yMatNa * matNa.chieuRong + xMatNa]) {
+                        capNhat[viTri] = false;
+                    }
+                }
+            }
+            return new VatCanTamThoi(this.x, this.y, this.chieuRong,
+                    this.chieuCao, capNhat);
+        }
+
+        private VatCanTamThoi phaTheoHinhElip(short tamX, short tamY,
+                int nuaRong, int nuaCao) {
+            boolean[] capNhat = this.diemVaCham.clone();
+            long binhPhuongRong = (long)nuaRong * nuaRong;
+            long binhPhuongCao = (long)nuaCao * nuaCao;
+            for (int localY = 0; localY < this.chieuCao; localY++) {
+                for (int localX = 0; localX < this.chieuRong; localX++) {
+                    int viTri = localY * this.chieuRong + localX;
+                    if (!capNhat[viTri]) {
+                        continue;
+                    }
+                    long dx = this.x + localX - tamX;
+                    long dy = this.y + localY - tamY;
+                    if (dx * dx * binhPhuongCao + dy * dy * binhPhuongRong
+                            <= binhPhuongRong * binhPhuongCao) {
+                        capNhat[viTri] = false;
+                    }
+                }
+            }
+            return new VatCanTamThoi(this.x, this.y, this.chieuRong,
+                    this.chieuCao, capNhat);
+        }
+
+        private boolean conVaCham() {
+            for (boolean diem : this.diemVaCham) {
+                if (diem) {
+                    return true;
+                }
+            }
+            return false;
         }
     }
 

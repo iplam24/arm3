@@ -28,6 +28,7 @@ public final class VXLBoLenhQuanTri {
             /admin item <tên> <itemId> [số lượng]
             /admin save [tên|all]
             /admin announce <nội dung>
+            /admin baotri <on [lý do]|off|status>
             /admin kick <tên>
             /admin ban <tên> <on|off>
             /admin grant <tên> <on|off>
@@ -112,6 +113,7 @@ public final class VXLBoLenhQuanTri {
                     thamSo.length >= 4 ? docInt(thamSo[3], "số lượng") : 1);
             case "save", "luu" -> VXLKhoQuanTri.luuNguoiChoi(thamSo.length >= 2 ? thamSo[1] : "all");
             case "announce", "thongbao" -> thongBao(phanConLai);
+            case "baotri", "maintenance" -> baoTri(quanTri, phanConLai, thamSo);
             case "kick" -> kick(quanTri, lay(thamSo, 1, "tên người chơi"));
             case "ban", "khoa" -> VXLKhoQuanTri.datKhoaTaiKhoan(lay(thamSo, 1, "tên người chơi"),
                     docBatTat(lay(thamSo, 2, "on/off")));
@@ -129,6 +131,21 @@ public final class VXLBoLenhQuanTri {
         String noiDung = phanConLai.substring(viTri + 1).trim();
         VXLNguoiChoi.onChatFromToAllPlayer("HỆ THỐNG", noiDung);
         return "Đã gửi thông báo tới toàn máy chủ.";
+    }
+
+    private static String baoTri(VXLNguoiChoi quanTri, String phanConLai, String[] thamSo) {
+        if (thamSo.length < 2 || "status".equalsIgnoreCase(thamSo[1])
+                || "trangthai".equalsIgnoreCase(thamSo[1])) {
+            return VXLBaoTriMayChu.trangThai();
+        }
+        String hanhDong = thamSo[1].toLowerCase(Locale.ROOT);
+        return switch (hanhDong) {
+            case "on", "bat", "1", "true" -> VXLBaoTriMayChu.bat(quanTri.ten,
+                    layNoiDungSauThamSo(phanConLai, 2));
+            case "off", "tat", "0", "false" -> VXLBaoTriMayChu.tat(quanTri.ten);
+            default -> throw new IllegalArgumentException(
+                    "Cú pháp: /admin baotri <on [lý do]|off|status>.");
+        };
     }
 
     static String kick(VXLNguoiChoi quanTri, String ten) {
@@ -151,6 +168,7 @@ public final class VXLBoLenhQuanTri {
         return "SERVER\n"
                 + "Kết nối: " + VXLQuanLyMayChu.getOnlineCount() + "\n"
                 + "Nhân vật online: " + VXLNguoiChoi.players_id.size() + "\n"
+                + "Bảo trì: " + VXLBaoTriMayChu.trangThaiNgan() + "\n"
                 + "Uptime: " + dinhDangThoiGian(runtimeBean.getUptime()) + "\n"
                 + "RAM: " + dinhDangDungLuong(boNhoDaDung) + " / "
                 + dinhDangDungLuong(runtime.maxMemory()) + "\n"
@@ -186,6 +204,24 @@ public final class VXLBoLenhQuanTri {
             throw new IllegalArgumentException("Thiếu " + ten + ".");
         }
         return thamSo[chiSo];
+    }
+
+    private static String layNoiDungSauThamSo(String phanConLai, int soThamSoBoQua) {
+        int viTri = 0;
+        int soThamSo = 0;
+        while (viTri < phanConLai.length() && soThamSo < soThamSoBoQua) {
+            while (viTri < phanConLai.length() && Character.isWhitespace(phanConLai.charAt(viTri))) {
+                viTri++;
+            }
+            while (viTri < phanConLai.length() && !Character.isWhitespace(phanConLai.charAt(viTri))) {
+                viTri++;
+            }
+            soThamSo++;
+        }
+        while (viTri < phanConLai.length() && Character.isWhitespace(phanConLai.charAt(viTri))) {
+            viTri++;
+        }
+        return viTri < phanConLai.length() ? phanConLai.substring(viTri).trim() : "";
     }
 
     private static int docInt(String giaTri, String ten) {

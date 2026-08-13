@@ -2,6 +2,8 @@ package com.vxl.mang;
 
 // Vũ Xuân Lâm đẹp trai VCL
 import com.vxl.cuahang.VXLCuaHang;
+import com.vxl.clan.VXLClanService;
+import com.vxl.xephang.VXLXepHangService;
 import com.vxl.loi.VXLQuanLyMayChu;
 import com.vxl.phong.VXLQuanLyPhong;
 import com.vxl.quantri.VXLMenuQuanTri;
@@ -41,7 +43,7 @@ implements IVXLXuLyTin {
                         this.khach.dangNhap2(mss);
                         break;
                     case -98:
-                        this.khach.user.nguoiChoi.banDoRPG(mss);
+            this.khach.user.nguoiChoi.banDoRPG(mss);
                         break;
                     case -28:
                         VXLQuanLyPhong.xuLyYeuCauPhongTrong(this.khach.user.nguoiChoi, mss);
@@ -78,6 +80,9 @@ implements IVXLXuLyTin {
                         } else {
                             VXLQuanLyPhong.dauCapNhatXY(this.khach.user.nguoiChoi, mss);
                         }
+                        break;
+                    case 56:
+                        VXLQuanLyPhong.datSoNguoiChoi(this.khach.user.nguoiChoi, mss);
                         break;
                     case 69:
                         if (this.khach.user.nguoiChoi.inTraining) {
@@ -125,6 +130,48 @@ implements IVXLXuLyTin {
                     case -31:
                         this.khach.user.dichVu.guiDuLieu();
                         break;
+                    case -14:
+                        VXLXepHangService.guiDanhMucXepHang(this.khach.user.nguoiChoi, mss);
+                        break;
+                    case -57:
+                        VXLXepHangService.guiBangXepHang(this.khach.user.nguoiChoi);
+                        break;
+                    case -103:
+                        VXLClanService.xuLyClan(this.khach.user.nguoiChoi, mss);
+                        break;
+                    case -104:
+                        VXLClanService.xuLyDuyetGiaNhap(this.khach.user.nguoiChoi, mss);
+                        break;
+                    case -105:
+                        VXLClanService.guiThanhVienClan(this.khach.user.nguoiChoi, mss);
+                        break;
+                    case -106:
+                        VXLClanService.xuLyTinClan(this.khach.user.nguoiChoi, mss);
+                        break;
+                    case -108:
+                        VXLClanService.guiThongTinClan(this.khach.user.nguoiChoi);
+                        break;
+                    case -109:
+                        VXLClanService.roiClan(this.khach.user.nguoiChoi);
+                        break;
+                    case -110:
+                        VXLClanService.quanLyThanhVien(this.khach.user.nguoiChoi, mss);
+                        break;
+                    case -111:
+                        VXLClanService.xuLyMoiClan(this.khach.user.nguoiChoi, mss);
+                        break;
+                    case -113:
+                        VXLClanService.timClan(this.khach.user.nguoiChoi, mss);
+                        break;
+                    case -117:
+                        VXLClanService.guiTopClan(this.khach.user.nguoiChoi);
+                        break;
+                    case -118:
+                        VXLClanService.guiCuaHangClan(this.khach.user.nguoiChoi, mss);
+                        break;
+                    case -119:
+                        VXLClanService.guiTrangThaiClan(this.khach.user.nguoiChoi, mss);
+                        break;
                     case 103:
                         this.khach.user.nguoiChoi.xemCuaHang(VXLCuaHang.SHOP_EQUIP);
                         break;
@@ -132,7 +179,9 @@ implements IVXLXuLyTin {
                         this.khach.user.nguoiChoi.requestTab(mss);
                         break;
                     case 72:
-                        this.khach.user.nguoiChoi.yeuCauMuaVatPham(mss);
+                        if (!VXLClanService.muaVatPhamClanNeuCan(this.khach.user.nguoiChoi, mss)) {
+                            this.khach.user.nguoiChoi.yeuCauMuaVatPham(mss);
+                        }
                         break;
                     case 26:
                         if (this.khach.user.nguoiChoi.inTraining) {
@@ -242,6 +291,20 @@ implements IVXLXuLyTin {
     private boolean lenhCanNhanVat(byte lenh) {
         switch (lenh) {
             case -98:
+            case -14:
+            case -57:
+            case -103:
+            case -104:
+            case -105:
+            case -106:
+            case -108:
+            case -109:
+            case -110:
+            case -111:
+            case -113:
+            case -117:
+            case -118:
+            case -119:
             case -28:
             case 5:
             case 6:
@@ -256,6 +319,7 @@ implements IVXLXuLyTin {
             case 26:
             case 49:
             case 53:
+            case 56:
             case 69:
             case 72:
             case 75:

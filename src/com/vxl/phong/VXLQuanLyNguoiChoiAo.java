@@ -29,11 +29,12 @@ final class VXLQuanLyNguoiChoiAo {
         this.maNguoiChoiAo = new int[nguoiChois.length];
     }
 
-    void boSungChoTran(VXLQuanLyChien tranDau, boolean cheDoCamTu, VXLNguoiChoi chuPhong, VXLPhong phong, byte maBan) throws IOException {
+    void boSungChoTran(VXLQuanLyChien tranDau, boolean cheDoCamTu, VXLNguoiChoi chuPhong,
+            VXLPhong phong, byte maBan, int gioiHanNguoiChoi) throws IOException {
         if (cheDoCamTu) {
             return;
         }
-        this.themBotTheoElo(tranDau, chuPhong, phong, maBan);
+        this.themBotTheoElo(tranDau, chuPhong, phong, maBan, gioiHanNguoiChoi);
     }
 
     void xoa(VXLNguoiChoi chuPhong) {
@@ -55,7 +56,8 @@ final class VXLQuanLyNguoiChoiAo {
         Arrays.fill(this.maNguoiChoiAo, 0);
     }
 
-    private void themBotTheoElo(VXLQuanLyChien tranDau, VXLNguoiChoi chuPhong, VXLPhong phong, byte maBan) throws IOException {
+    private void themBotTheoElo(VXLQuanLyChien tranDau, VXLNguoiChoi chuPhong, VXLPhong phong,
+            byte maBan, int gioiHanNguoiChoi) throws IOException {
         int eloCaoNhat = this.layEloCaoNhat();
         if (eloCaoNhat < 0) {
             return;
@@ -66,7 +68,7 @@ final class VXLQuanLyNguoiChoiAo {
         int giap = gioiHanChiSo(GIAP_BOT_MAC_DINH + (long)bacElo * GIAP_TANG_MOI_BAC);
         boolean[] daDung = new boolean[this.nguoiChois.length];
         for (int i = 0; i < TEN_BOT_SOLO.length; i++) {
-            int o = this.timOTrong(daDung);
+            int o = this.timOTrong(daDung, gioiHanNguoiChoi);
             if (o < 0) {
                 return;
             }
@@ -128,8 +130,9 @@ final class VXLQuanLyNguoiChoiAo {
         return PART_TOC_DU_PHONG[chiSo];
     }
 
-    private int timOTrong(boolean[] daDung) {
-        for (int i = 0; i < this.nguoiChois.length; i++) {
+    private int timOTrong(boolean[] daDung, int gioiHanNguoiChoi) {
+        int gioiHan = Math.min(Math.max(0, gioiHanNguoiChoi), this.nguoiChois.length);
+        for (int i = 0; i < gioiHan; i++) {
             if (this.nguoiChois[i] == null && !daDung[i]) {
                 return i;
             }

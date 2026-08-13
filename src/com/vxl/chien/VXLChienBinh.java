@@ -1,5 +1,7 @@
 package com.vxl.chien;
 
+import com.vxl.clan.VXLClanService;
+import com.vxl.clan.VXLHieuUngClan;
 import com.vxl.loi.VXLQuanLyMayChu;
 import com.vxl.mohinh.VXLNguoiChoi;
 import com.vxl.vatpham.VXLMauVatPham;
@@ -22,6 +24,7 @@ public class VXLChienBinh {
     public final byte avenger;
     public final byte avengerDan;
     public final VXLKyNangAvenger kyNangAvenger;
+    public final VXLHieuUngClan hieuUngClan;
     public int tanCong;
     public final int giap;
     public short x;
@@ -36,8 +39,10 @@ public class VXLChienBinh {
     public int satThuongDoc;
     public int luotDongBang;
     public int luotMu;
+    public int luotTangHinh;
     public int luotVoHinh;
     public int luotMacTo;
+    public int luotLechDan;
     public int luotMaCaRong;
     public int vatPhamDanDacBiet = -1;
     public int heSoPhatBan = 100;
@@ -57,6 +62,7 @@ public class VXLChienBinh {
     public boolean chet;
     public boolean daRoiTran;
     public boolean daQuyetToan;
+    public byte chiSoChuBanSaoUltron = -1;
     public VXLChienBinh nguoiGaySatThuongCuoi;
     public VXLChienBinh nguonDoc;
     private long thoiDiemSanSangBan;
@@ -73,6 +79,7 @@ public class VXLChienBinh {
         this.avenger = nguoiChoi.avenger;
         this.avengerDan = nguoiChoi.layAvengerDan();
         this.kyNangAvenger = VXLKyNangAvenger.tao(this.avengerDan);
+        this.hieuUngClan = VXLClanService.layHieuUngClan(nguoiChoi.clan);
         this.x = x;
         this.y = y;
 
@@ -106,10 +113,17 @@ public class VXLChienBinh {
             }
         }
 
-        this.mauToiDa = gioiHan((hpGoc + hpCong) * (100L + hpPhanTram + tatCaPhanTram) / 100L, 100, GIOI_HAN_CHI_SO);
-        this.tanCong = gioiHan((tanCongGoc + tanCongCong) * (100L + tanCongPhanTram + tatCaPhanTram) / 100L, 1, GIOI_HAN_CHI_SO);
-        this.giap = gioiHan((giapGoc + giapCong) * (100L + giapPhanTram + tatCaPhanTram) / 100L, 0, GIOI_HAN_CHI_SO);
-        this.heSoDiChuyenTrangBi = gioiHan(100L + diChuyenPhanTram, 100, 300);
+        this.mauToiDa = gioiHan((hpGoc + hpCong)
+                * (100L + hpPhanTram + tatCaPhanTram + this.hieuUngClan.phanTramSinhLuc()) / 100L,
+                100, GIOI_HAN_CHI_SO);
+        this.tanCong = gioiHan((tanCongGoc + tanCongCong)
+                * (100L + tanCongPhanTram + tatCaPhanTram + this.hieuUngClan.phanTramHoaLuc()) / 100L,
+                1, GIOI_HAN_CHI_SO);
+        this.giap = gioiHan((giapGoc + giapCong)
+                * (100L + giapPhanTram + tatCaPhanTram + this.hieuUngClan.phanTramPhongThu()) / 100L,
+                0, GIOI_HAN_CHI_SO);
+        this.heSoDiChuyenTrangBi = gioiHan(100L + diChuyenPhanTram
+                + this.hieuUngClan.phanTramTocDo(), 100, 400);
         this.hp = this.mauToiDa;
     }
 
@@ -139,6 +153,7 @@ public class VXLChienBinh {
         this.avenger = avenger;
         this.avengerDan = avenger;
         this.kyNangAvenger = VXLKyNangAvenger.tao(this.avengerDan);
+        this.hieuUngClan = VXLHieuUngClan.KHONG_CO;
         this.x = x;
         this.y = y;
         this.mauToiDa = gioiHan(mauToiDa, 1, GIOI_HAN_CHI_SO);
@@ -147,8 +162,20 @@ public class VXLChienBinh {
         this.hp = this.mauToiDa;
     }
 
+    public static VXLChienBinh taoBanSaoUltron(byte chiSo, byte chiSoChu,
+            short x, short y, String ten, int mauToiDa, int tanCong, int giap) {
+        VXLChienBinh banSao = new VXLChienBinh(chiSo, x, y, ten, (short)-1,
+                VXLKyNangAvenger.MA_ULTRON, false, mauToiDa, tanCong, giap);
+        banSao.chiSoChuBanSaoUltron = chiSoChu;
+        return banSao;
+    }
+
     public boolean coPhien() {
         return this.nguoiChoi != null && this.nguoiChoi.dichVu != null;
+    }
+
+    public boolean laBanSaoUltron() {
+        return this.chiSoChuBanSaoUltron >= 0;
     }
 
     public void capNhatTanCongTheoTrangBi() {
@@ -172,7 +199,7 @@ public class VXLChienBinh {
             }
         }
         this.tanCong = gioiHan((tanCongGoc + tanCongCong)
-                * (100L + tanCongPhanTram + tatCaPhanTram) / 100L,
+                * (100L + tanCongPhanTram + tatCaPhanTram + this.hieuUngClan.phanTramHoaLuc()) / 100L,
                 1, GIOI_HAN_CHI_SO);
     }
 

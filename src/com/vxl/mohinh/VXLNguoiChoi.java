@@ -48,6 +48,8 @@ public class VXLNguoiChoi {
     public int cap;
     public boolean quanTri;
     public int clan = -1;
+    public short clanIcon = -1;
+    public byte clanRole = 2;
     public byte power;
     public byte busyHammer;
     public byte nHammer;
@@ -1130,7 +1132,7 @@ public class VXLNguoiChoi {
             ds.writeShort(pl.wp);
             ds.writeInt(pl.kinhNghiem);
             ds.writeByte(1);
-            ds.writeShort(0);
+            ds.writeShort(pl.clanIcon);
             ds.flush();
             this.dichVu.guiTin(mss);
         }
@@ -1303,6 +1305,8 @@ public class VXLNguoiChoi {
         }
     }
     public void vaoLuyenTap() {
+        VXLQuanLyPhong.roiBanCho(this);
+        VXLBanDoRPG.roi(this);
         this.luyenTap.vao();
     }
 

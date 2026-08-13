@@ -254,6 +254,16 @@ public class VXLQuanLyPhong {
         }
     }
 
+    public static void datSoNguoiChoi(VXLNguoiChoi nguoiChoi, VXLTinNhan ms) throws IOException {
+        if (nguoiChoi == null || ms == null || ms.layDuLieu().length < 1) {
+            return;
+        }
+        VXLChoDau banCho = layBanCho(nguoiChoi);
+        if (banCho != null) {
+            banCho.datSoNguoiChoi(nguoiChoi, ms.boDoc().readByte());
+        }
+    }
+
     public static void dauDiChuyen(VXLNguoiChoi nguoiChoi, VXLTinNhan ms) throws IOException {
         VXLQuanLyChien fight = layTranDau(nguoiChoi);
         if (fight != null) {

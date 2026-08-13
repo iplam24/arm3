@@ -2,6 +2,7 @@ package com.vxl.mang;
 
 // Vũ Xuân Lâm đẹp trai VCL
 import com.vxl.loi.VXLQuanLyMayChu;
+import com.vxl.clan.VXLClanService;
 import com.vxl.bando.VXLDuLieuBanDo;
 import com.vxl.mohinh.VXLNguoiChoi;
 import com.vxl.mohinh.VXLNguoiDung;
@@ -500,6 +501,7 @@ implements IVXLPhien {
     }
 
     public void guiThongTin() throws IOException {
+        VXLClanService.taiChoNguoiChoi(this.user.nguoiChoi);
         VXLNguoiChoi.players_id.put(this.user.nguoiChoi.ma, this.user.nguoiChoi);
         this.guiVaChamBanDo();
         this.user.dichVu.guiDoTrenNguoi();
@@ -507,6 +509,11 @@ implements IVXLPhien {
         this.user.dichVu.guiRuongDo();
         this.user.dichVu.guiBalo();
         this.user.dichVu.guiThongTin();
+        try {
+            VXLClanService.guiThongTinClan(this.user.nguoiChoi);
+        } catch (Exception ex) {
+            VXLQuanLyMayChu.log("Khong the gui thong tin clan cho " + this.user.nguoiChoi.ten + ": " + ex.getMessage());
+        }
         VXLBanDoRPG.vao(this.user.nguoiChoi);
         this.user.dichVu.capNhatKDVaKDA();
         this.user.dichVu.capNhatAvenger();

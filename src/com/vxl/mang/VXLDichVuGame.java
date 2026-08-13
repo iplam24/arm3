@@ -9,6 +9,7 @@ import com.vxl.vatpham.VXLMauVatPham;
 import com.vxl.chien.VXLChienBinh;
 import com.vxl.chien.VXLCauHinhVatPhamChienDau;
 import com.vxl.chien.VXLKetQuaDan;
+import com.vxl.chien.VXLKyNangAvenger;
 import com.vxl.mohinh.VXLNguoiChoi;
 import com.vxl.mang.IVXLDichVuGame;
 import com.vxl.mang.VXLTinNhan;
@@ -194,7 +195,7 @@ implements IVXLDichVuGame {
         ds.writeByte(nguoiChoi.zoneId);
         ds.writeInt(nguoiChoi.clan);
         if (nguoiChoi.clan != -1) {
-            ds.writeShort(0);
+            ds.writeShort(nguoiChoi.clanIcon);
         }
         ds.writeByte(nguoiChoi.pointSeat);
         ds.writeShort(nguoiChoi.x);
@@ -662,7 +663,7 @@ implements IVXLDichVuGame {
         ds.writeByte(maBan);
         ds.writeInt(joined.clan);
         if (joined.clan != -1) {
-            ds.writeShort(0);
+            ds.writeShort(joined.clanIcon);
         }
         ds.writeByte(joined.pointSeat);
         ds.flush();
@@ -688,6 +689,14 @@ implements IVXLDichVuGame {
         DataOutputStream ds = ms.boGhi();
         ds.writeInt(playerId);
         ds.writeBoolean(sanSang);
+        ds.flush();
+        this.guiTin(ms);
+    }
+
+    public void guiSoNguoiDau(byte soNguoi) throws IOException {
+        VXLTinNhan ms = new VXLTinNhan(56);
+        DataOutputStream ds = ms.boGhi();
+        ds.writeByte(soNguoi);
         ds.flush();
         this.guiTin(ms);
     }
@@ -1234,27 +1243,69 @@ implements IVXLDichVuGame {
     }
 
     public void guiLuotLuyenTapTiep(byte whoNext, short x, short y,
-            int napDanNguoiChoi, int napDanPhienQuan, byte giay) throws IOException {
+            int[] napDan, long[] thuTuHanhDong, VXLChienBinh[] banSaoUltron,
+            byte giay) throws IOException {
         VXLTinNhan ms = new VXLTinNhan(24);
         DataOutputStream ds = ms.boGhi();
         ds.writeByte(whoNext);
         ds.writeShort(x);
         ds.writeShort(y);
-        ds.writeByte(2);
-        if (whoNext == 1) {
-            ds.writeByte(1);
-            ds.writeShort(Math.max(0, Math.min(Short.MAX_VALUE, napDanPhienQuan)));
-            ds.writeByte(0);
-            ds.writeShort(Math.max(0, Math.min(Short.MAX_VALUE, napDanNguoiChoi)));
-        } else {
-            ds.writeByte(0);
-            ds.writeShort(Math.max(0, Math.min(Short.MAX_VALUE, napDanNguoiChoi)));
-            ds.writeByte(1);
-            ds.writeShort(Math.max(0, Math.min(Short.MAX_VALUE, napDanPhienQuan)));
+        int soNguoi = 2;
+        if (banSaoUltron != null) {
+            for (VXLChienBinh banSao : banSaoUltron) {
+                if (banSao != null && !banSao.chet) {
+                    soNguoi++;
+                }
+            }
+        }
+        ds.writeByte(soNguoi);
+        boolean[] daGhi = new boolean[Math.max(2, napDan == null ? 2 : napDan.length)];
+        int viTriHienTai = Byte.toUnsignedInt(whoNext);
+        if (viTriHienTai < daGhi.length && laViTriLuyenTapHopLe(
+                viTriHienTai, banSaoUltron)) {
+            ds.writeByte(viTriHienTai);
+            ds.writeShort(layNapDanAnToan(napDan, viTriHienTai));
+            daGhi[viTriHienTai] = true;
+        }
+        for (int lan = 0; lan < soNguoi; lan++) {
+            int chon = -1;
+            int napNhoNhat = Integer.MAX_VALUE;
+            long thuTuNhoNhat = Long.MAX_VALUE;
+            for (int viTri = 0; viTri < daGhi.length; viTri++) {
+                if (daGhi[viTri] || !laViTriLuyenTapHopLe(viTri, banSaoUltron)) {
+                    continue;
+                }
+                int nap = layNapDanAnToan(napDan, viTri);
+                long thuTu = layThuTuHanhDongAnToan(thuTuHanhDong, viTri);
+                if (chon < 0 || nap < napNhoNhat
+                        || nap == napNhoNhat && thuTu < thuTuNhoNhat) {
+                    chon = viTri;
+                    napNhoNhat = nap;
+                    thuTuNhoNhat = thuTu;
+                }
+            }
+            if (chon < 0) {
+                break;
+            }
+            ds.writeByte(chon);
+            ds.writeShort(napNhoNhat);
+            daGhi[chon] = true;
         }
         ds.writeByte(giay);
         ds.flush();
         this.guiTin(ms);
+    }
+
+    private static boolean laViTriLuyenTapHopLe(int viTri,
+            VXLChienBinh[] banSaoUltron) {
+        if (viTri == 0 || viTri == 1) {
+            return true;
+        }
+        int chiSoBanSao = viTri - 2;
+        return banSaoUltron != null && chiSoBanSao >= 0
+                && chiSoBanSao < banSaoUltron.length
+                && banSaoUltron[chiSoBanSao] != null
+                && !banSaoUltron[chiSoBanSao].chet;
     }
 
     public void guiDungVatPhamLuyenTap(byte whoUse, byte itemId, short iconUse) throws IOException {
@@ -1263,6 +1314,84 @@ implements IVXLDichVuGame {
         ds.writeByte(whoUse);
         ds.writeByte(itemId);
         ds.writeShort(iconUse);
+        ds.flush();
+        this.guiTin(ms);
+    }
+
+    public void guiKetThucTangHinh(byte chiSo) throws IOException {
+        VXLTinNhan ms = new VXLTinNhan(80);
+        DataOutputStream ds = ms.boGhi();
+        ds.writeByte(chiSo);
+        ds.flush();
+        this.guiTin(ms);
+    }
+
+    public void guiTrangThaiMu(byte chiSo, boolean biMu) throws IOException {
+        VXLTinNhan ms = new VXLTinNhan(106);
+        DataOutputStream ds = ms.boGhi();
+        ds.writeByte(biMu ? 0 : 1);
+        ds.writeByte(chiSo);
+        ds.flush();
+        this.guiTin(ms);
+    }
+
+    public void guiTrangThaiBatDong(byte chiSo, boolean batDong) throws IOException {
+        VXLTinNhan ms = new VXLTinNhan(107);
+        DataOutputStream ds = ms.boGhi();
+        ds.writeByte(batDong ? 0 : 1);
+        ds.writeByte(chiSo);
+        ds.flush();
+        this.guiTin(ms);
+    }
+
+    public void guiDatBomHenGio(byte maBom, int x, int y, byte luotConLai)
+            throws IOException {
+        VXLTinNhan ms = new VXLTinNhan(109);
+        DataOutputStream ds = ms.boGhi();
+        ds.writeByte(0);
+        ds.writeByte(maBom);
+        ds.writeInt(x);
+        ds.writeInt(y);
+        ds.writeByte(luotConLai);
+        ds.flush();
+        this.guiTin(ms);
+    }
+
+    public void guiNoBomHenGio(byte maBom) throws IOException {
+        VXLTinNhan ms = new VXLTinNhan(109);
+        DataOutputStream ds = ms.boGhi();
+        ds.writeByte(1);
+        ds.writeByte(maBom);
+        ds.writeByte(0);
+        ds.flush();
+        this.guiTin(ms);
+    }
+
+    public void guiTienDoGoBom(byte maBom, byte phanTram) throws IOException {
+        VXLTinNhan ms = new VXLTinNhan(109);
+        DataOutputStream ds = ms.boGhi();
+        ds.writeByte(2);
+        ds.writeByte(maBom);
+        ds.writeByte(phanTram);
+        ds.flush();
+        this.guiTin(ms);
+    }
+
+    public void guiGoBomHenGio(byte maBom) throws IOException {
+        VXLTinNhan ms = new VXLTinNhan(109);
+        DataOutputStream ds = ms.boGhi();
+        ds.writeByte(3);
+        ds.writeByte(maBom);
+        ds.flush();
+        this.guiTin(ms);
+    }
+
+    public void guiCapNhatBomHenGio(byte maBom, byte luotConLai) throws IOException {
+        VXLTinNhan ms = new VXLTinNhan(109);
+        DataOutputStream ds = ms.boGhi();
+        ds.writeByte(4);
+        ds.writeByte(maBom);
+        ds.writeByte(luotConLai);
         ds.flush();
         this.guiTin(ms);
     }
@@ -1364,6 +1493,46 @@ implements IVXLDichVuGame {
         this.guiTin(ms);
     }
 
+    public void guiXacNhanSkillSpiderMan() throws IOException {
+        VXLTinNhan ms = new VXLTinNhan(-91);
+        DataOutputStream ds = ms.boGhi();
+        ds.writeByte(7);
+        ds.flush();
+        this.guiTin(ms);
+    }
+
+    public void guiLokiGiaDang(byte chiSoNguoiDung, byte chiSoMucTieu)
+            throws IOException {
+        VXLTinNhan ms = new VXLTinNhan(-91);
+        DataOutputStream ds = ms.boGhi();
+        ds.writeByte(0);
+        ds.writeByte(chiSoNguoiDung);
+        ds.writeByte(chiSoMucTieu);
+        ds.flush();
+        this.guiTin(ms);
+    }
+
+    public void guiLokiGiaDang(byte chiSoNguoiDung, byte chiSoMucTieu,
+            short head, short leg, short body, short wp, short hat, short wing,
+            byte avenger, int hp, int mauToiDa) throws IOException {
+        VXLTinNhan ms = new VXLTinNhan(-91);
+        DataOutputStream ds = ms.boGhi();
+        ds.writeByte(0);
+        ds.writeByte(chiSoNguoiDung);
+        ds.writeByte(chiSoMucTieu);
+        ds.writeShort(head);
+        ds.writeShort(leg);
+        ds.writeShort(body);
+        ds.writeShort(wp);
+        ds.writeShort(hat);
+        ds.writeShort(wing);
+        ds.writeByte(avenger);
+        ds.writeInt(Math.max(0, hp));
+        ds.writeInt(Math.max(1, mauToiDa));
+        ds.flush();
+        this.guiTin(ms);
+    }
+
     public void guiSkillHawkeye(byte chiSoNguoiBan, byte loaiDan, short[] mucTieuX,
             short[] mucTieuY) throws IOException {
         int soMucTieu = Math.min(mucTieuX == null ? 0 : mucTieuX.length,
@@ -1378,6 +1547,30 @@ implements IVXLDichVuGame {
             ds.writeShort(mucTieuX[i]);
             ds.writeShort(mucTieuY[i]);
         }
+        ds.flush();
+        this.guiTin(ms);
+    }
+
+    public void guiThemBanSaoUltron(VXLChienBinh banSao, byte chiSoChu)
+            throws IOException {
+        VXLTinNhan ms = new VXLTinNhan(-63);
+        DataOutputStream ds = ms.boGhi();
+        ds.writeByte(0);
+        ds.writeByte(banSao.chiSo);
+        ds.writeInt(banSao.ma);
+        ds.writeUTF(banSao.ten);
+        ds.writeShort(199);
+        ds.writeShort(210);
+        ds.writeShort(209);
+        ds.writeShort(-1);
+        ds.writeShort(-1);
+        ds.writeShort(banSao.maVuKhi);
+        ds.writeShort(banSao.x);
+        ds.writeShort(banSao.y);
+        ds.writeShort(Math.max(1, Math.min(Short.MAX_VALUE, banSao.mauToiDa)));
+        ds.writeByte(10);
+        ds.writeByte(VXLKyNangAvenger.MA_ULTRON);
+        ds.writeByte(chiSoChu);
         ds.flush();
         this.guiTin(ms);
     }

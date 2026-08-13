@@ -19,6 +19,9 @@ $bundleZipPath = Join-Path $releaseDirectory "vxldeptrai-server-$timestamp.zip"
 $detailsPath = Join-Path $releaseDirectory 'build-details.txt'
 $hashPath = Join-Path $releaseDirectory 'sha256.txt'
 $gradleProblemsReportPath = Join-Path $projectRoot 'build\reports\problems\problems-report.html'
+$gradleWrapperPath = Join-Path $projectRoot 'gradlew.bat'
+$gradleBuildPath = Join-Path $projectRoot 'build.gradle'
+$gradleSettingsPath = Join-Path $projectRoot 'settings.gradle'
 
 New-Item -ItemType Directory -Path $logDirectory -Force | Out-Null
 $script:buildLogLines = [System.Collections.Generic.List[string]]::new()
@@ -100,11 +103,23 @@ try {
     Write-BuildLog "Latest summary: $latestInfoPath"
     Write-BuildLog "Latest log: $latestLogPath"
     Write-BuildLog "Mode: $(if ($Clean) { 'clean jar' } else { 'jar --rerun-tasks (skip full clean)' })"
+    Write-BuildLog "Gradle wrapper: $gradleWrapperPath"
+    Write-BuildLog "Gradle build config: $gradleBuildPath"
+    Write-BuildLog "Gradle settings: $gradleSettingsPath"
+
+    foreach ($requiredBuildFile in @($gradleWrapperPath, $gradleBuildPath, $gradleSettingsPath)) {
+        if (-not (Test-Path -LiteralPath $requiredBuildFile -PathType Leaf)) {
+            throw "Required build file not found: $requiredBuildFile"
+        }
+    }
 
     $javaCommand = Get-Command java -ErrorAction Stop
     Write-BuildLog "Java executable: $($javaCommand.Source)"
     if ((Invoke-LoggedCommand $javaCommand.Source @('-version')) -ne 0) {
         throw 'java -version failed.'
+    }
+    if ((Invoke-LoggedCommand $gradleWrapperPath @('--version', '--console=plain')) -ne 0) {
+        throw 'Gradle wrapper version check failed.'
     }
 
     $locks = @(Get-BuildLockProcesses)
@@ -137,7 +152,7 @@ try {
     else {
         @('jar', '--rerun-tasks', '--console=plain', '--stacktrace')
     }
-    $gradleExit = Invoke-LoggedCommand (Join-Path $projectRoot 'gradlew.bat') $gradleArguments
+    $gradleExit = Invoke-LoggedCommand $gradleWrapperPath $gradleArguments
     if ($gradleExit -ne 0) {
         throw "Gradle build failed with exit code $gradleExit."
     }
@@ -257,6 +272,9 @@ catch {
     if ($_.ScriptStackTrace) {
         Write-BuildLog "PowerShell stack: $($_.ScriptStackTrace)" 'ERROR'
     }
+    if (Test-Path -LiteralPath $gradleProblemsReportPath -PathType Leaf) {
+        Write-BuildLog "Gradle problems report: $gradleProblemsReportPath" 'ERROR'
+    }
     Write-BuildLog "Build failed. Full log: $logPath" 'ERROR'
     Set-Content -LiteralPath $latestInfoPath -Value @(
         'status=FAILED'
@@ -266,6 +284,7 @@ catch {
         "latest_log=$latestLogPath"
         "release_directory=$releaseDirectory"
         "gradle_lib_directory=$gradleLibDirectory"
+        "gradle_problems_report=$gradleProblemsReportPath (exists=$(Test-Path -LiteralPath $gradleProblemsReportPath))"
         "error=$($_.Exception.Message)"
     ) -Encoding UTF8
     $exitCode = 1

@@ -85,7 +85,7 @@ final class VXLXuLyKetThucTranDau {
         StringBuilder bang = new StringBuilder("BẢNG KẾT QUẢ");
         int thuTu = 1;
         for (VXLChienBinh chienBinh : this.chienBinhs) {
-            if (chienBinh == null) {
+            if (chienBinh == null || chienBinh.laBanSaoUltron()) {
                 continue;
             }
             bang.append('\n').append(thuTu++).append(". ").append(chienBinh.ten)

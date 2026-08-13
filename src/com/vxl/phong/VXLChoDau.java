@@ -2,13 +2,14 @@ package com.vxl.phong;
 
 import com.vxl.chien.VXLQuanLyChien;
 import com.vxl.mohinh.VXLNguoiChoi;
+import com.vxl.nhapvai.VXLBanDoRPG;
 import java.io.IOException;
 
 public class VXLChoDau {
 
     public final VXLPhong phong;
     public final byte ma;
-    public final byte maxPlayers;
+    public volatile byte maxPlayers;
     public volatile byte maBanDo;
     public int tien;
     public String ten;
@@ -75,6 +76,8 @@ public class VXLChoDau {
             nguoiChoi.startOKDlg2("Khu vực đã đầy.");
             return false;
         }
+        nguoiChoi.roiLuyenTapNeuCan();
+        VXLBanDoRPG.roi(nguoiChoi);
         this.nguoiChois[o] = nguoiChoi;
         this.sanSang[o] = false;
         nguoiChoi.chiSo = o;
@@ -86,12 +89,14 @@ public class VXLChoDau {
         VXLQuanLyPhong.gan(nguoiChoi, this);
 
         nguoiChoi.dichVu.guiThongTinChoDau(this.phong.ma, this.ma, this.ten, this.phong.loai);
-        nguoiChoi.dichVu.guiChonBanDoDau(this.maBanDo);
+        nguoiChoi.dichVu.guiNguoiChoiVaoDau(nguoiChoi, this.chuPhong, this.phong.ma, this.ma);
         for (VXLNguoiChoi existing : this.nguoiChois) {
-            if (existing != null && existing.dichVu != null) {
+            if (existing != null && existing != nguoiChoi && existing.dichVu != null) {
                 nguoiChoi.dichVu.guiNguoiChoiVaoDau(existing, this.chuPhong, this.phong.ma, this.ma);
             }
         }
+        nguoiChoi.dichVu.guiChonBanDoDau(this.maBanDo);
+        nguoiChoi.dichVu.guiSoNguoiDau(this.maxPlayers);
         for (VXLNguoiChoi existing : this.nguoiChois) {
             if (existing != null && existing != nguoiChoi && existing.dichVu != null) {
                 existing.dichVu.guiNguoiChoiVaoDau(nguoiChoi, this.chuPhong, this.phong.ma, this.ma);
@@ -171,6 +176,26 @@ public class VXLChoDau {
         }
     }
 
+    public synchronized void datSoNguoiChoi(VXLNguoiChoi nguoiChoi, byte soNguoi) throws IOException {
+        int gioiHan = Byte.toUnsignedInt(soNguoi);
+        if (nguoiChoi != this.chuPhong || this.started
+                || (gioiHan != 2 && gioiHan != 4 && gioiHan != 6 && gioiHan != 8)
+                || gioiHan > this.nguoiChois.length) {
+            return;
+        }
+        for (int i = gioiHan; i < this.nguoiChois.length; i++) {
+            if (this.nguoiChois[i] != null) {
+                return;
+            }
+        }
+        this.maxPlayers = soNguoi;
+        for (VXLNguoiChoi existing : this.nguoiChois) {
+            if (existing != null && existing.dichVu != null) {
+                existing.dichVu.guiSoNguoiDau(soNguoi);
+            }
+        }
+    }
+
     public synchronized void batDau(VXLNguoiChoi nguoiChoi) throws IOException {
         if (nguoiChoi == null || this.started || nguoiChoi != this.chuPhong) {
             return;
@@ -184,7 +209,8 @@ public class VXLChoDau {
         try {
             boolean cheDoCamTu = this.maBanDo == VXLQuanLyChien.MA_BAN_DO_HAI_TOA_THAP;
             this.fight = new VXLQuanLyChien(this, this.chupNguoiChoi(), this.maBanDo);
-            this.quanLyNguoiChoiAo.boSungChoTran(this.fight, cheDoCamTu, this.chuPhong, this.phong, this.ma);
+            this.quanLyNguoiChoiAo.boSungChoTran(this.fight, cheDoCamTu, this.chuPhong,
+                    this.phong, this.ma, Byte.toUnsignedInt(this.maxPlayers));
             this.fight.batDau();
         }
         catch (IOException | RuntimeException ex) {
@@ -221,7 +247,8 @@ public class VXLChoDau {
     }
 
     private int oTrongDauTien() {
-        for (int i = 0; i < this.nguoiChois.length; i++) {
+        int gioiHan = Math.min(Byte.toUnsignedInt(this.maxPlayers), this.nguoiChois.length);
+        for (int i = 0; i < gioiHan; i++) {
             if (this.nguoiChois[i] == null) {
                 return i;
             }

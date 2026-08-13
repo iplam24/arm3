@@ -59,7 +59,9 @@ final class VXLPhatTinTranDau {
 
     void guiMau(VXLChienBinh mucTieu) {
         this.guiTungNguoi(chienBinh -> chienBinh.nguoiChoi.dichVu.guiCapNhatMauDau(
-                mucTieu.chiSo, mucTieu.hp, mucTieu.mauToiDa, mucTieu.chet ? (byte)2 : (byte)0));
+                mucTieu.chiSo, mucTieu.hp, mucTieu.mauToiDa,
+                mucTieu.chet ? (mucTieu.laBanSaoUltron() ? (byte)3 : (byte)2)
+                        : (byte)0));
     }
 
     void guiNo(VXLChienBinh chienBinh) {
@@ -71,10 +73,75 @@ final class VXLPhatTinTranDau {
         this.guiTungNguoi(chienBinh -> chienBinh.nguoiChoi.dichVu.guiDungVatPhamLuyenTap(nguoiDung.chiSo, maHieuUng, icon));
     }
 
+    void guiKetThucTangHinh(VXLChienBinh chienBinh) {
+        this.guiTungNguoi(nguoiNhan -> nguoiNhan.nguoiChoi.dichVu.guiKetThucTangHinh(
+                chienBinh.chiSo));
+    }
+
+    void guiTrangThaiMu(VXLChienBinh chienBinh, boolean biMu) {
+        this.guiTungNguoi(nguoiNhan -> nguoiNhan.nguoiChoi.dichVu.guiTrangThaiMu(
+                chienBinh.chiSo, biMu));
+    }
+
+    void guiTrangThaiBatDong(VXLChienBinh chienBinh, boolean batDong) {
+        this.guiTungNguoi(nguoiNhan -> nguoiNhan.nguoiChoi.dichVu.guiTrangThaiBatDong(
+                chienBinh.chiSo, batDong));
+    }
+
+    void guiDatBomHenGio(byte maBom, short x, short y, byte luotConLai) {
+        this.guiTungNguoi(chienBinh -> chienBinh.nguoiChoi.dichVu.guiDatBomHenGio(
+                maBom, x, y, luotConLai));
+    }
+
+    void guiNoBomHenGio(byte maBom) {
+        this.guiTungNguoi(chienBinh -> chienBinh.nguoiChoi.dichVu.guiNoBomHenGio(maBom));
+    }
+
+    void guiTienDoGoBom(byte maBom, byte phanTram) {
+        this.guiTungNguoi(chienBinh -> chienBinh.nguoiChoi.dichVu.guiTienDoGoBom(
+                maBom, phanTram));
+    }
+
+    void guiGoBomHenGio(byte maBom) {
+        this.guiTungNguoi(chienBinh -> chienBinh.nguoiChoi.dichVu.guiGoBomHenGio(maBom));
+    }
+
+    void guiCapNhatBomHenGio(byte maBom, byte luotConLai) {
+        this.guiTungNguoi(chienBinh -> chienBinh.nguoiChoi.dichVu.guiCapNhatBomHenGio(
+                maBom, luotConLai));
+    }
+
     void guiDoiSung(VXLChienBinh nguoiDoi, short iconVuKhiCu) {
         this.guiTungNguoi(chienBinh -> chienBinh.nguoiChoi.dichVu.guiDoiSungLuyenTap(
                 nguoiDoi.chiSo, nguoiDoi.maVuKhi,
                 chienBinh == nguoiDoi ? iconVuKhiCu : (short)-1));
+    }
+
+    void guiLokiGiaDang(VXLChienBinh nguoiDung, VXLChienBinh mucTieu) {
+        this.guiTungNguoi(chienBinh -> {
+            if (mucTieu.nguoiChoi == null) {
+                chienBinh.nguoiChoi.dichVu.guiLokiGiaDang(
+                        nguoiDung.chiSo, mucTieu.chiSo);
+                return;
+            }
+            chienBinh.nguoiChoi.dichVu.guiLokiGiaDang(
+                    nguoiDung.chiSo, mucTieu.chiSo,
+                    mucTieu.nguoiChoi.head, mucTieu.nguoiChoi.leg,
+                    mucTieu.nguoiChoi.body, mucTieu.nguoiChoi.wp,
+                    mucTieu.nguoiChoi.hat, mucTieu.nguoiChoi.wing,
+                    mucTieu.nguoiChoi.avenger, mucTieu.hp, mucTieu.mauToiDa);
+        });
+    }
+
+    void guiDiemRoiSkill(byte chiSoNguoiDung, byte loaiDan, short[] cacX,
+            short[] cacY) {
+        this.guiTungNguoi(chienBinh -> chienBinh.nguoiChoi.dichVu.guiSkillHawkeye(
+                chiSoNguoiDung, loaiDan, cacX, cacY));
+    }
+
+    void guiThemBanSaoUltron(VXLChienBinh banSao, byte chiSoChu) {
+        this.guiTungNguoi(chienBinh -> chienBinh.nguoiChoi.dichVu.guiThemBanSaoUltron(
+                banSao, chiSoChu));
     }
 
     private void guiTungNguoi(HanhDongGui hanhDong) {

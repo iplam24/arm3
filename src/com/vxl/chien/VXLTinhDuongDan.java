@@ -28,9 +28,15 @@ final class VXLTinhDuongDan {
     }
 
     VXLTinhDuongDan(VXLQuanLyBanDo banDo, VXLChienBinh[] chienBinhs) {
+        this(banDo, chienBinhs, null);
+    }
+
+    VXLTinhDuongDan(VXLQuanLyBanDo banDo, VXLChienBinh[] chienBinhs,
+            VXLHeThongDan.BoKiemTraVungVoiRong boKiemTraVungVoiRong) {
         this.banDo = banDo;
         this.chienBinhs = chienBinhs;
-        this.heThongDan = new VXLHeThongDan(banDo, this::timChiSoMucTieuTaiDiem);
+        this.heThongDan = new VXLHeThongDan(banDo, this::timChiSoMucTieuTaiDiem,
+                boKiemTraVungVoiRong);
     }
 
     short[][] tao(short batDauX, short batDauY, short goc, byte luc) {

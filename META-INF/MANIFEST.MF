@@ -1,0 +1,11 @@
+Manifest-Version: 1.0
+Ant-Version: Apache Ant 1.9.7
+Created-By: 1.8.0_291-b10 (Oracle Corporation)
+MIDlet-1: ARM3 Mobile,/icon.png,coreLG.MyMidlet
+MIDlet-Vendor: VXL ARM3
+MIDlet-Version: 3.7.3
+MIDlet-Name: ARM3 Mobile
+MicroEdition-Configuration: CLDC-1.1
+MicroEdition-Profile: MIDP-2.1
+MIDlet-Description: ARM3 client for Android J2ME Loader
+

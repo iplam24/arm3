@@ -2,6 +2,7 @@ package com.vxl.chien;
 
 import com.vxl.mang.VXLTinNhan;
 import com.vxl.mohinh.VXLNguoiChoi;
+import com.vxl.loi.VXLQuanLyMayChu;
 import com.vxl.vatpham.VXLVatPham;
 import java.io.IOException;
 
@@ -50,6 +51,9 @@ final class VXLXuLyVatPhamTrongTran {
         chienBinh.daDungVatPhamTrongLuot = true;
         nguoiChoi.tieuThuVatPhamTrongBalo(viTri[0]);
         this.tranDau.phatDungVatPham(chienBinh, vatPham.mau.gioiTinh, vatPham.mau.iconID);
+        VXLQuanLyMayChu.log("[ITEM] use player=" + chienBinh.ten
+                + " item=" + vatPham.ma + " effect="
+                + Byte.toUnsignedInt(vatPham.mau.gioiTinh));
         this.tranDau.kiemTraKetThuc();
         return true;
     }
@@ -66,6 +70,7 @@ final class VXLXuLyVatPhamTrongTran {
                 chienBinh.heSoDiChuyen = 200;
                 return true;
             case 224:
+                chienBinh.luotTangHinh = Math.max(chienBinh.luotTangHinh, 2);
                 return true;
             case 225:
                 chienBinh.luotNgungGio = Math.max(chienBinh.luotNgungGio, 3);
@@ -84,9 +89,6 @@ final class VXLXuLyVatPhamTrongTran {
                 return true;
             case 257:
                 return chienBinh.nguoiChoi != null && chienBinh.nguoiChoi.kichHoatNhanDoiKinhNghiem();
-            case 258:
-                this.noBomTuSat(chienBinh);
-                return true;
             case 296:
                 chienBinh.heSoTangNo = Math.max(chienBinh.heSoTangNo, 150);
                 return true;
@@ -140,20 +142,6 @@ final class VXLXuLyVatPhamTrongTran {
         }
         this.tranDau.phatCapNhatMau(chienBinh);
         return true;
-    }
-
-    private void noBomTuSat(VXLChienBinh nguoiDung) throws IOException {
-        for (VXLChienBinh mucTieu : this.tranDau.layDanhSachChienBinh()) {
-            if (mucTieu == null || mucTieu == nguoiDung || mucTieu.chet) {
-                continue;
-            }
-            int dx = mucTieu.x - nguoiDung.x;
-            int dy = mucTieu.y - nguoiDung.y;
-            if (dx * dx + dy * dy <= 220 * 220) {
-                this.tranDau.satThuong(nguoiDung, mucTieu, Math.max(mucTieu.mauToiDa, nguoiDung.tanCong * 3), true, true, false);
-            }
-        }
-        this.tranDau.satThuong(nguoiDung, nguoiDung, nguoiDung.mauToiDa, true, true, false);
     }
 
     private int[] timVatPhamTrongBalo(VXLNguoiChoi nguoiChoi, int yeuCau) {
