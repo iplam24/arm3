@@ -15,7 +15,6 @@ import java.util.Set;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
-import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -875,18 +874,9 @@ public class VXLQuanLyChien {
     }
 
     private void taoGioMoi() {
-        ThreadLocalRandom ngauNhien = ThreadLocalRandom.current();
-        byte gioMoiX = this.gioX;
-        byte gioMoiY = this.gioY;
-        for (int lan = 0; lan < 4 && gioMoiX == this.gioX && gioMoiY == this.gioY; lan++) {
-            gioMoiX = (byte)ngauNhien.nextInt(-4, 5);
-            gioMoiY = (byte)ngauNhien.nextInt(-1, 2);
-        }
-        if (gioMoiX == 0 && gioMoiY == 0) {
-            gioMoiX = (byte)(ngauNhien.nextBoolean() ? 2 : -2);
-        }
-        this.gioX = gioMoiX;
-        this.gioY = gioMoiY;
+        VXLGioChienDau.HuongGio gioMoi = VXLGioChienDau.taoMoi(this.gioX, this.gioY);
+        this.gioX = gioMoi.x();
+        this.gioY = gioMoi.y();
     }
 
     void phatDiChuyen(VXLChienBinh daDiChuyen) {

@@ -24,7 +24,10 @@ import java.util.Set;
 public final class VXLHeThongDan {
     private static final double HE_SO_TOC_DO = 0.85;
     private static final double TRONG_LUC = 0.33;
-    private static final double HE_SO_GIO = 0.0035;
+    private static final double HE_SO_GIO = 0.008;
+    private static final double DO_NHAY_GIO_TOI_THIEU = 0.35;
+    private static final double DO_NHAY_GIO_TOI_DA = 1.25;
+    private static final double HE_SO_GIO_THEO_KHUNG = 1.5;
     private static final double KHOANG_CACH_DAU_SUNG = 30.0;
     private static final double DO_CAO_DAU_SUNG = 17.0;
     public static final short KHONG_CO_VA_CHAM_DIA_HINH = Short.MIN_VALUE;
@@ -452,8 +455,9 @@ public final class VXLHeThongDan {
         double yHienTai = (double)batDauY - 17.0 - Math.sin(radian) * 30.0;
         double vanTocX = Math.cos(radian) * (double)lucBan * vatLy.heSoTocDoTheoKhung();
         double vanTocY = -Math.sin(radian) * (double)lucBan * vatLy.heSoTocDoTheoKhung();
-        double giaTocX = (double)gioX * vatLy.heSoGioTheoKhung();
-        double giaTocY = vatLy.giaTocTrongLucTheoKhung() + (double)gioY * vatLy.heSoGioTheoKhung();
+        double heSoGioTheoKhung = VXLHeThongDan.tinhHeSoGioTheoKhung(vatLy);
+        double giaTocX = (double)gioX * heSoGioTheoKhung;
+        double giaTocY = vatLy.giaTocTrongLucTheoKhung() - (double)gioY * heSoGioTheoKhung;
         ArrayList<Short> cacDiemX = new ArrayList<Short>();
         ArrayList<Short> cacDiemY = new ArrayList<Short>();
         ArrayList<Integer> cacMucTieu = new ArrayList<Integer>();
@@ -614,7 +618,7 @@ public final class VXLHeThongDan {
         double trongLuong = Math.max(0.25, vatLy.trongLuong());
         double tocDo = (double)Math.max(8, Byte.toUnsignedInt(luc)) * 0.85 / Math.sqrt(trongLuong);
         double trongLuc = 0.33 * Math.sqrt(trongLuong) * vatLy.heSoTrongLuc();
-        double heSoGio = 0.0035 * vatLy.heSoGio() / trongLuong;
+        double heSoGio = VXLHeThongDan.tinhHeSoGio(vatLy);
         double xGoc = batDauX;
         double yGoc = batDauY;
         if (dungDauSung) {
@@ -668,8 +672,9 @@ public final class VXLHeThongDan {
         short[] ys = new short[gioiHanDiem];
         double xHienTai = batDauX;
         double yHienTai = batDauY;
-        double giaTocX = (double)gioX * vatLy.heSoGioTheoKhung();
-        double giaTocY = vatLy.giaTocTrongLucTheoKhung() + (double)gioY * vatLy.heSoGioTheoKhung();
+        double heSoGioTheoKhung = VXLHeThongDan.tinhHeSoGioTheoKhung(vatLy);
+        double giaTocX = (double)gioX * heSoGioTheoKhung;
+        double giaTocY = vatLy.giaTocTrongLucTheoKhung() - (double)gioY * heSoGioTheoKhung;
         int doDai = 1;
         int xTruoc = batDauX;
         int yTruoc = batDauY;
@@ -715,7 +720,7 @@ public final class VXLHeThongDan {
         double vanTocX = Math.cos(radian) * tocDoBan;
         double vanTocY = -Math.sin(radian) * tocDoBan;
         double giaTocTrongLuc = 0.66 * Math.sqrt(trongLuong) * hoSoDan.heSoTrongLuc();
-        double heSoGio = 0.007 * hoSoDan.heSoGio() / trongLuong;
+        double heSoGio = 2.0 * VXLHeThongDan.tinhHeSoGio(hoSoDan.vatLy());
         double giaTocGioX = (double)gioX * heSoGio;
         double giaTocGioY = (double)(-gioY) * heSoGio;
         double xHienTai = (double)batDauX + Math.cos(radian) * 30.0;
@@ -813,7 +818,7 @@ public final class VXLHeThongDan {
         double vanTocX = Math.cos(radian) * tocDoBan;
         double vanTocY = -Math.sin(radian) * tocDoBan;
         double giaTocTrongLuc = 0.66 * Math.sqrt(trongLuong) * hoSoDan.heSoTrongLuc();
-        double heSoGio = 0.007 * hoSoDan.heSoGio() / trongLuong;
+        double heSoGio = 2.0 * VXLHeThongDan.tinhHeSoGio(hoSoDan.vatLy());
         double giaTocGioX = (double)gioX * heSoGio;
         double giaTocGioY = (double)(-gioY) * heSoGio;
         double xThuVe = batDauX;
@@ -1077,6 +1082,22 @@ public final class VXLHeThongDan {
             ketQua += 360;
         }
         return (short)ketQua;
+    }
+
+    private static double tinhHeSoGio(VXLHoSoDan.VatLy vatLy) {
+        if (vatLy.heSoGio() <= 0.0) {
+            return 0.0;
+        }
+        double trongLuong = Math.max(0.25, vatLy.trongLuong());
+        double doNhayGio = Math.max(DO_NHAY_GIO_TOI_THIEU, Math.min(DO_NHAY_GIO_TOI_DA, vatLy.heSoGio()));
+        return HE_SO_GIO * doNhayGio / trongLuong;
+    }
+
+    private static double tinhHeSoGioTheoKhung(VXLHoSoDan.VatLy vatLy) {
+        if (vatLy.heSoGioTheoKhung() <= 0.0) {
+            return 0.0;
+        }
+        return vatLy.heSoGioTheoKhung() * HE_SO_GIO_THEO_KHUNG;
     }
 
     @FunctionalInterface

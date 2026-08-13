@@ -5,6 +5,7 @@ import com.vxl.chien.VXLCauHinhVatPhamChienDau;
 import com.vxl.chien.VXLDiaHinhPhatBan;
 import com.vxl.chien.VXLChienBinh;
 import com.vxl.chien.VXLHeThongDan;
+import com.vxl.chien.VXLGioChienDau;
 import com.vxl.chien.VXLHangDoiNapDan;
 import com.vxl.chien.VXLHoSoDan;
 import com.vxl.chien.VXLKyNangAvenger;
@@ -1193,18 +1194,9 @@ public final class VXLQuanLyLuyenTap {
     }
 
     private void taoGioMoi() {
-        ThreadLocalRandom ngauNhien = ThreadLocalRandom.current();
-        byte gioMoiX = this.gioX;
-        byte gioMoiY = this.gioY;
-        for (int lan = 0; lan < 4 && gioMoiX == this.gioX && gioMoiY == this.gioY; lan++) {
-            gioMoiX = (byte)ngauNhien.nextInt(-4, 5);
-            gioMoiY = (byte)ngauNhien.nextInt(-1, 2);
-        }
-        if (gioMoiX == 0 && gioMoiY == 0) {
-            gioMoiX = (byte)(ngauNhien.nextBoolean() ? 2 : -2);
-        }
-        this.gioX = gioMoiX;
-        this.gioY = gioMoiY;
+        VXLGioChienDau.HuongGio gioMoi = VXLGioChienDau.taoMoi(this.gioX, this.gioY);
+        this.gioX = gioMoi.x();
+        this.gioY = gioMoi.y();
         this.tinhDuongDan.capNhatGio(this.gioX, this.gioY);
     }
 
@@ -1327,6 +1319,8 @@ public final class VXLQuanLyLuyenTap {
                 continue;
             }
             this.phienQuanY[chiSoPhienQuan] = yMoi;
+            this.nguoiChoi.dichVu.guiBayLuyenTap(
+                    (byte)(chiSoPhienQuan + 1), x, yMoi);
             if (yMoi >= chieuCaoBanDo - 1) {
                 this.mauPhienQuan[chiSoPhienQuan] = 0;
                 this.phienQuanDaChet[chiSoPhienQuan] = true;

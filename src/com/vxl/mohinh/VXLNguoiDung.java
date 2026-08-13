@@ -98,8 +98,8 @@ public class VXLNguoiDung {
                     return null;
                 }
                 String matKhauDaLuu = res.getString("password");
-                matKhauDangNhap = chuanHoaMatKhauKhach(tenDangNhap, matKhau, matKhauDaLuu);
-                if (!VXLMaHoaMatKhau.khop(matKhauDangNhap, matKhauDaLuu)) {
+                matKhauDangNhap = timMatKhauKhop(tenDangNhap, matKhau, matKhauDaLuu);
+                if (matKhauDangNhap == null) {
                     us.dichVu.moHopThoaiOK("Tài khoản hoặc mật khẩu không chính xác.");
                     return null;
                 }
@@ -144,6 +144,19 @@ public class VXLNguoiDung {
         return matKhau;
     }
 
+    private static String timMatKhauKhop(String tenDangNhap, String matKhau, String matKhauDaLuu) {
+        String matKhauDangNhap = chuanHoaMatKhauKhach(tenDangNhap, matKhau, matKhauDaLuu);
+        if (VXLMaHoaMatKhau.khop(matKhauDangNhap, matKhauDaLuu)) {
+            return matKhauDangNhap;
+        }
+        String matKhauKieuCu = matKhau.trim().toLowerCase(Locale.ROOT);
+        if (!matKhauKieuCu.equals(matKhauDangNhap)
+                && VXLMaHoaMatKhau.khop(matKhauKieuCu, matKhauDaLuu)) {
+            return matKhauKieuCu;
+        }
+        return null;
+    }
+
     private static boolean laBiDanhMatKhauKhach(String tenDangNhap, String matKhau) {
         return tenDangNhap.startsWith("nvn_") && "a".equals(matKhau);
     }
@@ -173,7 +186,7 @@ public class VXLNguoiDung {
             return "Thông tin đăng ký không hợp lệ.";
         }
         String tenMoi = tenDangNhap.trim().toLowerCase(Locale.ROOT);
-        String matKhauMoi = matKhau.trim().toLowerCase(Locale.ROOT);
+        String matKhauMoi = matKhau;
         String tenAo = tenDangNhapAo == null ? "" : tenDangNhapAo.trim();
         if (tenMoi.length() < 5 || tenMoi.length() > 32) {
             return "Tên đăng nhập phải từ 5 đến 32 ký tự.";
@@ -181,7 +194,7 @@ public class VXLNguoiDung {
         if (!tenMoi.matches("[a-z0-9_]+")) {
             return "Tên đăng nhập chỉ gồm chữ thường, số và dấu gạch dưới.";
         }
-        if (matKhauMoi.isEmpty() || !VXLMaHoaMatKhau.coDoDaiHopLe(matKhauMoi)) {
+        if (matKhauMoi.isBlank() || !VXLMaHoaMatKhau.coDoDaiHopLe(matKhauMoi)) {
             return "Mật khẩu phải từ 1 đến 72 byte UTF-8.";
         }
         String matKhauDaMaHoa = VXLMaHoaMatKhau.maHoa(matKhauMoi);

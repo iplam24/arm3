@@ -1171,7 +1171,14 @@ implements IVXLDichVuGame {
         if (loaiDan == 17 || loaiDan == 19) {
             ds.writeByte(Math.max(4, Byte.toUnsignedInt(lucTach)));
         }
+        if (loaiDan == 14 || loaiDan == 40) {
+            ds.writeByte(goc);
+            ds.writeByte(lucBan);
+        } else if (loaiDan == 44 || loaiDan == 45 || loaiDan == 47) {
+            ds.writeByte(goc);
+        }
         ds.writeByte(soPhat <= 0 ? 1 : soPhat);
+
         ds.writeByte(cacDuongX.length);
         for (int quyDao = 0; quyDao < cacDuongX.length; quyDao++) {
             ds.writeShort(cacDuongX[quyDao].length);
