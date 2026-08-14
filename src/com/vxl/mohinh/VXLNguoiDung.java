@@ -145,9 +145,14 @@ public class VXLNguoiDung {
                 return null;
             }
             if (user != null) {
-                us.dichVu.moHopThoaiOK("Tài khoản này đang được đăng nhập ở nơi khác.");
-                user.khach.guiMaPhien(0);
-                return null;
+                user.thongBao("Tai khoan da dang nhap o thiet bi khac. Ket noi cu da bi ngat.");
+                try {
+                    user.dongKetNoi();
+                }
+                catch (RuntimeException ex) {
+                    Logger.getLogger(VXLNguoiDung.class.getName()).log(Level.WARNING,
+                            "Khong the dong phien dang nhap cu cua tai khoan " + us.tenDangNhap + ".", ex);
+                }
             }
             return us;
         }

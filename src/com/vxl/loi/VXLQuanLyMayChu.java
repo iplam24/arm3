@@ -175,12 +175,12 @@ public class VXLQuanLyMayChu {
 
     private static void loadDataCaptionLevel() {
         try (java.sql.Connection conn = VXLCoSoDuLieu.getConnection();
-             PreparedStatement stmt = conn.prepareStatement("SELECT * FROM `caption_levels`");
+             PreparedStatement stmt = conn.prepareStatement("SELECT * FROM `caption_levels` ORDER BY `id`");
              ResultSet res = stmt.executeQuery()) {
             while (res.next()) {
                 int kinhNghiem = res.getInt("exp");
                 String ten = res.getString("name");
-                short icon = res.getShort("icon");
+                short icon = chuanHoaBieuTuongCap(res.getShort("icon"));
                 int ma = res.getInt("id");
                 VXLTieuDeCap cap = new VXLTieuDeCap();
                 cap.kinhNghiem = kinhNghiem;
@@ -192,6 +192,13 @@ public class VXLQuanLyMayChu {
         catch (SQLException | RuntimeException ex) {
             Logger.getLogger(VXLQuanLyMayChu.class.getName()).log(Level.SEVERE, null, ex);
         }
+    }
+
+    private static short chuanHoaBieuTuongCap(short icon) {
+        if (icon >= 1300 && icon <= 1304) {
+            return (short)(1248 + icon - 1300);
+        }
+        return icon;
     }
 
     private static void loadDataPart() {
@@ -456,7 +463,11 @@ public class VXLQuanLyMayChu {
             ByteArrayOutputStream dos = new ByteArrayOutputStream();
             DataOutputStream ds = new DataOutputStream(dos);
             ds.writeByte(VXLTieuDeCap.levels.size());
-            for (VXLTieuDeCap cap : VXLTieuDeCap.levels.values()) {
+            for (int ma = 0; ma < VXLTieuDeCap.levels.size(); ma++) {
+                VXLTieuDeCap cap = VXLTieuDeCap.levels.get(ma);
+                if (cap == null) {
+                    throw new IOException("Thieu caption_levels id=" + ma);
+                }
                 ds.writeUTF(cap.ten);
                 ds.writeInt(cap.kinhNghiem);
                 ds.writeShort(cap.icon);

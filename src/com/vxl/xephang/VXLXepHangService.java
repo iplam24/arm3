@@ -85,7 +85,7 @@ public final class VXLXepHangService {
     }
 
     private static List<HangNguoiChoi> docNguoiChoi() throws Exception {
-        String sql = "SELECT p.id,p.name,p.cup,p.stats_json,p.equipped_json,COALESCE(c.icon_id,-1) clan_icon "
+        String sql = "SELECT p.id,p.name,p.cup,p.stats_json,p.equipped_json,COALESCE(c.icon_id,0) clan_icon "
                 + "FROM players p LEFT JOIN clan_members cm ON cm.player_id=p.id "
                 + "LEFT JOIN clans c ON c.id=cm.clan_id";
         List<HangNguoiChoi> ketQua = new ArrayList<>();

@@ -39,7 +39,7 @@ public final class VXLBaoTriMayChu {
         if (dangBaoTri && !nguoiDungMoi.laQuanTri()) {
             return nguoiDungMoi;
         }
-        return VXLNguoiDung.users.putIfAbsent(khoaNguoiDung, nguoiDungMoi);
+        return VXLNguoiDung.users.put(khoaNguoiDung, nguoiDungMoi);
     }
 
     public static synchronized String bat(String tenQuanTri, String lyDoMoi) {

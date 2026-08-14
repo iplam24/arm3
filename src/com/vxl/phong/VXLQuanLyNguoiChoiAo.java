@@ -31,10 +31,7 @@ final class VXLQuanLyNguoiChoiAo {
 
     void boSungChoTran(VXLQuanLyChien tranDau, boolean cheDoCamTu, VXLNguoiChoi chuPhong,
             VXLPhong phong, byte maBan, int gioiHanNguoiChoi) throws IOException {
-        if (cheDoCamTu) {
-            return;
-        }
-        this.themBotTheoElo(tranDau, chuPhong, phong, maBan, gioiHanNguoiChoi);
+        // Khong tu dong them bot vao phong pvp
     }
 
     void xoa(VXLNguoiChoi chuPhong) {
