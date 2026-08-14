@@ -124,6 +124,13 @@ final class VXLDieuKhienBotTranDau {
         }
         VXLChienBinh mucTieu = this.timMucTieuGanNhat(bot);
         VXLKetQuaDan ketQua = null;
+        if (this.tranDau.laCheDoBoss()) {
+            System.out.println("[BOT-BOSS] be=" + bot.chiSo + " tgt="
+                    + (mucTieu == null ? -1 : mucTieu.chiSo) + " wp=" + bot.maVuKhi
+                    + " x=" + bot.x + " y=" + bot.y + " d="
+                    + (mucTieu == null ? -1 : (mucTieu.x - bot.x)) + ","
+                    + (mucTieu == null ? -1 : (mucTieu.y - bot.y)));
+        }
         if (mucTieu == null) {
             System.out.println("[BOT] " + bot.ten + " không tìm thấy mục tiêu, bỏ lượt.");
         }
@@ -135,8 +142,9 @@ final class VXLDieuKhienBotTranDau {
                             bot.maVuKhi, (byte)0);
             byte luc;
             short goc;
-            if (this.tranDau.laCheDoCamTu()) {
-                boolean banGocCao = ThreadLocalRandom.current().nextInt(100)
+            if (this.tranDau.laCheDoCamTu() || this.tranDau.laCheDoBoss()) {
+                boolean banGocCao = this.tranDau.laCheDoCamTu()
+                        && ThreadLocalRandom.current().nextInt(100)
                         < TI_LE_PHIEN_QUAN_BAN_GOC_CAO;
                 VXLTinhDuongDan.CachBanBot cachBan = this.tinhDuongDan.timCachBanBot(
                         bot, mucTieu, loaiDan, this.tranDau.layGioX(),
@@ -173,7 +181,7 @@ final class VXLDieuKhienBotTranDau {
             } else if (bot.laBanSaoUltron()) {
                 this.tranDau.chuyenLuotBotSauHanhDong(bot,
                         TRE_SAU_DAN_BAN_SAO_ULTRON);
-            } else if (this.tranDau.laCheDoCamTu()) {
+            } else if (this.tranDau.laCheDoCamTu() || this.tranDau.laCheDoBoss()) {
                 this.tranDau.chuyenLuotBotSauPhatBan(bot, ketQua);
             } else {
                 this.tranDau.sangLuot(bot.chiSo);

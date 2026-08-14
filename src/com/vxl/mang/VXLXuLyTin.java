@@ -1,6 +1,6 @@
 package com.vxl.mang;
 
-// Vũ Xuân Lâm đẹp trai VCL
+// VÃƒâ€¦Ã‚Â© XuÃƒÆ’Ã‚Â¢n LÃƒÆ’Ã‚Â¢m Ãƒâ€žÃ¢â‚¬ËœÃƒÂ¡Ã‚ÂºÃ‚Â¹p trai VCL
 import com.vxl.cuahang.VXLCuaHang;
 import com.vxl.clan.VXLClanService;
 import com.vxl.xephang.VXLXepHangService;
@@ -25,7 +25,7 @@ implements IVXLXuLyTin {
             try {
                 byte lenh = mss.layLenh();
                 if (!this.laLenhTruocDangNhap(lenh) && !this.khach.daDangNhap()) {
-                    throw new IllegalStateException("Lenh " + lenh + " yêu cầu đăng nhập.");
+                    throw new IllegalStateException("Lenh " + lenh + " yÃƒÆ’Ã‚Âªu cÃƒÂ¡Ã‚ÂºÃ‚Â§u Ãƒâ€žÃ¢â‚¬ËœÃƒâ€žÃ†â€™ng nhÃƒÂ¡Ã‚ÂºÃ‚Â­p.");
                 }
                 if (this.lenhCanNhanVat(lenh) && (this.khach.user == null || this.khach.user.nguoiChoi == null)) {
                     VXLQuanLyMayChu.log("Bo qua lenh " + lenh + " khi nhan vat chua san sang: " + this.khach.moTa());
@@ -208,6 +208,8 @@ implements IVXLXuLyTin {
                     case -47:
                         if (VXLMenuQuanTri.laMenuDangCho(this.khach.user.nguoiChoi)) {
                             VXLMenuQuanTri.xuLyMenu(this.khach.user.nguoiChoi, mss);
+                        } else if (com.vxl.nhapvai.VXLMenuSiQuan.laMenuDangCho(this.khach.user.nguoiChoi)) {
+                            com.vxl.nhapvai.VXLMenuSiQuan.xuLyMenu(this.khach.user.nguoiChoi, mss);
                         } else {
                             VXLDichVuNgocTrangBi.xuLyMenu(this.khach.user.nguoiChoi, mss);
                         }
@@ -233,7 +235,7 @@ implements IVXLXuLyTin {
                         break;
                     case 83:
                         this.khach.user.nguoiChoi.vaoLuyenTap();
-                        System.out.println("Client gửi lệnh vào luyện tập");
+                        System.out.println("Client gÃƒÂ¡Ã‚Â»Ã‚Â­i lÃƒÂ¡Ã‚Â»Ã¢â‚¬Â¡nh vÃƒÆ’Ã‚Â o luyÃƒÂ¡Ã‚Â»Ã¢â‚¬Â¡n tÃƒÂ¡Ã‚ÂºÃ‚Â­p");
                         break;
                     case 21:
                         if (this.khach.user.nguoiChoi.inTraining) {
@@ -274,6 +276,36 @@ implements IVXLXuLyTin {
                                 + " training=" + this.khach.user.nguoiChoi.inTraining);
                         this.khach.user.nguoiChoi.handleTrainingClientReady();
                         break;
+                    case 123: // giftcode
+                        if (this.khach.user != null && this.khach.user.nguoiChoi != null) {
+                            try {
+                                String code = mss.boDoc().readUTF();
+                                com.vxl.giftcode.VXLGiftcodeService.GiftResult res =
+                                        com.vxl.giftcode.VXLGiftcodeService.redeem(this.khach.user.getUserId(), code);
+                                if (res.success) {
+                                    if (res.gold > 0) this.khach.user.nguoiChoi.updateGold(res.gold);
+                                    if (res.gem > 0) this.khach.user.nguoiChoi.updateGem(res.gem);
+                                    if (res.items != null && !res.items.isEmpty()) {
+                                        StringBuilder sb = new StringBuilder(res.message);
+                                        if (res.gold > 0) sb.append("\n+").append(res.gold).append(" vàng");
+                                        if (res.gem > 0) sb.append("\n+").append(res.gem).append(" ngọc");
+                                        for (com.vxl.giftcode.VXLGiftcodeService.GiftItem gi : res.items) {
+                                            com.vxl.vatpham.VXLVatPham vp = new com.vxl.vatpham.VXLVatPham(gi.id);
+                                            vp.soLuong = gi.quantity;
+                                            this.khach.user.nguoiChoi.themVatPhamVaoTui(vp);
+                                            String tenVp = vp.mau != null ? vp.mau.ten : ("Vật phẩm #" + gi.id);
+                                            sb.append("\n+").append(gi.quantity).append(" ").append(tenVp);
+                                        }
+                                        this.khach.user.dichVu.moHopThoaiOK(sb.toString());
+                                        break;
+                                    }
+                                }
+                                this.khach.user.dichVu.moHopThoaiOK(res.message);
+                            } catch (Exception ex) {
+                                Logger.getLogger(VXLXuLyTin.class.getName()).log(Level.WARNING, "Giftcode error", ex);
+                            }
+                        }
+                        break;
                     default:
                         if (mss.layLenh() != -98) {
                             System.out.println("CMD: " + mss.layLenh());
@@ -282,7 +314,7 @@ implements IVXLXuLyTin {
                 }
             }
             catch (Exception ex) {
-                Logger.getLogger(VXLXuLyTin.class.getName()).log(Level.WARNING, "Gói tin không hợp lệ, lệnh=" + mss.layLenh() + " từ " + this.khach.moTa(), ex);
+                Logger.getLogger(VXLXuLyTin.class.getName()).log(Level.WARNING, "GÃƒÆ’Ã‚Â³i tin khÃƒÆ’Ã‚Â´ng hÃƒÂ¡Ã‚Â»Ã‚Â£p lÃƒÂ¡Ã‚Â»Ã¢â‚¬Â¡, lÃƒÂ¡Ã‚Â»Ã¢â‚¬Â¡nh=" + mss.layLenh() + " tÃƒÂ¡Ã‚Â»Ã‚Â« " + this.khach.moTa(), ex);
                 this.khach.dongTin();
             }
         }
@@ -353,16 +385,18 @@ implements IVXLXuLyTin {
 
     @Override
     public void khiKetNoiLoi() {
-        System.out.println("Client " + this.khach.ma + ": Kết nối thất bại!");
+        System.out.println("Client " + this.khach.ma + ": KÃƒÂ¡Ã‚ÂºÃ‚Â¿t nÃƒÂ¡Ã‚Â»Ã¢â‚¬Ëœi thÃƒÂ¡Ã‚ÂºÃ‚Â¥t bÃƒÂ¡Ã‚ÂºÃ‚Â¡i!");
     }
 
     @Override
     public void khiMatKetNoi() {
-        System.out.println("Client " + this.khach.ma + ": Mất kết nối!");
+        System.out.println("Client " + this.khach.ma + ": MÃƒÂ¡Ã‚ÂºÃ‚Â¥t kÃƒÂ¡Ã‚ÂºÃ‚Â¿t nÃƒÂ¡Ã‚Â»Ã¢â‚¬Ëœi!");
     }
 
     @Override
     public void khiKetNoiThanhCong() {
-        System.out.println("Client " + this.khach.ma + ": Kết nối thành công!");
+        System.out.println("Client " + this.khach.ma + ": KÃƒÂ¡Ã‚ÂºÃ‚Â¿t nÃƒÂ¡Ã‚Â»Ã¢â‚¬Ëœi thÃƒÆ’Ã‚Â nh cÃƒÆ’Ã‚Â´ng!");
     }
 }
+
+

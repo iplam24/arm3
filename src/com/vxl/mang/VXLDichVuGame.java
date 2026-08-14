@@ -43,6 +43,10 @@ implements IVXLDichVuGame {
         this.nguoiChoi = nguoiChoi;
     }
 
+    public VXLPhien layKhach() {
+        return this.khach;
+    }
+
     public void ping() throws IOException {
         VXLTinNhan ms = new VXLTinNhan(-102);
         this.guiTin(ms);

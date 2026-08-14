@@ -1,6 +1,6 @@
 package com.vxl.mohinh;
 
-// Code by Lọ Thánh Chí Tôn
+// Code by LÃ¡Â»Â ThÃƒÂ¡nh ChÃƒÂ­ TÃƒÂ´n
 import java.io.IOException;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -32,7 +32,7 @@ public class VXLNguoiDung {
     public static final ConcurrentMap<String, VXLNguoiDung> users = new ConcurrentHashMap<>();
     private VXLPhien khach;
     public VXLDichVuGame dichVu;
-    private int user_id;
+    private int user_id; public int getUserId(){ return user_id; }
     private String tenDangNhap;
     private String matKhau;
     private boolean ban;
@@ -81,7 +81,7 @@ public class VXLNguoiDung {
         }
         catch (IOException ex) {
             Logger.getLogger(VXLNguoiDung.class.getName()).log(Level.FINE,
-                    "Không thể gửi thông báo tới người dùng.", ex);
+                    "KhÃƒÂ´ng thÃ¡Â»Æ’ gÃ¡Â»Â­i thÃƒÂ´ng bÃƒÂ¡o tÃ¡Â»â€ºi ngÃ†Â°Ã¡Â»Âi dÃƒÂ¹ng.", ex);
         }
     }
 
@@ -114,20 +114,20 @@ public class VXLNguoiDung {
             stmt.setString(1, tenDangNhap);
             try (ResultSet res = stmt.executeQuery()) {
                 if (!res.next()) {
-                    us.dichVu.moHopThoaiOK("Tài khoản hoặc mật khẩu không chính xác.");
+                    us.dichVu.moHopThoaiOK("TÃƒÂ i khoÃ¡ÂºÂ£n hoÃ¡ÂºÂ·c mÃ¡ÂºÂ­t khÃ¡ÂºÂ©u khÃƒÂ´ng chÃƒÂ­nh xÃƒÂ¡c.");
                     return null;
                 }
                 String matKhauDaLuu = res.getString("password");
                 matKhauDangNhap = timMatKhauKhop(tenDangNhap, matKhau, matKhauDaLuu);
                 if (matKhauDangNhap == null) {
-                    us.dichVu.moHopThoaiOK("Tài khoản hoặc mật khẩu không chính xác.");
+                    us.dichVu.moHopThoaiOK("TÃƒÂ i khoÃ¡ÂºÂ£n hoÃ¡ÂºÂ·c mÃ¡ÂºÂ­t khÃ¡ÂºÂ©u khÃƒÂ´ng chÃƒÂ­nh xÃƒÂ¡c.");
                     return null;
                 }
                 us.user_id = res.getInt("id");
                 us.ban = res.getBoolean("is_banned");
                 us.quanTri = res.getBoolean("is_admin");
                 if (us.ban) {
-                    us.dichVu.moHopThoaiOK("Tài khoản đã bị khóa.");
+                    us.dichVu.moHopThoaiOK("TÃƒÂ i khoÃ¡ÂºÂ£n Ã„â€˜ÃƒÂ£ bÃ¡Â»â€¹ khÃƒÂ³a.");
                     return null;
                 }
                 if (VXLBaoTriMayChu.dangBaoTri() && !us.quanTri) {
@@ -158,13 +158,13 @@ public class VXLNguoiDung {
         }
         catch (Exception ex) {
             Logger.getLogger(VXLNguoiDung.class.getName()).log(Level.WARNING,
-                    "Không thể đăng nhập tài khoản " + tenDangNhap + ".", ex);
+                    "KhÃƒÂ´ng thÃ¡Â»Æ’ Ã„â€˜Ã„Æ’ng nhÃ¡ÂºÂ­p tÃƒÂ i khoÃ¡ÂºÂ£n " + tenDangNhap + ".", ex);
             try {
-                us.dichVu.moHopThoaiOK("Không thể đăng nhập lúc này.");
+                us.dichVu.moHopThoaiOK("KhÃƒÂ´ng thÃ¡Â»Æ’ Ã„â€˜Ã„Æ’ng nhÃ¡ÂºÂ­p lÃƒÂºc nÃƒÂ y.");
             }
             catch (Exception guiLoi) {
                 Logger.getLogger(VXLNguoiDung.class.getName()).log(Level.FINE,
-                        "Không thể gửi thông báo lỗi đăng nhập.", guiLoi);
+                        "KhÃƒÂ´ng thÃ¡Â»Æ’ gÃ¡Â»Â­i thÃƒÂ´ng bÃƒÂ¡o lÃ¡Â»â€”i Ã„â€˜Ã„Æ’ng nhÃ¡ÂºÂ­p.", guiLoi);
             }
         }
         return null;
@@ -209,26 +209,26 @@ public class VXLNguoiDung {
         }
         catch (SQLException ex) {
             Logger.getLogger(VXLNguoiDung.class.getName()).log(Level.WARNING,
-                    "Không thể nâng cấp mật khẩu BCrypt cho tài khoản id=" + userId + ".", ex);
+                    "KhÃƒÂ´ng thÃ¡Â»Æ’ nÃƒÂ¢ng cÃ¡ÂºÂ¥p mÃ¡ÂºÂ­t khÃ¡ÂºÂ©u BCrypt cho tÃƒÂ i khoÃ¡ÂºÂ£n id=" + userId + ".", ex);
             return matKhauDaLuu;
         }
     }
 
     public static String dangKy(String tenDangNhap, String matKhau, String tenDangNhapAo) {
         if (tenDangNhap == null || matKhau == null) {
-            return "Thông tin đăng ký không hợp lệ.";
+            return "ThÃƒÂ´ng tin Ã„â€˜Ã„Æ’ng kÃƒÂ½ khÃƒÂ´ng hÃ¡Â»Â£p lÃ¡Â»â€¡.";
         }
         String tenMoi = tenDangNhap.trim().toLowerCase(Locale.ROOT);
         String matKhauMoi = matKhau;
         String tenAo = tenDangNhapAo == null ? "" : tenDangNhapAo.trim();
         if (tenMoi.length() < 5 || tenMoi.length() > 32) {
-            return "Tên đăng nhập phải từ 5 đến 32 ký tự.";
+            return "TÃƒÂªn Ã„â€˜Ã„Æ’ng nhÃ¡ÂºÂ­p phÃ¡ÂºÂ£i tÃ¡Â»Â« 5 Ã„â€˜Ã¡ÂºÂ¿n 32 kÃƒÂ½ tÃ¡Â»Â±.";
         }
         if (!tenMoi.matches("[a-z0-9_]+")) {
-            return "Tên đăng nhập chỉ gồm chữ thường, số và dấu gạch dưới.";
+            return "TÃƒÂªn Ã„â€˜Ã„Æ’ng nhÃ¡ÂºÂ­p chÃ¡Â»â€° gÃ¡Â»â€œm chÃ¡Â»Â¯ thÃ†Â°Ã¡Â»Âng, sÃ¡Â»â€˜ vÃƒÂ  dÃ¡ÂºÂ¥u gÃ¡ÂºÂ¡ch dÃ†Â°Ã¡Â»â€ºi.";
         }
         if (matKhauMoi.isBlank() || !VXLMaHoaMatKhau.coDoDaiHopLe(matKhauMoi)) {
-            return "Mật khẩu phải từ 1 đến 72 byte UTF-8.";
+            return "MÃ¡ÂºÂ­t khÃ¡ÂºÂ©u phÃ¡ÂºÂ£i tÃ¡Â»Â« 1 Ã„â€˜Ã¡ÂºÂ¿n 72 byte UTF-8.";
         }
         String matKhauDaMaHoa = VXLMaHoaMatKhau.maHoa(matKhauMoi);
         try (java.sql.Connection conn = VXLCoSoDuLieu.getConnection()) {
@@ -236,12 +236,12 @@ public class VXLNguoiDung {
             try {
                 if (taiKhoanTonTai(conn, tenMoi)) {
                     conn.rollback();
-                    return "Tên đăng nhập đã tồn tại.";
+                    return "TÃƒÂªn Ã„â€˜Ã„Æ’ng nhÃ¡ÂºÂ­p Ã„â€˜ÃƒÂ£ tÃ¡Â»â€œn tÃ¡ÂºÂ¡i.";
                 }
                 if (!tenAo.isEmpty()) {
                     if (!chuyenTaiKhoanKhach(conn, tenAo, tenMoi, matKhauDaMaHoa)) {
                         conn.rollback();
-                        return "Tài khoản khách không hợp lệ hoặc đã được đăng ký.";
+                        return "TÃƒÂ i khoÃ¡ÂºÂ£n khÃƒÂ¡ch khÃƒÂ´ng hÃ¡Â»Â£p lÃ¡Â»â€¡ hoÃ¡ÂºÂ·c Ã„â€˜ÃƒÂ£ Ã„â€˜Ã†Â°Ã¡Â»Â£c Ã„â€˜Ã„Æ’ng kÃƒÂ½.";
                     }
                 } else {
                     try (PreparedStatement stmt = conn.prepareStatement(
@@ -265,8 +265,8 @@ public class VXLNguoiDung {
         }
         catch (Exception ex) {
             Logger.getLogger(VXLNguoiDung.class.getName()).log(Level.WARNING,
-                    "Không thể đăng ký tài khoản " + tenMoi + ".", ex);
-            return "Không thể đăng ký lúc này.";
+                    "KhÃƒÂ´ng thÃ¡Â»Æ’ Ã„â€˜Ã„Æ’ng kÃƒÂ½ tÃƒÂ i khoÃ¡ÂºÂ£n " + tenMoi + ".", ex);
+            return "KhÃƒÂ´ng thÃ¡Â»Æ’ Ã„â€˜Ã„Æ’ng kÃƒÂ½ lÃƒÂºc nÃƒÂ y.";
         }
     }
 
@@ -318,7 +318,7 @@ public class VXLNguoiDung {
                 }
                 catch (IOException ex) {
                     Logger.getLogger(VXLNguoiDung.class.getName()).log(Level.FINE,
-                            "Không thể gửi thông báo bảo trì cho tài khoản khách.", ex);
+                            "KhÃƒÂ´ng thÃ¡Â»Æ’ gÃ¡Â»Â­i thÃƒÂ´ng bÃƒÂ¡o bÃ¡ÂºÂ£o trÃƒÂ¬ cho tÃƒÂ i khoÃ¡ÂºÂ£n khÃƒÂ¡ch.", ex);
                 }
                 return;
             }
@@ -341,7 +341,7 @@ public class VXLNguoiDung {
 
     public void taoNhanVat(VXLTinNhan ms) throws IOException {
         try {
-            String ten = ms.docUTF(20, "tên nhân vật").trim();
+            String ten = ms.docUTF(20, "tÃƒÂªn nhÃƒÂ¢n vÃ¡ÂºÂ­t").trim();
             short head = ms.boDoc().readShort();
             short leg = ms.boDoc().readShort();
             short body = ms.boDoc().readShort();
@@ -355,7 +355,7 @@ public class VXLNguoiDung {
             System.out.println("wp: " + weapon);
             System.out.println("hat: " + hat);
             if (ten.isEmpty()) {
-                this.dichVu.moHopThoaiOK("Tên không hợp lệ!");
+                this.dichVu.moHopThoaiOK("TÃƒÂªn khÃƒÂ´ng hÃ¡Â»Â£p lÃ¡Â»â€¡!");
                 return;
             }
             if (!laPartHopLe(ID_TEMPLATE_HEAD, head)
@@ -364,7 +364,7 @@ public class VXLNguoiDung {
                     || !laPartHopLe(ID_TEMPLATE_BALO, wing)
                     || !laPartHopLe(ID_TEMPLATE_WEAPON, weapon)
                     || !laPartHopLe(ID_TEMPLATE_HAT, hat)) {
-                this.dichVu.moHopThoaiOK("Dữ liệu tạo nhân vật không hợp lệ.");
+                this.dichVu.moHopThoaiOK("DÃ¡Â»Â¯ liÃ¡Â»â€¡u tÃ¡ÂºÂ¡o nhÃƒÂ¢n vÃ¡ÂºÂ­t khÃƒÂ´ng hÃ¡Â»Â£p lÃ¡Â»â€¡.");
                 return;
             }
             try (java.sql.Connection conn = VXLCoSoDuLieu.getConnection();
@@ -372,7 +372,7 @@ public class VXLNguoiDung {
                 stmt.setString(1, ten);
                 try (ResultSet res = stmt.executeQuery()) {
                     if (res.next()) {
-                        this.dichVu.moHopThoaiOK("Tên nhân vật đã tồn tại.");
+                        this.dichVu.moHopThoaiOK("TÃƒÂªn nhÃƒÂ¢n vÃ¡ÂºÂ­t Ã„â€˜ÃƒÂ£ tÃ¡Â»â€œn tÃ¡ÂºÂ¡i.");
                         return;
                     }
                 }
@@ -478,7 +478,7 @@ public class VXLNguoiDung {
                                 }
                             }
                             if (headId < 0 || legId < 0 || bodyId < 0 || wingId < 0 || maVuKhi < 0 || hatId < 0) {
-                                this.dichVu.moHopThoaiOK("Dữ liệu trang bị khởi tạo không hợp lệ.");
+                                this.dichVu.moHopThoaiOK("DÃ¡Â»Â¯ liÃ¡Â»â€¡u trang bÃ¡Â»â€¹ khÃ¡Â»Å¸i tÃ¡ÂºÂ¡o khÃƒÂ´ng hÃ¡Â»Â£p lÃ¡Â»â€¡.");
                                 return;
                             }
                             VXLVatPham vatPham = new VXLVatPham(headId);
@@ -513,7 +513,7 @@ public class VXLNguoiDung {
                             this.nguoiChoi.dichVu.datNguoiChoi(this.nguoiChoi);
                             this.khach.guiThongTin();
                         } else {
-                            this.dichVu.moHopThoaiOK("Có lỗi xảy ra.");
+                            this.dichVu.moHopThoaiOK("CÃƒÂ³ lÃ¡Â»â€”i xÃ¡ÂºÂ£y ra.");
                         }
                     }
                 }
@@ -572,7 +572,7 @@ public class VXLNguoiDung {
                             this.nguoiChoi.pointAdd[i] = Short.parseShort(pointAdds.get(i).toString());
                         }
                         catch (RuntimeException valueEx) {
-                            Logger.getLogger(VXLNguoiDung.class.getName()).log(Level.WARNING, "Bỏ qua pointAdd bị lỗi tại vị trí " + i, valueEx);
+                            Logger.getLogger(VXLNguoiDung.class.getName()).log(Level.WARNING, "BÃ¡Â»Â qua pointAdd bÃ¡Â»â€¹ lÃ¡Â»â€”i tÃ¡ÂºÂ¡i vÃ¡Â»â€¹ trÃƒÂ­ " + i, valueEx);
                         }
                     }
                 }
@@ -584,11 +584,11 @@ public class VXLNguoiDung {
                         if (vatPham.chiSo >= 0 && vatPham.chiSo < this.nguoiChoi.itemBag.length) {
                             this.nguoiChoi.itemBag[vatPham.chiSo] = vatPham;
                         } else {
-                            Logger.getLogger(VXLNguoiDung.class.getName()).warning("Bỏ qua vật phẩm trong túi có chỉ số lỗi: " + vatPham.chiSo);
+                            Logger.getLogger(VXLNguoiDung.class.getName()).warning("BÃ¡Â»Â qua vÃ¡ÂºÂ­t phÃ¡ÂºÂ©m trong tÃƒÂºi cÃƒÂ³ chÃ¡Â»â€° sÃ¡Â»â€˜ lÃ¡Â»â€”i: " + vatPham.chiSo);
                         }
                     }
                     catch (RuntimeException itemEx) {
-                        Logger.getLogger(VXLNguoiDung.class.getName()).log(Level.WARNING, "Bỏ qua vật phẩm trong túi bị lỗi.", itemEx);
+                        Logger.getLogger(VXLNguoiDung.class.getName()).log(Level.WARNING, "BÃ¡Â»Â qua vÃ¡ÂºÂ­t phÃ¡ÂºÂ©m trong tÃƒÂºi bÃ¡Â»â€¹ lÃ¡Â»â€”i.", itemEx);
                     }
                 }
                 JSONArray bodys = docJsonArray(res.getString("equipped_json"));
@@ -596,14 +596,14 @@ public class VXLNguoiDung {
                     try {
                         VXLVatPham vatPham = new VXLVatPham((JSONObject)bodys.get(i));
                         if (vatPham.chiSo < 0 || vatPham.chiSo >= this.nguoiChoi.itemBody.length) {
-                            Logger.getLogger(VXLNguoiDung.class.getName()).warning("Bỏ qua trang bị có chỉ số lỗi: " + vatPham.chiSo);
+                            Logger.getLogger(VXLNguoiDung.class.getName()).warning("BÃ¡Â»Â qua trang bÃ¡Â»â€¹ cÃƒÂ³ chÃ¡Â»â€° sÃ¡Â»â€˜ lÃ¡Â»â€”i: " + vatPham.chiSo);
                             continue;
                         }
                         int soOBalo = -1;
                         if (vatPham.mau.loai == 4) {
                             soOBalo = vatPham.getParamById(13);
                             if (soOBalo < 0 || soOBalo > this.nguoiChoi.itemBag.length) {
-                                throw new IllegalArgumentException("Số ô ba lô không hợp lệ: " + soOBalo);
+                                throw new IllegalArgumentException("SÃ¡Â»â€˜ ÃƒÂ´ ba lÃƒÂ´ khÃƒÂ´ng hÃ¡Â»Â£p lÃ¡Â»â€¡: " + soOBalo);
                             }
                         }
                         this.nguoiChoi.itemBody[vatPham.chiSo] = vatPham;
@@ -616,7 +616,7 @@ public class VXLNguoiDung {
                         }
                     }
                     catch (RuntimeException itemEx) {
-                        Logger.getLogger(VXLNguoiDung.class.getName()).log(Level.WARNING, "Bỏ qua trang bị bị lỗi.", itemEx);
+                        Logger.getLogger(VXLNguoiDung.class.getName()).log(Level.WARNING, "BÃ¡Â»Â qua trang bÃ¡Â»â€¹ bÃ¡Â»â€¹ lÃ¡Â»â€”i.", itemEx);
                     }
                 }
                 JSONArray balos = docJsonArray(res.getString("pocket_json"));
@@ -629,7 +629,7 @@ public class VXLNguoiDung {
                         }
                     }
                     catch (RuntimeException valueEx) {
-                        Logger.getLogger(VXLNguoiDung.class.getName()).log(Level.WARNING, "Bỏ qua ô ba lô bị lỗi tại vị trí " + i, valueEx);
+                        Logger.getLogger(VXLNguoiDung.class.getName()).log(Level.WARNING, "BÃ¡Â»Â qua ÃƒÂ´ ba lÃƒÂ´ bÃ¡Â»â€¹ lÃ¡Â»â€”i tÃ¡ÂºÂ¡i vÃ¡Â»â€¹ trÃƒÂ­ " + i, valueEx);
                     }
                 }
                 JSONArray box = docJsonArray(res.getString("storage_json"));
@@ -639,11 +639,11 @@ public class VXLNguoiDung {
                         if (vatPham.chiSo >= 0 && vatPham.chiSo < this.nguoiChoi.itemBox.length) {
                             this.nguoiChoi.itemBox[vatPham.chiSo] = vatPham;
                         } else {
-                            Logger.getLogger(VXLNguoiDung.class.getName()).warning("Bỏ qua vật phẩm trong rương có chỉ số lỗi: " + vatPham.chiSo);
+                            Logger.getLogger(VXLNguoiDung.class.getName()).warning("BÃ¡Â»Â qua vÃ¡ÂºÂ­t phÃ¡ÂºÂ©m trong rÃ†Â°Ã†Â¡ng cÃƒÂ³ chÃ¡Â»â€° sÃ¡Â»â€˜ lÃ¡Â»â€”i: " + vatPham.chiSo);
                         }
                     }
                     catch (RuntimeException itemEx) {
-                        Logger.getLogger(VXLNguoiDung.class.getName()).log(Level.WARNING, "Bỏ qua vật phẩm trong rương bị lỗi.", itemEx);
+                        Logger.getLogger(VXLNguoiDung.class.getName()).log(Level.WARNING, "BÃ¡Â»Â qua vÃ¡ÂºÂ­t phÃ¡ÂºÂ©m trong rÃ†Â°Ã†Â¡ng bÃ¡Â»â€¹ lÃ¡Â»â€”i.", itemEx);
                     }
                 }
                 VXLTienTrinhDucLo.capNhat(this.nguoiChoi);
@@ -653,8 +653,8 @@ public class VXLNguoiDung {
         }
         catch (Exception ex) {
             this.nguoiChoi = null;
-            Logger.getLogger(VXLNguoiDung.class.getName()).log(Level.SEVERE, "Không thể tải dữ liệu người chơi.", ex);
-            throw new IllegalStateException("Không thể tải dữ liệu người chơi.", ex);
+            Logger.getLogger(VXLNguoiDung.class.getName()).log(Level.SEVERE, "KhÃƒÂ´ng thÃ¡Â»Æ’ tÃ¡ÂºÂ£i dÃ¡Â»Â¯ liÃ¡Â»â€¡u ngÃ†Â°Ã¡Â»Âi chÃ†Â¡i.", ex);
+            throw new IllegalStateException("KhÃƒÂ´ng thÃ¡Â»Æ’ tÃ¡ÂºÂ£i dÃ¡Â»Â¯ liÃ¡Â»â€¡u ngÃ†Â°Ã¡Â»Âi chÃ†Â¡i.", ex);
         }
     }
 
@@ -665,7 +665,7 @@ public class VXLNguoiDung {
             }
         }
         catch (IOException ex) {
-            Logger.getLogger(VXLNguoiDung.class.getName()).log(Level.WARNING, "Không thể gửi bảng thành tích.", ex);
+            Logger.getLogger(VXLNguoiDung.class.getName()).log(Level.WARNING, "KhÃƒÂ´ng thÃ¡Â»Æ’ gÃ¡Â»Â­i bÃ¡ÂºÂ£ng thÃƒÂ nh tÃƒÂ­ch.", ex);
         }
     }
     public void close() {
@@ -708,7 +708,7 @@ public class VXLNguoiDung {
             return value instanceof JSONObject ? (JSONObject)value : new JSONObject();
         }
         catch (RuntimeException ex) {
-            Logger.getLogger(VXLNguoiDung.class.getName()).log(Level.WARNING, "Bỏ qua JSON object bị lỗi.", ex);
+            Logger.getLogger(VXLNguoiDung.class.getName()).log(Level.WARNING, "BÃ¡Â»Â qua JSON object bÃ¡Â»â€¹ lÃ¡Â»â€”i.", ex);
             return new JSONObject();
         }
     }
@@ -722,8 +722,9 @@ public class VXLNguoiDung {
             return value instanceof JSONArray ? (JSONArray)value : new JSONArray();
         }
         catch (RuntimeException ex) {
-            Logger.getLogger(VXLNguoiDung.class.getName()).log(Level.WARNING, "Bỏ qua JSON array bị lỗi.", ex);
+            Logger.getLogger(VXLNguoiDung.class.getName()).log(Level.WARNING, "BÃ¡Â»Â qua JSON array bÃ¡Â»â€¹ lÃ¡Â»â€”i.", ex);
             return new JSONArray();
         }
     }
 }
+

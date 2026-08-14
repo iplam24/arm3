@@ -585,7 +585,7 @@ public class VXLQuanLyChien {
             }
         }
         catch (IOException ex) {
-            Logger.getLogger(VXLQuanLyChien.class.getName()).log(Level.WARNING, "Lỗi xử lý sau khi người chơi rời trận.", ex);
+            Logger.getLogger(VXLQuanLyChien.class.getName()).log(Level.WARNING, "Lá»—i xá»­ lÃ½ sau khi ngÆ°á»i chÆ¡i rá»i tráº­n.", ex);
         }
     }
 
@@ -907,7 +907,7 @@ public class VXLQuanLyChien {
             this.phatTin.guiKetThucTangHinh(mucTieu);
             VXLQuanLyMayChu.log("[ITEM-STATUS] invisible absorbed target=" + mucTieu.ten);
             if (mucTieu.coPhien()) {
-                mucTieu.nguoiChoi.startOKDlg2("Vô hình đã giúp bạn né phát bắn.");
+                mucTieu.nguoiChoi.startOKDlg2("VÃ´ hÃ¬nh Ä‘Ã£ giÃºp báº¡n nÃ© phÃ¡t báº¯n.");
             }
             return 0;
         }
@@ -924,8 +924,8 @@ public class VXLQuanLyChien {
         mucTieu.hp = Math.max(0, mucTieu.hp - satThuong);
         int satThuongThucTe = mauTruoc - mucTieu.hp;
 
-        System.out.println(String.format("[FIGHT-DAMAGE] %s -> %s | Sát thương gốc=%d | Giáp=%d | Sát thương thực=%d | HP: %d -> %d/%d",
-                (nguon != null ? nguon.ten : "Môi trường"), mucTieu.ten, satThuongGoc, mucTieu.giap,
+        System.out.println(String.format("[FIGHT-DAMAGE] %s -> %s | SÃ¡t thÆ°Æ¡ng gá»‘c=%d | GiÃ¡p=%d | SÃ¡t thÆ°Æ¡ng thá»±c=%d | HP: %d -> %d/%d",
+                (nguon != null ? nguon.ten : "MÃ´i trÆ°á»ng"), mucTieu.ten, satThuongGoc, mucTieu.giap,
                 satThuongThucTe, mauTruoc, mucTieu.hp, mucTieu.mauToiDa));
 
         if (nguon != null && nguon != mucTieu) {

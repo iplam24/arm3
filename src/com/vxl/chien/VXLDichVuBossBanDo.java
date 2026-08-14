@@ -139,7 +139,7 @@ final class VXLDichVuBossBanDo {
             return;
         }
         short x = toaDo != null ? toaDo[0] : this.banDo.laySinhX(chiSo);
-        short y = toaDo != null ? toaDo[1] : this.banDo.laySinhY(chiSo);
+        short y = toaDo != null ? this.banDo.timViTriDat(toaDo[0], toaDo[1]) : this.banDo.laySinhY(chiSo);
         int maHieuLuc = ma != 0 ? ma : -9000 - chiSo;
         VXLChienBinh boss = new VXLChienBinh((byte)chiSo, x, y, ten, maHieuLuc,
                 maVuKhi, (byte)0, camTu, loaiBossDacBiet,

@@ -245,7 +245,7 @@ public class VXLNguoiChoi {
     }
 
     public void npcDaiUy() throws IOException {
-        VXLQuanLyPhong.guiPhongTisEmpty(this);
+        com.vxl.nhapvai.VXLMenuSiQuan.mo(this);
     }
 
     public void doiKhu(VXLTinNhan ms) throws IOException {
@@ -904,6 +904,45 @@ public class VXLNguoiChoi {
         if (VXLBoLenhQuanTri.xuLy(this, noiDung)) {
             return;
         }
+        if (noiDung != null) {
+            String trimmed = noiDung.trim();
+            String lower = trimmed.toLowerCase();
+            if (lower.startsWith("/code ") || lower.startsWith("/giftcode ")
+                    || lower.equals("/code") || lower.equals("/giftcode")) {
+                String code = "";
+                if (lower.startsWith("/code ")) {
+                    code = trimmed.substring(6).trim();
+                } else if (lower.startsWith("/giftcode ")) {
+                    code = trimmed.substring(10).trim();
+                }
+                if (code.isEmpty()) {
+                    this.moHopThoaiOK("Cú pháp không hợp lệ. Hãy gõ:\n/code <mã>\nVí dụ: /code VIP2026");
+                    return;
+                }
+                com.vxl.giftcode.VXLGiftcodeService.GiftResult res =
+                        com.vxl.giftcode.VXLGiftcodeService.redeem(this.layUserId(), code);
+                if (res.success) {
+                    if (res.gold > 0) this.updateGold(res.gold);
+                    if (res.gem > 0) this.updateGem(res.gem);
+                    if (res.items != null && !res.items.isEmpty()) {
+                        StringBuilder sb = new StringBuilder(res.message);
+                        if (res.gold > 0) sb.append("\n+").append(res.gold).append(" vàng");
+                        if (res.gem > 0) sb.append("\n+").append(res.gem).append(" ngọc");
+                        for (com.vxl.giftcode.VXLGiftcodeService.GiftItem gi : res.items) {
+                            VXLVatPham vp = new VXLVatPham(gi.id);
+                            vp.soLuong = gi.quantity;
+                            this.themVatPhamVaoTui(vp);
+                            String tenVp = vp.mau != null ? vp.mau.ten : ("Vật phẩm #" + gi.id);
+                            sb.append("\n+").append(gi.quantity).append(" ").append(tenVp);
+                        }
+                        this.moHopThoaiOK(sb.toString());
+                        return;
+                    }
+                }
+                this.moHopThoaiOK(res.message);
+                return;
+            }
+        }
         VXLTinNhan mss = new VXLTinNhan(-98);
         DataOutputStream ds = mss.boGhi();
         ds.writeByte(3);
@@ -911,6 +950,13 @@ public class VXLNguoiChoi {
         ds.writeUTF(noiDung);
         ds.flush();
         this.zone.guiTatCaNguoiChoi(mss);
+    }
+
+    public int layUserId() {
+        if (this.dichVu != null && this.dichVu.layKhach() != null && this.dichVu.layKhach().user != null) {
+            return this.dichVu.layKhach().user.getUserId();
+        }
+        return this.ma;
     }
 
     public void diChuyen(VXLTinNhan ms) throws IOException {
