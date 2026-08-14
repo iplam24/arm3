@@ -226,7 +226,19 @@ fi
 echo "Không có JAR sẵn, tiến hành build/chạy bằng Gradle..."
 prepare_gradle
 
-exec "$GRADLE_BIN" \
-    --no-daemon \
-    run \
+"$GRADLE_BIN" --no-daemon --console=plain clean jar
+
+if ! find_server_jar; then
+    echo "ERROR: Build completed but vxldeptrai.jar was not found." >&2
+    exit 1
+fi
+
+echo "Starting built JAR: $SERVER_JAR"
+exec "$JAVA_CMD" \
+    -Dfile.encoding=UTF-8 \
+    -Dstdout.encoding=UTF-8 \
+    -Dstderr.encoding=UTF-8 \
+    -Xms512M \
+    -Xmx1024M \
+    -jar "$SERVER_JAR" \
     "$@"
