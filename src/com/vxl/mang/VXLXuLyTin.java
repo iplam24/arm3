@@ -208,8 +208,8 @@ implements IVXLXuLyTin {
                     case -47:
                         if (VXLMenuQuanTri.laMenuDangCho(this.khach.user.nguoiChoi)) {
                             VXLMenuQuanTri.xuLyMenu(this.khach.user.nguoiChoi, mss);
-                        } else if (com.vxl.nhapvai.VXLMenuSiQuan.laMenuDangCho(this.khach.user.nguoiChoi)) {
-                            com.vxl.nhapvai.VXLMenuSiQuan.xuLyMenu(this.khach.user.nguoiChoi, mss);
+                        } else if (com.vxl.nhapvai.VXLMenuDoiTruong.laMenuDangCho(this.khach.user.nguoiChoi)) {
+                            com.vxl.nhapvai.VXLMenuDoiTruong.xuLyMenu(this.khach.user.nguoiChoi, mss);
                         } else {
                             VXLDichVuNgocTrangBi.xuLyMenu(this.khach.user.nguoiChoi, mss);
                         }
