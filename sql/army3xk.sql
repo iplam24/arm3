@@ -3444,7 +3444,7 @@ ALTER TABLE `player_mails`
 -- AUTO_INCREMENT cho bảng `sprite_images`
 --
 ALTER TABLE `sprite_images`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2229;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2249;
 
 -- Custom seed: T?c M? R?m
 INSERT INTO `avatar_parts` (`id`, `type`, `part_data`)
@@ -3471,13 +3471,13 @@ ON DUPLICATE KEY UPDATE
 
 -- Custom seed: Tóc Zoro
 INSERT INTO `avatar_parts` (`id`, `type`, `part_data`)
-VALUES (285, 0, '[{"dx":-4,"dy":-3,"id":2193},{"dx":-4,"dy":-3,"id":2194},{"dx":-4,"dy":-5,"id":2195},{"dx":-3,"dy":-2,"id":2196}]')
+VALUES (285, 0, '[{"dx":-1,"dy":0,"id":2229},{"dx":-1,"dy":0,"id":2230},{"dx":-1,"dy":-2,"id":2231},{"dx":0,"dy":1,"id":2232}]')
 ON DUPLICATE KEY UPDATE
     `type` = VALUES(`type`),
     `part_data` = VALUES(`part_data`);
 
 INSERT INTO `items` (`id`, `name`, `type`, `gender`, `description`, `level`, `icon`, `part_id`, `strength_required`, `buy_gold`, `buy_gem`, `options`)
-VALUES (415, CONVERT(0x54C3B363205A6F726F USING utf8mb4), 0, -1, CONVERT(0x4B69E1BB83752074C3B363205A6F726F USING utf8mb4), 1, 2193, 285, 0, 100000, 0, '[]')
+VALUES (415, CONVERT(0x54C3B363205A6F726F USING utf8mb4), 0, -1, CONVERT(0x4B69E1BB83752074C3B363205A6F726F USING utf8mb4), 1, 2229, 285, 0, 100000, 0, '[]')
 ON DUPLICATE KEY UPDATE
     `name` = VALUES(`name`),
     `type` = VALUES(`type`),
@@ -3493,7 +3493,7 @@ ON DUPLICATE KEY UPDATE
 
 -- Custom seed: Toc Nami
 INSERT INTO `avatar_parts` (`id`, `type`, `part_data`)
-VALUES (286, 0, '[{"dx":-4,"dy":-3,"id":2197},{"dx":-4,"dy":-4,"id":2198},{"dx":-4,"dy":-6,"id":2199},{"dx":-3,"dy":-3,"id":2200}]')
+VALUES (286, 0, '[{"dx":-2,"dy":-2,"id":2197},{"dx":-2,"dy":-3,"id":2198},{"dx":-2,"dy":-5,"id":2199},{"dx":-1,"dy":-2,"id":2200}]')
 ON DUPLICATE KEY UPDATE
     `type` = VALUES(`type`),
     `part_data` = VALUES(`part_data`);
@@ -3515,7 +3515,7 @@ ON DUPLICATE KEY UPDATE
 
 -- Custom seed: Toc Usopp
 INSERT INTO `avatar_parts` (`id`, `type`, `part_data`)
-VALUES (287, 0, '[{"dx":-4,"dy":-2,"id":2201},{"dx":-4,"dy":-3,"id":2202},{"dx":-4,"dy":-5,"id":2203},{"dx":-3,"dy":-2,"id":2204}]')
+VALUES (287, 0, '[{"dx":-2,"dy":0,"id":2201},{"dx":-2,"dy":-1,"id":2202},{"dx":-2,"dy":-3,"id":2203},{"dx":-1,"dy":0,"id":2204}]')
 ON DUPLICATE KEY UPDATE
     `type` = VALUES(`type`),
     `part_data` = VALUES(`part_data`);
@@ -3537,13 +3537,13 @@ ON DUPLICATE KEY UPDATE
 
 -- Custom seed: Toc Sanji
 INSERT INTO `avatar_parts` (`id`, `type`, `part_data`)
-VALUES (288, 0, '[{"dx":-4,"dy":-1,"id":2205},{"dx":-4,"dy":-2,"id":2206},{"dx":-4,"dy":-3,"id":2207},{"dx":-3,"dy":-1,"id":2208}]')
+VALUES (288, 0, '[{"dx":-1,"dy":-1,"id":2233},{"dx":-1,"dy":-2,"id":2234},{"dx":-1,"dy":-3,"id":2235},{"dx":0,"dy":-1,"id":2236}]')
 ON DUPLICATE KEY UPDATE
     `type` = VALUES(`type`),
     `part_data` = VALUES(`part_data`);
 
 INSERT INTO `items` (`id`, `name`, `type`, `gender`, `description`, `level`, `icon`, `part_id`, `strength_required`, `buy_gold`, `buy_gem`, `options`)
-VALUES (418, CONVERT(0x54C3B3632053616E6A69 USING utf8mb4), 0, -1, CONVERT(0x4B69E1BB83752074C3B3632053616E6A69 USING utf8mb4), 1, 2205, 288, 0, 100000, 0, '[]')
+VALUES (418, CONVERT(0x54C3B3632053616E6A69 USING utf8mb4), 0, -1, CONVERT(0x4B69E1BB83752074C3B3632053616E6A69 USING utf8mb4), 1, 2233, 288, 0, 100000, 0, '[]')
 ON DUPLICATE KEY UPDATE
     `name` = VALUES(`name`),
     `type` = VALUES(`type`),
@@ -3559,7 +3559,7 @@ ON DUPLICATE KEY UPDATE
 
 -- Custom seed: Toc Chopper
 INSERT INTO `avatar_parts` (`id`, `type`, `part_data`)
-VALUES (289, 0, '[{"dx":-4,"dy":-1,"id":2209},{"dx":-4,"dy":-2,"id":2210},{"dx":-4,"dy":-3,"id":2211},{"dx":-3,"dy":0,"id":2212}]')
+VALUES (289, 0, '[{"dx":-1,"dy":0,"id":2209},{"dx":-1,"dy":-1,"id":2210},{"dx":-1,"dy":-2,"id":2211},{"dx":0,"dy":1,"id":2212}]')
 ON DUPLICATE KEY UPDATE
     `type` = VALUES(`type`),
     `part_data` = VALUES(`part_data`);
@@ -3581,7 +3581,7 @@ ON DUPLICATE KEY UPDATE
 
 -- Custom seed: Toc Robin
 INSERT INTO `avatar_parts` (`id`, `type`, `part_data`)
-VALUES (290, 0, '[{"dx":-3,"dy":-1,"id":2213},{"dx":-3,"dy":-2,"id":2214},{"dx":-3,"dy":-4,"id":2215},{"dx":-2,"dy":-2,"id":2216}]')
+VALUES (290, 0, '[{"dx":0,"dy":1,"id":2213},{"dx":0,"dy":0,"id":2214},{"dx":0,"dy":-2,"id":2215},{"dx":1,"dy":0,"id":2216}]')
 ON DUPLICATE KEY UPDATE
     `type` = VALUES(`type`),
     `part_data` = VALUES(`part_data`);
@@ -3603,13 +3603,13 @@ ON DUPLICATE KEY UPDATE
 
 -- Custom seed: Toc Franky
 INSERT INTO `avatar_parts` (`id`, `type`, `part_data`)
-VALUES (291, 0, '[{"dx":-3,"dy":-2,"id":2217},{"dx":-3,"dy":-4,"id":2218},{"dx":-3,"dy":-6,"id":2219},{"dx":-2,"dy":-3,"id":2220}]')
+VALUES (291, 0, '[{"dx":0,"dy":-2,"id":2237},{"dx":0,"dy":-4,"id":2238},{"dx":0,"dy":-6,"id":2239},{"dx":1,"dy":-3,"id":2240}]')
 ON DUPLICATE KEY UPDATE
     `type` = VALUES(`type`),
     `part_data` = VALUES(`part_data`);
 
 INSERT INTO `items` (`id`, `name`, `type`, `gender`, `description`, `level`, `icon`, `part_id`, `strength_required`, `buy_gold`, `buy_gem`, `options`)
-VALUES (421, CONVERT(0x54C3B363204672616E6B79 USING utf8mb4), 0, -1, CONVERT(0x4B69E1BB83752074C3B363204672616E6B79 USING utf8mb4), 1, 2217, 291, 0, 100000, 0, '[]')
+VALUES (421, CONVERT(0x54C3B363204672616E6B79 USING utf8mb4), 0, -1, CONVERT(0x4B69E1BB83752074C3B363204672616E6B79 USING utf8mb4), 1, 2237, 291, 0, 100000, 0, '[]')
 ON DUPLICATE KEY UPDATE
     `name` = VALUES(`name`),
     `type` = VALUES(`type`),
@@ -3625,13 +3625,13 @@ ON DUPLICATE KEY UPDATE
 
 -- Custom seed: Toc Brook
 INSERT INTO `avatar_parts` (`id`, `type`, `part_data`)
-VALUES (292, 0, '[{"dx":-3,"dy":-1,"id":2221},{"dx":-3,"dy":-1,"id":2222},{"dx":-3,"dy":-1,"id":2223},{"dx":-2,"dy":2,"id":2224}]')
+VALUES (292, 0, '[{"dx":0,"dy":-1,"id":2241},{"dx":0,"dy":-1,"id":2242},{"dx":0,"dy":-1,"id":2243},{"dx":1,"dy":2,"id":2244}]')
 ON DUPLICATE KEY UPDATE
     `type` = VALUES(`type`),
     `part_data` = VALUES(`part_data`);
 
 INSERT INTO `items` (`id`, `name`, `type`, `gender`, `description`, `level`, `icon`, `part_id`, `strength_required`, `buy_gold`, `buy_gem`, `options`)
-VALUES (422, CONVERT(0x54C3B3632042726F6F6B USING utf8mb4), 0, -1, CONVERT(0x4B69E1BB83752074C3B3632042726F6F6B USING utf8mb4), 1, 2221, 292, 0, 100000, 0, '[]')
+VALUES (422, CONVERT(0x54C3B3632042726F6F6B USING utf8mb4), 0, -1, CONVERT(0x4B69E1BB83752074C3B3632042726F6F6B USING utf8mb4), 1, 2241, 292, 0, 100000, 0, '[]')
 ON DUPLICATE KEY UPDATE
     `name` = VALUES(`name`),
     `type` = VALUES(`type`),
@@ -3647,13 +3647,13 @@ ON DUPLICATE KEY UPDATE
 
 -- Custom seed: Toc Jinbe
 INSERT INTO `avatar_parts` (`id`, `type`, `part_data`)
-VALUES (293, 0, '[{"dx":-3,"dy":-1,"id":2225},{"dx":-3,"dy":-1,"id":2226},{"dx":-3,"dy":-2,"id":2227},{"dx":-2,"dy":0,"id":2228}]')
+VALUES (293, 0, '[{"dx":-2,"dy":0,"id":2245},{"dx":-2,"dy":0,"id":2246},{"dx":-2,"dy":-1,"id":2247},{"dx":-1,"dy":1,"id":2248}]')
 ON DUPLICATE KEY UPDATE
     `type` = VALUES(`type`),
     `part_data` = VALUES(`part_data`);
 
 INSERT INTO `items` (`id`, `name`, `type`, `gender`, `description`, `level`, `icon`, `part_id`, `strength_required`, `buy_gold`, `buy_gem`, `options`)
-VALUES (423, CONVERT(0x54C3B363204A696E6265 USING utf8mb4), 0, -1, CONVERT(0x4B69E1BB83752074C3B363204A696E6265 USING utf8mb4), 1, 2225, 293, 0, 100000, 0, '[]')
+VALUES (423, CONVERT(0x54C3B363204A696E6265 USING utf8mb4), 0, -1, CONVERT(0x4B69E1BB83752074C3B363204A696E6265 USING utf8mb4), 1, 2245, 293, 0, 100000, 0, '[]')
 ON DUPLICATE KEY UPDATE
     `name` = VALUES(`name`),
     `type` = VALUES(`type`),

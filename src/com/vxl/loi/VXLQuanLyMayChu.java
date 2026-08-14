@@ -227,7 +227,7 @@ public class VXLQuanLyMayChu {
 
     private static void loadDataImage() {
         try (java.sql.Connection conn = VXLCoSoDuLieu.getConnection();
-             PreparedStatement stmt = conn.prepareStatement("SELECT * FROM `sprite_images`");
+             PreparedStatement stmt = conn.prepareStatement("SELECT * FROM `sprite_images` ORDER BY `id`");
              ResultSet res = stmt.executeQuery()) {
             while (res.next()) {
                 int ma = res.getInt("id");
@@ -500,8 +500,13 @@ public class VXLQuanLyMayChu {
         try {
             ByteArrayOutputStream dos = new ByteArrayOutputStream();
             DataOutputStream ds = new DataOutputStream(dos);
-            ds.writeShort(VXLAnhNho.smallImg.size());
-            for (VXLAnhNho small : VXLAnhNho.smallImg.values()) {
+            int soAnh = VXLAnhNho.smallImg.size();
+            ds.writeShort(soAnh);
+            for (int ma = 0; ma < soAnh; ma++) {
+                VXLAnhNho small = VXLAnhNho.smallImg.get(ma);
+                if (small == null) {
+                    throw new IOException("Thieu sprite_images id=" + ma);
+                }
                 ds.writeByte(small.maAnh);
                 ds.writeShort(small.x);
                 ds.writeShort(small.y);

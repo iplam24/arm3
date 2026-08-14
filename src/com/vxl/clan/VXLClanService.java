@@ -21,10 +21,13 @@ import java.util.concurrent.ThreadLocalRandom;
 public final class VXLClanService {
     private static final int SO_CLAN_TOI_DA = 30;
     private static final int SO_TIN_TOI_DA = 20;
-    private static final int SO_BIEU_TUONG = 24;
     private static final int SO_THANH_VIEN_MAC_DINH = 50;
     private static final int SO_VAT_PHAM_MOI_TRANG = 8;
     private static final byte MA_THUOC_TINH_TRANG_THAI = 31;
+    private static final int CLAN_LOGO_FIRST_IMAGE = 1617;
+    private static final int CLAN_LOGO_LAST_IMAGE = 1693;
+    private static final short CLAN_VIETNAM_IMAGE = 2128;
+    private static final VXLBieuTuongClan[] BIEU_TUONG_CLAN = taoDanhSachBieuTuongClan();
     private static final VXLVatPhamClan[] VAT_PHAM_CLAN = new VXLVatPhamClan[]{
         new VXLVatPhamClan((short)364, (byte)0, (byte)1, 100_000, 10, (byte)6, (short)5),
         new VXLVatPhamClan((short)365, (byte)1, (byte)2, 180_000, 18, (byte)7, (short)5),
@@ -310,6 +313,7 @@ public final class VXLClanService {
                 nguoiChoi.clanIcon = -1;
                 nguoiChoi.clanRole = 2;
                 guiThongTinClan(nguoiChoi);
+                capNhatNguoiChoiTaiSanh(nguoiChoi);
                 nguoiChoi.moHopThoaiOK(soThanhVien <= 1 ? "Đã giải tán clan." : "Đã rời clan.");
                 if (soThanhVien > 1) {
                     lamMoiClanOnline(clanCu);
@@ -781,9 +785,10 @@ public final class VXLClanService {
         ghi.writeByte(0);
         ghi.writeByte(1);
         ghi.writeByte(soBieuTuong);
-        for (int i = 1; i <= soBieuTuong; i++) {
-            ghi.writeShort(-i);
-            ghi.writeUTF("Màu " + i);
+        for (int i = 0; i < soBieuTuong; i++) {
+            VXLBieuTuongClan bieuTuong = BIEU_TUONG_CLAN[i];
+            ghi.writeShort(bieuTuong.ma());
+            ghi.writeUTF(bieuTuong.ten());
             ghi.writeInt(0);
             ghi.writeInt(0);
         }
@@ -792,6 +797,7 @@ public final class VXLClanService {
     }
 
     private static void taoClan(VXLNguoiChoi nguoiChoi, short bieuTuong, String ten) throws Exception {
+        bieuTuong = chuanHoaBieuTuong(bieuTuong);
         if (!bieuTuongMoKhoa(bieuTuong, 1)) {
             nguoiChoi.moHopThoaiOK("Biểu tượng clan không hợp lệ.");
             return;
@@ -854,6 +860,7 @@ public final class VXLClanService {
                 nguoiChoi.clanRole = 0;
                 nguoiChoi.dichVu.capNhat();
                 guiThongTinClan(nguoiChoi);
+                capNhatNguoiChoiTaiSanh(nguoiChoi);
                 nguoiChoi.moHopThoaiOK("Tạo clan " + ten + " thành công.");
             } catch (Exception ex) {
                 ketNoi.rollback();
@@ -867,6 +874,7 @@ public final class VXLClanService {
     }
 
     private static void capNhatClan(VXLNguoiChoi nguoiChoi, short bieuTuong, String khauHieu) throws Exception {
+        bieuTuong = chuanHoaBieuTuong(bieuTuong);
         if (!bieuTuongHopLe(bieuTuong)) {
             nguoiChoi.moHopThoaiOK("Biểu tượng clan không hợp lệ.");
             return;
@@ -1146,7 +1154,7 @@ public final class VXLClanService {
         VXLClan clan = new VXLClan();
         clan.ma = duLieu.getInt("id");
         clan.ten = chuoi(duLieu.getString("name"));
-        clan.bieuTuong = duLieu.getShort("icon_id");
+        clan.bieuTuong = chuanHoaBieuTuong(duLieu.getShort("icon_id"));
         clan.khauHieu = chuoi(duLieu.getString("slogan"));
         clan.maTruongClan = duLieu.getInt("leader_player_id");
         clan.tenTruongClan = chuoi(duLieu.getString("leader_name"));
@@ -1314,6 +1322,7 @@ public final class VXLClanService {
             try {
                 taiChoNguoiChoi(nguoiChoi);
                 guiThongTinClan(nguoiChoi);
+                capNhatNguoiChoiTaiSanh(nguoiChoi);
             } catch (Exception ex) {
                 VXLQuanLyMayChu.log("Khong the lam moi clan cho " + nguoiChoi.ten + ": " + ex.getMessage());
             }
@@ -1321,31 +1330,48 @@ public final class VXLClanService {
     }
 
     private static boolean bieuTuongHopLe(short bieuTuong) {
-        return bieuTuong <= -1 && bieuTuong >= -SO_BIEU_TUONG;
+        return chiSoBieuTuong(bieuTuong) >= 0;
     }
 
     private static boolean bieuTuongMoKhoa(short bieuTuong, int capClan) {
-        return bieuTuongHopLe(bieuTuong)
-                && Math.abs((int)bieuTuong) <= soBieuTuongMoKhoa(capClan);
+        int chiSo = chiSoBieuTuong(bieuTuong);
+        return chiSo >= 0 && chiSo < soBieuTuongMoKhoa(capClan);
     }
 
     private static int soBieuTuongMoKhoa(int capClan) {
-        if (capClan >= 20) {
-            return 24;
+        return BIEU_TUONG_CLAN.length;
+    }
+
+    private static VXLBieuTuongClan[] taoDanhSachBieuTuongClan() {
+        List<VXLBieuTuongClan> danhSach = new ArrayList<>();
+        for (int ma = CLAN_LOGO_FIRST_IMAGE; ma <= CLAN_LOGO_LAST_IMAGE; ma++) {
+            danhSach.add(new VXLBieuTuongClan((short)ma, "Bieu tuong clan " + (ma - CLAN_LOGO_FIRST_IMAGE + 1)));
         }
-        if (capClan >= 15) {
-            return 21;
+        danhSach.add(new VXLBieuTuongClan(CLAN_VIETNAM_IMAGE, "Co Viet Nam"));
+        return danhSach.toArray(VXLBieuTuongClan[]::new);
+    }
+
+    private static short chuanHoaBieuTuong(short bieuTuong) {
+        int chiSo = chiSoBieuTuong(bieuTuong);
+        return chiSo < 0 ? bieuTuong : BIEU_TUONG_CLAN[chiSo].ma();
+    }
+
+    private static int chiSoBieuTuong(short bieuTuong) {
+        if (bieuTuong <= -1 && bieuTuong >= -BIEU_TUONG_CLAN.length) {
+            return -bieuTuong - 1;
         }
-        if (capClan >= 10) {
-            return 18;
+        for (int i = 0; i < BIEU_TUONG_CLAN.length; i++) {
+            if (BIEU_TUONG_CLAN[i].ma() == bieuTuong) {
+                return i;
+            }
         }
-        if (capClan >= 5) {
-            return 14;
+        return -1;
+    }
+
+    private static void capNhatNguoiChoiTaiSanh(VXLNguoiChoi nguoiChoi) {
+        if (nguoiChoi != null && nguoiChoi.zone != null) {
+            nguoiChoi.zone.guiCapNhatNguoiChoi(nguoiChoi);
         }
-        if (capClan >= 3) {
-            return 10;
-        }
-        return 6;
     }
 
     private static int gioiHanByte(int giaTri) {
@@ -1391,5 +1417,8 @@ public final class VXLClanService {
     }
 
     private record VXLVatPhamClanDaMua(VXLVatPhamClan vatPham, boolean dangDung) {
+    }
+
+    private record VXLBieuTuongClan(short ma, String ten) {
     }
 }

@@ -112,6 +112,22 @@ public class VXLKhu {
         }
     }
 
+    public void guiCapNhatNguoiChoi(VXLNguoiChoi nguoiChoi) {
+        if (nguoiChoi == null || this.players_id.get(nguoiChoi.ma) != nguoiChoi) {
+            return;
+        }
+        for (VXLNguoiChoi nguoiNhan : this.players_id.values()) {
+            if (nguoiNhan == null || nguoiNhan.dichVu == null) {
+                continue;
+            }
+            try {
+                nguoiNhan.dichVu.vaoCho(nguoiChoi);
+            } catch (IOException ex) {
+                Logger.getLogger(VXLKhu.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+    }
+
     public void guiNguoiChoiRoiKhu(int chiSo) {
         for (VXLNguoiChoi pl : this.players_id.values()) {
             if (pl != null && pl.dichVu != null) {
