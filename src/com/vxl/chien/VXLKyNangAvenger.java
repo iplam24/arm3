@@ -243,8 +243,13 @@ public final class VXLKyNangAvenger {
         if (!this.laLoki() || nguoiDung == null || mucTieu == null) {
             return;
         }
-        this.avengerSaoChep = mucTieu.avengerDan;
-        this.vuKhiSaoChep = mucTieu.maVuKhi;
+        VXLKyNangAvenger kyNangMucTieu = mucTieu.kyNangAvenger;
+        this.avengerSaoChep = kyNangMucTieu != null
+                ? kyNangMucTieu.layAvengerDan(mucTieu.avengerDan)
+                : mucTieu.avengerDan;
+        this.vuKhiSaoChep = kyNangMucTieu != null
+                ? kyNangMucTieu.layVuKhi(mucTieu.maVuKhi)
+                : mucTieu.maVuKhi;
         nguoiDung.tanCong = Math.max(1, mucTieu.tanCong);
         nguoiDung.mauToiDa = Math.max(1, mucTieu.mauToiDa);
         nguoiDung.hp = Math.max(1, Math.min(nguoiDung.mauToiDa, mucTieu.hp));

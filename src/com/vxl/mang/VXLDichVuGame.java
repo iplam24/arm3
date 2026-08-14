@@ -1503,11 +1503,18 @@ implements IVXLDichVuGame {
 
     public void guiLokiGiaDang(byte chiSoNguoiDung, byte chiSoMucTieu)
             throws IOException {
+        this.guiLokiGiaDang(chiSoNguoiDung, chiSoMucTieu, (byte)-1, (byte)-1);
+    }
+
+    public void guiLokiGiaDang(byte chiSoNguoiDung, byte chiSoMucTieu,
+            byte loaiDan, byte nhomSung) throws IOException {
         VXLTinNhan ms = new VXLTinNhan(-91);
         DataOutputStream ds = ms.boGhi();
         ds.writeByte(0);
         ds.writeByte(chiSoNguoiDung);
         ds.writeByte(chiSoMucTieu);
+        ds.writeByte(loaiDan);
+        ds.writeByte(nhomSung);
         ds.flush();
         this.guiTin(ms);
     }
@@ -1515,6 +1522,14 @@ implements IVXLDichVuGame {
     public void guiLokiGiaDang(byte chiSoNguoiDung, byte chiSoMucTieu,
             short head, short leg, short body, short wp, short hat, short wing,
             byte avenger, int hp, int mauToiDa) throws IOException {
+        this.guiLokiGiaDang(chiSoNguoiDung, chiSoMucTieu, head, leg, body, wp,
+                hat, wing, avenger, hp, mauToiDa, (byte)-1, (byte)-1);
+    }
+
+    public void guiLokiGiaDang(byte chiSoNguoiDung, byte chiSoMucTieu,
+            short head, short leg, short body, short wp, short hat, short wing,
+            byte avenger, int hp, int mauToiDa, byte loaiDan, byte nhomSung)
+            throws IOException {
         VXLTinNhan ms = new VXLTinNhan(-91);
         DataOutputStream ds = ms.boGhi();
         ds.writeByte(0);
@@ -1529,6 +1544,8 @@ implements IVXLDichVuGame {
         ds.writeByte(avenger);
         ds.writeInt(Math.max(0, hp));
         ds.writeInt(Math.max(1, mauToiDa));
+        ds.writeByte(loaiDan);
+        ds.writeByte(nhomSung);
         ds.flush();
         this.guiTin(ms);
     }

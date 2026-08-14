@@ -744,11 +744,16 @@ public final class VXLQuanLyLuyenTap {
             VXLChienBinh phienQuan = this.taoHoSoPhienQuan(chiSoPhienQuan);
             kyNang.saoChepLoki(this.chiSoNguoiChoi, phienQuan);
             this.mauNguoiChoi = this.chiSoNguoiChoi.hp;
+            byte loaiDanSaoChep = VXLCauHinhVatPhamChienDau.layLoaiDanTheoVuKhi(
+                    this.vuKhiPhienQuanHienTai, (byte)0);
+            byte nhomSungSaoChep = VXLCauHinhVatPhamChienDau.layNhomSungClientTheoVuKhi(
+                    this.vuKhiPhienQuanHienTai);
             this.nguoiChoi.dichVu.guiLokiGiaDang((byte)0,
                     (byte)(chiSoPhienQuan + 1), DAU_PHIEN_QUAN,
                     QUAN_PHIEN_QUAN, AO_PHIEN_QUAN, this.vuKhiPhienQuanHienTai,
                     NON_PHIEN_QUAN, CANH_PHIEN_QUAN, (byte)0,
-                    this.mauPhienQuan[chiSoPhienQuan], this.mauToiDaPhienQuan);
+                    this.mauPhienQuan[chiSoPhienQuan], this.mauToiDaPhienQuan,
+                    loaiDanSaoChep, nhomSungSaoChep);
             this.nguoiChoi.dichVu.guiCapNhatMauLuyenTap((byte)0,
                     this.mauNguoiChoi, this.chiSoNguoiChoi.mauToiDa, (byte)0);
             return;

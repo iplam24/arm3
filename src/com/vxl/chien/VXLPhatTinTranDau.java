@@ -118,18 +118,32 @@ final class VXLPhatTinTranDau {
     }
 
     void guiLokiGiaDang(VXLChienBinh nguoiDung, VXLChienBinh mucTieu) {
+        byte avengerHieuLuc = nguoiDung.kyNangAvenger != null
+                ? nguoiDung.kyNangAvenger.layAvengerDan(nguoiDung.avengerDan)
+                : nguoiDung.avengerDan;
+        short vuKhiHieuLuc = nguoiDung.kyNangAvenger != null
+                ? nguoiDung.kyNangAvenger.layVuKhi(nguoiDung.maVuKhi)
+                : nguoiDung.maVuKhi;
+        byte loaiDanHieuLuc = avengerHieuLuc > 0
+                ? VXLCauHinhVatPhamChienDau.layLoaiDanTheoAvenger(avengerHieuLuc, (byte)0)
+                : VXLCauHinhVatPhamChienDau.layLoaiDanTheoVuKhi(vuKhiHieuLuc, (byte)0);
+        byte nhomSungHieuLuc = avengerHieuLuc > 0
+                ? (byte)(avengerHieuLuc + 10)
+                : VXLCauHinhVatPhamChienDau.layNhomSungClientTheoVuKhi(vuKhiHieuLuc);
         this.guiTungNguoi(chienBinh -> {
             if (mucTieu.nguoiChoi == null) {
                 chienBinh.nguoiChoi.dichVu.guiLokiGiaDang(
-                        nguoiDung.chiSo, mucTieu.chiSo);
+                        nguoiDung.chiSo, mucTieu.chiSo,
+                        loaiDanHieuLuc, nhomSungHieuLuc);
                 return;
             }
             chienBinh.nguoiChoi.dichVu.guiLokiGiaDang(
                     nguoiDung.chiSo, mucTieu.chiSo,
                     mucTieu.nguoiChoi.head, mucTieu.nguoiChoi.leg,
-                    mucTieu.nguoiChoi.body, mucTieu.nguoiChoi.wp,
+                    mucTieu.nguoiChoi.body, vuKhiHieuLuc,
                     mucTieu.nguoiChoi.hat, mucTieu.nguoiChoi.wing,
-                    mucTieu.nguoiChoi.avenger, mucTieu.hp, mucTieu.mauToiDa);
+                    avengerHieuLuc, mucTieu.hp, mucTieu.mauToiDa,
+                    loaiDanHieuLuc, nhomSungHieuLuc);
         });
     }
 

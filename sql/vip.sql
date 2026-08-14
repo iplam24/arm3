@@ -112,7 +112,7 @@ CREATE TABLE `avatar_parts` (
   `type` int NOT NULL,
   `part_data` text COLLATE utf8mb4_general_ci NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=284 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=294 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -561,7 +561,7 @@ CREATE TABLE `items` (
   `buy_gem` int NOT NULL,
   `options` text COLLATE utf8mb4_general_ci NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=414 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=424 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -766,7 +766,7 @@ CREATE TABLE `sprite_images` (
   `width` int NOT NULL,
   `height` int NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=2128 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=2229 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -842,6 +842,228 @@ LOCK TABLES `web_sessions` WRITE;
 INSERT INTO `web_sessions` VALUES (1,23,_binary '? \  \ =ϝI? \Z 葅pis9 NY \nΔ','2026-09-11 09:23:26','2026-08-12 09:24:01','2026-08-12 16:23:26');
 /*!40000 ALTER TABLE `web_sessions` ENABLE KEYS */;
 UNLOCK TABLES;
+-- Custom seed: T?c M? R?m
+INSERT INTO `avatar_parts` (`id`, `type`, `part_data`)
+VALUES (284, 0, '[{"dx":-4,"dy":-3,"id":2143},{"dx":-4,"dy":-4,"id":2144},{"dx":-4,"dy":-7,"id":2145},{"dx":-3,"dy":-6,"id":2146}]')
+ON DUPLICATE KEY UPDATE
+  `type` = VALUES(`type`),
+  `part_data` = VALUES(`part_data`);
+
+INSERT INTO `items` (`id`, `name`, `type`, `gender`, `description`, `level`, `icon`, `part_id`, `strength_required`, `buy_gold`, `buy_gem`, `options`)
+VALUES (414, CONVERT(0x54C3B363204DC5A92052C6A16D USING utf8mb4), 0, -1, CONVERT(0x4B69E1BB83752074C3B363206DC5A92072C6A16D207468E1BB9D69207472616E67 USING utf8mb4), 1, 2143, 284, 0, 100000, 0, '[]')
+ON DUPLICATE KEY UPDATE
+  `name` = VALUES(`name`),
+  `type` = VALUES(`type`),
+  `gender` = VALUES(`gender`),
+  `description` = VALUES(`description`),
+  `level` = VALUES(`level`),
+  `icon` = VALUES(`icon`),
+  `part_id` = VALUES(`part_id`),
+  `strength_required` = VALUES(`strength_required`),
+  `buy_gold` = VALUES(`buy_gold`),
+  `buy_gem` = VALUES(`buy_gem`),
+  `options` = VALUES(`options`);
+
+
+
+-- Custom seed: Tóc Zoro
+INSERT INTO `avatar_parts` (`id`, `type`, `part_data`)
+VALUES (285, 0, '[{"dx":-4,"dy":-3,"id":2193},{"dx":-4,"dy":-3,"id":2194},{"dx":-4,"dy":-5,"id":2195},{"dx":-3,"dy":-2,"id":2196}]')
+ON DUPLICATE KEY UPDATE
+    `type` = VALUES(`type`),
+    `part_data` = VALUES(`part_data`);
+
+INSERT INTO `items` (`id`, `name`, `type`, `gender`, `description`, `level`, `icon`, `part_id`, `strength_required`, `buy_gold`, `buy_gem`, `options`)
+VALUES (415, CONVERT(0x54C3B363205A6F726F USING utf8mb4), 0, -1, CONVERT(0x4B69E1BB83752074C3B363205A6F726F USING utf8mb4), 1, 2193, 285, 0, 100000, 0, '[]')
+ON DUPLICATE KEY UPDATE
+    `name` = VALUES(`name`),
+    `type` = VALUES(`type`),
+    `gender` = VALUES(`gender`),
+    `description` = VALUES(`description`),
+    `level` = VALUES(`level`),
+    `icon` = VALUES(`icon`),
+    `part_id` = VALUES(`part_id`),
+    `strength_required` = VALUES(`strength_required`),
+    `buy_gold` = VALUES(`buy_gold`),
+    `buy_gem` = VALUES(`buy_gem`),
+    `options` = VALUES(`options`);
+
+-- Custom seed: Toc Nami
+INSERT INTO `avatar_parts` (`id`, `type`, `part_data`)
+VALUES (286, 0, '[{"dx":-4,"dy":-3,"id":2197},{"dx":-4,"dy":-4,"id":2198},{"dx":-4,"dy":-6,"id":2199},{"dx":-3,"dy":-3,"id":2200}]')
+ON DUPLICATE KEY UPDATE
+    `type` = VALUES(`type`),
+    `part_data` = VALUES(`part_data`);
+
+INSERT INTO `items` (`id`, `name`, `type`, `gender`, `description`, `level`, `icon`, `part_id`, `strength_required`, `buy_gold`, `buy_gem`, `options`)
+VALUES (416, CONVERT(0x54C3B363204E616D69 USING utf8mb4), 0, -1, CONVERT(0x4B69E1BB83752074C3B363204E616D69 USING utf8mb4), 1, 2197, 286, 0, 100000, 0, '[]')
+ON DUPLICATE KEY UPDATE
+    `name` = VALUES(`name`),
+    `type` = VALUES(`type`),
+    `gender` = VALUES(`gender`),
+    `description` = VALUES(`description`),
+    `level` = VALUES(`level`),
+    `icon` = VALUES(`icon`),
+    `part_id` = VALUES(`part_id`),
+    `strength_required` = VALUES(`strength_required`),
+    `buy_gold` = VALUES(`buy_gold`),
+    `buy_gem` = VALUES(`buy_gem`),
+    `options` = VALUES(`options`);
+
+-- Custom seed: Toc Usopp
+INSERT INTO `avatar_parts` (`id`, `type`, `part_data`)
+VALUES (287, 0, '[{"dx":-4,"dy":-2,"id":2201},{"dx":-4,"dy":-3,"id":2202},{"dx":-4,"dy":-5,"id":2203},{"dx":-3,"dy":-2,"id":2204}]')
+ON DUPLICATE KEY UPDATE
+    `type` = VALUES(`type`),
+    `part_data` = VALUES(`part_data`);
+
+INSERT INTO `items` (`id`, `name`, `type`, `gender`, `description`, `level`, `icon`, `part_id`, `strength_required`, `buy_gold`, `buy_gem`, `options`)
+VALUES (417, CONVERT(0x54C3B3632055736F7070 USING utf8mb4), 0, -1, CONVERT(0x4B69E1BB83752074C3B3632055736F7070 USING utf8mb4), 1, 2201, 287, 0, 100000, 0, '[]')
+ON DUPLICATE KEY UPDATE
+    `name` = VALUES(`name`),
+    `type` = VALUES(`type`),
+    `gender` = VALUES(`gender`),
+    `description` = VALUES(`description`),
+    `level` = VALUES(`level`),
+    `icon` = VALUES(`icon`),
+    `part_id` = VALUES(`part_id`),
+    `strength_required` = VALUES(`strength_required`),
+    `buy_gold` = VALUES(`buy_gold`),
+    `buy_gem` = VALUES(`buy_gem`),
+    `options` = VALUES(`options`);
+
+-- Custom seed: Toc Sanji
+INSERT INTO `avatar_parts` (`id`, `type`, `part_data`)
+VALUES (288, 0, '[{"dx":-4,"dy":-1,"id":2205},{"dx":-4,"dy":-2,"id":2206},{"dx":-4,"dy":-3,"id":2207},{"dx":-3,"dy":-1,"id":2208}]')
+ON DUPLICATE KEY UPDATE
+    `type` = VALUES(`type`),
+    `part_data` = VALUES(`part_data`);
+
+INSERT INTO `items` (`id`, `name`, `type`, `gender`, `description`, `level`, `icon`, `part_id`, `strength_required`, `buy_gold`, `buy_gem`, `options`)
+VALUES (418, CONVERT(0x54C3B3632053616E6A69 USING utf8mb4), 0, -1, CONVERT(0x4B69E1BB83752074C3B3632053616E6A69 USING utf8mb4), 1, 2205, 288, 0, 100000, 0, '[]')
+ON DUPLICATE KEY UPDATE
+    `name` = VALUES(`name`),
+    `type` = VALUES(`type`),
+    `gender` = VALUES(`gender`),
+    `description` = VALUES(`description`),
+    `level` = VALUES(`level`),
+    `icon` = VALUES(`icon`),
+    `part_id` = VALUES(`part_id`),
+    `strength_required` = VALUES(`strength_required`),
+    `buy_gold` = VALUES(`buy_gold`),
+    `buy_gem` = VALUES(`buy_gem`),
+    `options` = VALUES(`options`);
+
+-- Custom seed: Toc Chopper
+INSERT INTO `avatar_parts` (`id`, `type`, `part_data`)
+VALUES (289, 0, '[{"dx":-4,"dy":-1,"id":2209},{"dx":-4,"dy":-2,"id":2210},{"dx":-4,"dy":-3,"id":2211},{"dx":-3,"dy":0,"id":2212}]')
+ON DUPLICATE KEY UPDATE
+    `type` = VALUES(`type`),
+    `part_data` = VALUES(`part_data`);
+
+INSERT INTO `items` (`id`, `name`, `type`, `gender`, `description`, `level`, `icon`, `part_id`, `strength_required`, `buy_gold`, `buy_gem`, `options`)
+VALUES (419, CONVERT(0x54C3B3632043686F70706572 USING utf8mb4), 0, -1, CONVERT(0x4B69E1BB83752074C3B3632043686F70706572 USING utf8mb4), 1, 2209, 289, 0, 100000, 0, '[]')
+ON DUPLICATE KEY UPDATE
+    `name` = VALUES(`name`),
+    `type` = VALUES(`type`),
+    `gender` = VALUES(`gender`),
+    `description` = VALUES(`description`),
+    `level` = VALUES(`level`),
+    `icon` = VALUES(`icon`),
+    `part_id` = VALUES(`part_id`),
+    `strength_required` = VALUES(`strength_required`),
+    `buy_gold` = VALUES(`buy_gold`),
+    `buy_gem` = VALUES(`buy_gem`),
+    `options` = VALUES(`options`);
+
+-- Custom seed: Toc Robin
+INSERT INTO `avatar_parts` (`id`, `type`, `part_data`)
+VALUES (290, 0, '[{"dx":-3,"dy":-1,"id":2213},{"dx":-3,"dy":-2,"id":2214},{"dx":-3,"dy":-4,"id":2215},{"dx":-2,"dy":-2,"id":2216}]')
+ON DUPLICATE KEY UPDATE
+    `type` = VALUES(`type`),
+    `part_data` = VALUES(`part_data`);
+
+INSERT INTO `items` (`id`, `name`, `type`, `gender`, `description`, `level`, `icon`, `part_id`, `strength_required`, `buy_gold`, `buy_gem`, `options`)
+VALUES (420, CONVERT(0x54C3B36320526F62696E USING utf8mb4), 0, -1, CONVERT(0x4B69E1BB83752074C3B36320526F62696E USING utf8mb4), 1, 2213, 290, 0, 100000, 0, '[]')
+ON DUPLICATE KEY UPDATE
+    `name` = VALUES(`name`),
+    `type` = VALUES(`type`),
+    `gender` = VALUES(`gender`),
+    `description` = VALUES(`description`),
+    `level` = VALUES(`level`),
+    `icon` = VALUES(`icon`),
+    `part_id` = VALUES(`part_id`),
+    `strength_required` = VALUES(`strength_required`),
+    `buy_gold` = VALUES(`buy_gold`),
+    `buy_gem` = VALUES(`buy_gem`),
+    `options` = VALUES(`options`);
+
+-- Custom seed: Toc Franky
+INSERT INTO `avatar_parts` (`id`, `type`, `part_data`)
+VALUES (291, 0, '[{"dx":-3,"dy":-2,"id":2217},{"dx":-3,"dy":-4,"id":2218},{"dx":-3,"dy":-6,"id":2219},{"dx":-2,"dy":-3,"id":2220}]')
+ON DUPLICATE KEY UPDATE
+    `type` = VALUES(`type`),
+    `part_data` = VALUES(`part_data`);
+
+INSERT INTO `items` (`id`, `name`, `type`, `gender`, `description`, `level`, `icon`, `part_id`, `strength_required`, `buy_gold`, `buy_gem`, `options`)
+VALUES (421, CONVERT(0x54C3B363204672616E6B79 USING utf8mb4), 0, -1, CONVERT(0x4B69E1BB83752074C3B363204672616E6B79 USING utf8mb4), 1, 2217, 291, 0, 100000, 0, '[]')
+ON DUPLICATE KEY UPDATE
+    `name` = VALUES(`name`),
+    `type` = VALUES(`type`),
+    `gender` = VALUES(`gender`),
+    `description` = VALUES(`description`),
+    `level` = VALUES(`level`),
+    `icon` = VALUES(`icon`),
+    `part_id` = VALUES(`part_id`),
+    `strength_required` = VALUES(`strength_required`),
+    `buy_gold` = VALUES(`buy_gold`),
+    `buy_gem` = VALUES(`buy_gem`),
+    `options` = VALUES(`options`);
+
+-- Custom seed: Toc Brook
+INSERT INTO `avatar_parts` (`id`, `type`, `part_data`)
+VALUES (292, 0, '[{"dx":-3,"dy":-1,"id":2221},{"dx":-3,"dy":-1,"id":2222},{"dx":-3,"dy":-1,"id":2223},{"dx":-2,"dy":2,"id":2224}]')
+ON DUPLICATE KEY UPDATE
+    `type` = VALUES(`type`),
+    `part_data` = VALUES(`part_data`);
+
+INSERT INTO `items` (`id`, `name`, `type`, `gender`, `description`, `level`, `icon`, `part_id`, `strength_required`, `buy_gold`, `buy_gem`, `options`)
+VALUES (422, CONVERT(0x54C3B3632042726F6F6B USING utf8mb4), 0, -1, CONVERT(0x4B69E1BB83752074C3B3632042726F6F6B USING utf8mb4), 1, 2221, 292, 0, 100000, 0, '[]')
+ON DUPLICATE KEY UPDATE
+    `name` = VALUES(`name`),
+    `type` = VALUES(`type`),
+    `gender` = VALUES(`gender`),
+    `description` = VALUES(`description`),
+    `level` = VALUES(`level`),
+    `icon` = VALUES(`icon`),
+    `part_id` = VALUES(`part_id`),
+    `strength_required` = VALUES(`strength_required`),
+    `buy_gold` = VALUES(`buy_gold`),
+    `buy_gem` = VALUES(`buy_gem`),
+    `options` = VALUES(`options`);
+
+-- Custom seed: Toc Jinbe
+INSERT INTO `avatar_parts` (`id`, `type`, `part_data`)
+VALUES (293, 0, '[{"dx":-3,"dy":-1,"id":2225},{"dx":-3,"dy":-1,"id":2226},{"dx":-3,"dy":-2,"id":2227},{"dx":-2,"dy":0,"id":2228}]')
+ON DUPLICATE KEY UPDATE
+    `type` = VALUES(`type`),
+    `part_data` = VALUES(`part_data`);
+
+INSERT INTO `items` (`id`, `name`, `type`, `gender`, `description`, `level`, `icon`, `part_id`, `strength_required`, `buy_gold`, `buy_gem`, `options`)
+VALUES (423, CONVERT(0x54C3B363204A696E6265 USING utf8mb4), 0, -1, CONVERT(0x4B69E1BB83752074C3B363204A696E6265 USING utf8mb4), 1, 2225, 293, 0, 100000, 0, '[]')
+ON DUPLICATE KEY UPDATE
+    `name` = VALUES(`name`),
+    `type` = VALUES(`type`),
+    `gender` = VALUES(`gender`),
+    `description` = VALUES(`description`),
+    `level` = VALUES(`level`),
+    `icon` = VALUES(`icon`),
+    `part_id` = VALUES(`part_id`),
+    `strength_required` = VALUES(`strength_required`),
+    `buy_gold` = VALUES(`buy_gold`),
+    `buy_gem` = VALUES(`buy_gem`),
+    `options` = VALUES(`options`);
+
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
 /*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
