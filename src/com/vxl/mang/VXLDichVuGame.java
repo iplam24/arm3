@@ -132,7 +132,7 @@ implements IVXLDichVuGame {
     }
 
     public void moHopThoaiOK(String noiDung) throws IOException {
-        VXLTinNhan ms = new VXLTinNhan(45);
+        VXLTinNhan ms = new VXLTinNhan(10);
         DataOutputStream ds = ms.boGhi();
         ds.writeUTF(noiDung);
         ds.flush();
