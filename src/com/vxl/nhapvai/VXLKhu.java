@@ -1,6 +1,7 @@
 package com.vxl.nhapvai;
 
 // Vũ Xuân Lâm đẹp trai VCL
+import com.vxl.mohinh.VXLGiaoDich;
 import com.vxl.mohinh.VXLNguoiChoi;
 import com.vxl.mang.VXLTinNhan;
 import java.io.IOException;
@@ -54,6 +55,7 @@ public class VXLKhu {
         if (nguoiChoi == null || this.players_id.get(nguoiChoi.ma) != nguoiChoi) {
             return false;
         }
+        VXLGiaoDich.khiRoiKhu(nguoiChoi);
         int chiSo = this.timChiSo(nguoiChoi);
         if (chiSo >= 0) {
             this.players_index.remove(chiSo, nguoiChoi);

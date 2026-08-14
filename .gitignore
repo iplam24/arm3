@@ -1,6 +1,9 @@
 # Gradle / Java build
 .gradle/
-build/
+build/*
+!build/libs/
+build/libs/*
+!build/libs/vxldeptrai.jar
 bin/
 out/
 *.class

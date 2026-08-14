@@ -215,6 +215,10 @@ public class VXLNguoiChoi {
                 this.doiKhu(ms);
                 break;
             }
+            case 9: {
+                VXLGiaoDich.xuLy(this, ms);
+                break;
+            }
             case 11: {
                 this.moMenu(ms);
                 break;
@@ -1139,6 +1143,18 @@ public class VXLNguoiChoi {
     }
 
     public synchronized void flushCache() {
+        try {
+            VXLCoSoDuLieu.withTransaction(conn -> this.luuTrangThaiGiaoDich(conn, this.vang, this.itemBag));
+        }
+        catch (SQLException | RuntimeException ex) {
+            Logger.getLogger(VXLNguoiChoi.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+
+    void luuTrangThaiGiaoDich(java.sql.Connection conn, int vangMoi, VXLVatPham[] tuiMoi) throws SQLException {
+        if (conn == null || tuiMoi == null) {
+            throw new IllegalArgumentException("Kết nối và túi đồ cần lưu không được rỗng.");
+        }
         this.ensurePointAdd();
         JSONObject duLieu = new JSONObject();
         duLieu.put("power", this.power);
@@ -1159,56 +1175,39 @@ public class VXLNguoiChoi {
         }
         duLieu.put("pointAdd", pointAdds);
 
-        JSONArray body = new JSONArray();
-        for (VXLVatPham vatPham : this.itemBody) {
-            if (vatPham != null) {
-                body.add(vatPham.toJSONObject());
-            }
-        }
-        JSONArray bag = new JSONArray();
-        for (VXLVatPham vatPham : this.itemBag) {
-            if (vatPham != null) {
-                bag.add(vatPham.toJSONObject());
-            }
-        }
         JSONArray balo = new JSONArray();
         for (int chiSo : this.itemBalo) {
             balo.add(chiSo);
         }
-        JSONArray box = new JSONArray();
-        for (VXLVatPham vatPham : this.itemBox) {
-            if (vatPham != null) {
-                box.add(vatPham.toJSONObject());
+
+        String sql = "UPDATE `players` SET `gold` = ?, `cup` = ?, `gem` = ?, `stats_json` = ?, `equipped_json` = ?, `inventory_json` = ?, `pocket_json` = ?, `storage_json` = ? WHERE `id` = ? LIMIT 1;";
+        try (java.sql.PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setInt(1, vangMoi);
+            stmt.setInt(2, this.cup);
+            stmt.setInt(3, this.ngoc);
+            stmt.setString(4, duLieu.toJSONString());
+            stmt.setString(5, taoMangVatPhamJson(this.itemBody).toJSONString());
+            stmt.setString(6, taoMangVatPhamJson(tuiMoi).toJSONString());
+            stmt.setString(7, balo.toJSONString());
+            stmt.setString(8, taoMangVatPhamJson(this.itemBox).toJSONString());
+            stmt.setInt(9, this.ma);
+            if (stmt.executeUpdate() != 1) {
+                throw new SQLException("Không tìm thấy người chơi có mã=" + this.ma + " để lưu.");
             }
         }
+    }
 
-        String statsJson = duLieu.toJSONString();
-        String equippedJson = body.toJSONString();
-        String inventoryJson = bag.toJSONString();
-        String pocketJson = balo.toJSONString();
-        String storageJson = box.toJSONString();
-        try {
-            VXLCoSoDuLieu.withTransaction(conn -> {
-                String sql = "UPDATE `players` SET `gold` = ?, `cup` = ?, `gem` = ?, `stats_json` = ?, `equipped_json` = ?, `inventory_json` = ?, `pocket_json` = ?, `storage_json` = ? WHERE `id` = ? LIMIT 1;";
-                try (java.sql.PreparedStatement stmt = conn.prepareStatement(sql)) {
-                    stmt.setInt(1, this.vang);
-                    stmt.setInt(2, this.cup);
-                    stmt.setInt(3, this.ngoc);
-                    stmt.setString(4, statsJson);
-                    stmt.setString(5, equippedJson);
-                    stmt.setString(6, inventoryJson);
-                    stmt.setString(7, pocketJson);
-                    stmt.setString(8, storageJson);
-                    stmt.setInt(9, this.ma);
-                    if (stmt.executeUpdate() != 1) {
-                        throw new SQLException("Không tìm thấy người chơi có mã=" + this.ma + " để lưu.");
-                    }
-                }
-            });
+    private static JSONArray taoMangVatPhamJson(VXLVatPham[] vatPhams) {
+        JSONArray ketQua = new JSONArray();
+        if (vatPhams == null) {
+            return ketQua;
         }
-        catch (SQLException | RuntimeException ex) {
-            Logger.getLogger(VXLNguoiChoi.class.getName()).log(Level.SEVERE, null, ex);
+        for (VXLVatPham vatPham : vatPhams) {
+            if (vatPham != null) {
+                ketQua.add(vatPham.toJSONObject());
+            }
         }
+        return ketQua;
     }
 
     private void ensurePointAdd() {
