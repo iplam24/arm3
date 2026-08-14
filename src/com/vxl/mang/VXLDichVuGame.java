@@ -760,6 +760,64 @@ implements IVXLDichVuGame {
         this.guiTin(ms);
     }
 
+    public void guiKyNangBossRua(byte chiSoBoss, short[] cacX, short[] cacY,
+            byte[][] cacMucTieu, short[][] cacXMoi, short[][] cacYMoi) throws IOException {
+        int soDiem = Math.min(cacX != null ? cacX.length : 0,
+                cacY != null ? cacY.length : 0);
+        soDiem = Math.min(soDiem, 20);
+        VXLTinNhan ms = new VXLTinNhan(-68);
+        DataOutputStream ds = ms.boGhi();
+        ds.writeByte(chiSoBoss);
+        ds.writeByte(0);
+        ds.writeByte(soDiem);
+        for (int i = 0; i < soDiem; i++) {
+            ds.writeByte(1);
+            ds.writeShort(cacX[i]);
+            ds.writeShort(cacY[i]);
+            byte[] mucTieu = cacMucTieu != null && i < cacMucTieu.length
+                    && cacMucTieu[i] != null ? cacMucTieu[i] : new byte[0];
+            short[] xMoi = cacXMoi != null && i < cacXMoi.length
+                    && cacXMoi[i] != null ? cacXMoi[i] : new short[0];
+            short[] yMoi = cacYMoi != null && i < cacYMoi.length
+                    && cacYMoi[i] != null ? cacYMoi[i] : new short[0];
+            int soMucTieu = Math.min(mucTieu.length, Math.min(xMoi.length, yMoi.length));
+            soMucTieu = Math.min(soMucTieu, 20);
+            ds.writeByte(soMucTieu);
+            for (int j = 0; j < soMucTieu; j++) {
+                ds.writeByte(mucTieu[j]);
+                ds.writeShort(xMoi[j]);
+                ds.writeShort(yMoi[j]);
+            }
+        }
+        ds.flush();
+        this.guiTin(ms);
+    }
+
+    public void guiKyNangBossRongCan(byte chiSoBoss, byte chiSoMucTieu)
+            throws IOException {
+        VXLTinNhan ms = new VXLTinNhan(-68);
+        DataOutputStream ds = ms.boGhi();
+        ds.writeByte(chiSoBoss);
+        ds.writeByte(1);
+        ds.writeByte(chiSoMucTieu);
+        ds.flush();
+        this.guiTin(ms);
+    }
+
+    public void guiKyNangBossRongGapTha(byte chiSoBoss, short xCu, short yCu,
+            byte chiSoMucTieu, short xTha, short yTha) throws IOException {
+        VXLTinNhan ms = new VXLTinNhan(-68);
+        DataOutputStream ds = ms.boGhi();
+        ds.writeByte(chiSoBoss);
+        ds.writeByte(2);
+        ds.writeShort(xCu);
+        ds.writeShort(yCu);
+        ds.writeByte(chiSoMucTieu);
+        ds.writeShort(xTha);
+        ds.writeShort(yTha);
+        ds.flush();
+        this.guiTin(ms);
+    }
     public void guiDiChuyenDau(byte chiSo, short x, short y) throws IOException {
         VXLTinNhan ms = new VXLTinNhan(21);
         DataOutputStream ds = ms.boGhi();

@@ -28,7 +28,8 @@ public final class VXLBoLenhQuanTri {
             /admin item <tên> <itemId> [số lượng]
             /admin save [tên|all]
             /admin announce <nội dung>
-            /admin baotri <on [lý do]|off|status>
+            /admin fly <nội dung>
+            /admin baotri <on [lý do]|off|status|<số phút> [lý do]>
             /admin kick <tên>
             /admin ban <tên> <on|off>
             /admin grant <tên> <on|off>
@@ -44,7 +45,8 @@ public final class VXLBoLenhQuanTri {
     public static boolean xuLy(VXLNguoiChoi nguoiChoi, String noiDung) {
         String lenh = noiDung == null ? "" : noiDung.trim();
         boolean lenhMoMenu = "/menu".equalsIgnoreCase(lenh)
-                || "menu".equalsIgnoreCase(lenh);
+                || "menu".equalsIgnoreCase(lenh)
+                || "!menu".equalsIgnoreCase(lenh);
         String phanConLai = lenhMoMenu ? "menu" : layPhanLenh(lenh);
         if (phanConLai == null) {
             return false;
@@ -55,7 +57,7 @@ public final class VXLBoLenhQuanTri {
             }
             return true;
         }
-        if (lenhMoMenu || "menu".equalsIgnoreCase(phanConLai)) {
+        if (lenhMoMenu || phanConLai.isBlank() || "menu".equalsIgnoreCase(phanConLai)) {
             VXLMenuQuanTri.mo(nguoiChoi);
             VXLKhoQuanTri.ghiNhatKy(nguoiChoi, lenh, true, "Đã mở menu admin.");
             return true;
@@ -113,6 +115,14 @@ public final class VXLBoLenhQuanTri {
                     thamSo.length >= 4 ? docInt(thamSo[3], "số lượng") : 1);
             case "save", "luu" -> VXLKhoQuanTri.luuNguoiChoi(thamSo.length >= 2 ? thamSo[1] : "all");
             case "announce", "thongbao" -> thongBao(phanConLai);
+            case "fly", "maybay" -> {
+                String noiDungFly = layNoiDungSauThamSo(phanConLai, 1);
+                if (noiDungFly.isBlank()) {
+                    throw new IllegalArgumentException("Thiếu nội dung máy bay thông báo.");
+                }
+                VXLThongBaoServer.guiMayBay(noiDungFly);
+                yield "Đã cho máy bay bay qua mang thông báo: " + noiDungFly;
+            }
             case "baotri", "maintenance" -> baoTri(quanTri, phanConLai, thamSo);
             case "kick" -> kick(quanTri, lay(thamSo, 1, "tên người chơi"));
             case "ban", "khoa" -> VXLKhoQuanTri.datKhoaTaiKhoan(lay(thamSo, 1, "tên người chơi"),
@@ -139,12 +149,17 @@ public final class VXLBoLenhQuanTri {
             return VXLBaoTriMayChu.trangThai();
         }
         String hanhDong = thamSo[1].toLowerCase(Locale.ROOT);
+        if (isSo(thamSo[1])) {
+            int soPhut = docInt(thamSo[1], "số phút");
+            return VXLBaoTriMayChu.datLich(quanTri.ten, soPhut,
+                    layNoiDungSauThamSo(phanConLai, 2));
+        }
         return switch (hanhDong) {
             case "on", "bat", "1", "true" -> VXLBaoTriMayChu.bat(quanTri.ten,
                     layNoiDungSauThamSo(phanConLai, 2));
             case "off", "tat", "0", "false" -> VXLBaoTriMayChu.tat(quanTri.ten);
             default -> throw new IllegalArgumentException(
-                    "Cú pháp: /admin baotri <on [lý do]|off|status>.");
+                    "Cú pháp: /admin baotri <on [lý do]|off|status|<số phút> [lý do]>.");
         };
     }
 
@@ -247,6 +262,19 @@ public final class VXLBoLenhQuanTri {
             case "0", "off", "false", "tat" -> false;
             default -> throw new IllegalArgumentException("Giá trị phải là on hoặc off.");
         };
+    }
+
+    private static boolean isSo(String giaTri) {
+        if (giaTri == null || giaTri.isBlank()) {
+            return false;
+        }
+        for (int i = 0; i < giaTri.length(); i++) {
+            char kyTu = giaTri.charAt(i);
+            if (kyTu < '0' || kyTu > '9') {
+                return false;
+            }
+        }
+        return true;
     }
 
     private static String layPhanLenh(String noiDung) {

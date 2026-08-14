@@ -598,7 +598,8 @@ CREATE TABLE `items` (
   `strength_required` int(11) NOT NULL,
   `buy_gold` int(11) NOT NULL,
   `buy_gem` int(11) NOT NULL,
-  `options` text NOT NULL
+  `options` text NOT NULL,
+  `notrade` tinyint(1) NOT NULL DEFAULT 0
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --

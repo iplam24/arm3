@@ -45,6 +45,22 @@ final class VXLPhatTinTranDau {
         this.guiTungNguoi(chienBinh -> chienBinh.nguoiChoi.dichVu.guiGioLuyenTap(gioX, gioY));
     }
 
+    void guiKyNangBossRua(VXLChienBinh boss, short[] cacX, short[] cacY,
+            byte[][] cacMucTieu, short[][] cacXMoi, short[][] cacYMoi) {
+        this.guiTungNguoi(chienBinh -> chienBinh.nguoiChoi.dichVu.guiKyNangBossRua(
+                boss.chiSo, cacX, cacY, cacMucTieu, cacXMoi, cacYMoi));
+    }
+
+    void guiKyNangBossRongCan(VXLChienBinh boss, VXLChienBinh mucTieu) {
+        this.guiTungNguoi(chienBinh -> chienBinh.nguoiChoi.dichVu.guiKyNangBossRongCan(
+                boss.chiSo, mucTieu.chiSo));
+    }
+
+    void guiKyNangBossRongGapTha(VXLChienBinh boss, VXLChienBinh mucTieu,
+            short xCu, short yCu, short xTha, short yTha) {
+        this.guiTungNguoi(chienBinh -> chienBinh.nguoiChoi.dichVu.guiKyNangBossRongGapTha(
+                boss.chiSo, xCu, yCu, mucTieu.chiSo, xTha, yTha));
+    }
     void guiDiChuyen(VXLChienBinh daDiChuyen) {
         this.guiTungNguoi(chienBinh -> chienBinh.nguoiChoi.dichVu.guiDiChuyenDau(daDiChuyen.chiSo, daDiChuyen.x, daDiChuyen.y));
     }

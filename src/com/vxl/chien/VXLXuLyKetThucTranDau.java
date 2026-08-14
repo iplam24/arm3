@@ -9,10 +9,12 @@ final class VXLXuLyKetThucTranDau {
     private static final byte KET_QUA_THUA = 0;
     private static final byte KET_QUA_THANG = 1;
     private static final byte KET_QUA_HOA = 2;
+    private final boolean cheDoBoss;
     private final boolean cheDoCamTu;
     private final VXLChienBinh[] chienBinhs;
 
-    VXLXuLyKetThucTranDau(boolean cheDoCamTu, VXLChienBinh[] chienBinhs) {
+    VXLXuLyKetThucTranDau(boolean cheDoBoss, boolean cheDoCamTu, VXLChienBinh[] chienBinhs) {
+        this.cheDoBoss = cheDoBoss;
         this.cheDoCamTu = cheDoCamTu;
         this.chienBinhs = chienBinhs;
     }
@@ -26,7 +28,7 @@ final class VXLXuLyKetThucTranDau {
             byte ketQua;
             if (chienBinh.daRoiTran) {
                 ketQua = KET_QUA_THUA;
-            } else if (this.cheDoCamTu) {
+            } else if (this.cheDoBoss) {
                 ketQua = ketQuaDoi;
             } else if (ketQuaDoi == KET_QUA_HOA) {
                 ketQua = KET_QUA_HOA;
@@ -47,11 +49,14 @@ final class VXLXuLyKetThucTranDau {
         }
         chienBinh.daQuyetToan = true;
         VXLNguoiChoi nguoiChoi = chienBinh.nguoiChoi;
-        VXLPhanThuongTranDau phanThuong = VXLPhanThuongTranDau.tinh(chienBinh, ketQua, this.cheDoCamTu);
+        VXLPhanThuongTranDau phanThuong = VXLPhanThuongTranDau.tinh(chienBinh, ketQua, this.cheDoBoss, this.cheDoCamTu);
         if (this.cheDoCamTu && chienBinh.haCamTuTrongTran > 0) {
             nguoiChoi.ghiNhanHaCamTu(chienBinh.haCamTuTrongTran);
         }
-        if (!this.cheDoCamTu && ketQua == KET_QUA_THANG && !chienBinh.daRoiTran) {
+        if (this.cheDoBoss && ketQua == KET_QUA_THANG && !chienBinh.daRoiTran) {
+            nguoiChoi.ghiNhanHaBoss(1);
+        }
+        if (!this.cheDoBoss && ketQua == KET_QUA_THANG && !chienBinh.daRoiTran) {
             nguoiChoi.ghiNhanThangPvp();
         }
 

@@ -14,6 +14,7 @@ public class VXLMauVatPham {
     public short iconID;
     public short part;
     public boolean isUpToUp;
+    public boolean noTrade;
     public int strRequire;
     public Vector thuocTinhs;
     public int buyGold;
@@ -30,6 +31,7 @@ public class VXLMauVatPham {
         this.iconID = iconID;
         this.part = part;
         this.isUpToUp = isUpToUp;
+        this.noTrade = false;
         this.thuocTinhs = new Vector();
     }
 }

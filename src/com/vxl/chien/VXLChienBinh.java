@@ -9,6 +9,9 @@ import com.vxl.vatpham.VXLThuocTinhVatPham;
 import com.vxl.vatpham.VXLVatPham;
 
 public class VXLChienBinh {
+    public static final byte LOAI_BOSS_KHONG_CO = 0;
+    public static final byte LOAI_BOSS_RUA = 1;
+    public static final byte LOAI_BOSS_RONG = 2;
     private static final int GIOI_HAN_CHI_SO = 30000;
     private static final int MA_THUOC_TINH_THOI_GIAN_NAP_DAN = 14;
     public static final int THOI_GIAN_NAP_DAN_TOI_THIEU = 250;
@@ -18,6 +21,7 @@ public class VXLChienBinh {
     public final byte chiSo;
     public final boolean bot;
     public final boolean camTu;
+    public final byte loaiBossDacBiet;
     public final String ten;
     public final int ma;
     public short maVuKhi;
@@ -62,6 +66,8 @@ public class VXLChienBinh {
     public boolean chet;
     public boolean daRoiTran;
     public boolean daQuyetToan;
+    public boolean coDinh;
+    public int soLuotBossDaHanhDong;
     public byte chiSoChuBanSaoUltron = -1;
     public VXLChienBinh nguoiGaySatThuongCuoi;
     public VXLChienBinh nguonDoc;
@@ -73,6 +79,7 @@ public class VXLChienBinh {
         this.chiSo = chiSo;
         this.bot = false;
         this.camTu = false;
+        this.loaiBossDacBiet = LOAI_BOSS_KHONG_CO;
         this.ten = nguoiChoi.ten;
         this.ma = nguoiChoi.ma;
         this.maVuKhi = nguoiChoi.wp;
@@ -143,12 +150,20 @@ public class VXLChienBinh {
 
     public VXLChienBinh(byte chiSo, short x, short y, String ten, short maVuKhi, byte avenger,
             boolean camTu, int mauToiDa, int tanCong, int giap) {
+        this(chiSo, x, y, ten, -9000 - Byte.toUnsignedInt(chiSo), maVuKhi, avenger,
+                camTu, LOAI_BOSS_KHONG_CO, mauToiDa, tanCong, giap);
+    }
+
+    public VXLChienBinh(byte chiSo, short x, short y, String ten, int ma, short maVuKhi,
+            byte avenger, boolean camTu, byte loaiBossDacBiet,
+            int mauToiDa, int tanCong, int giap) {
         this.nguoiChoi = null;
         this.chiSo = chiSo;
         this.bot = true;
         this.camTu = camTu;
+        this.loaiBossDacBiet = loaiBossDacBiet;
         this.ten = ten;
-        this.ma = -9000 - chiSo;
+        this.ma = ma;
         this.maVuKhi = maVuKhi;
         this.avenger = avenger;
         this.avengerDan = avenger;

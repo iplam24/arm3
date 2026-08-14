@@ -4,8 +4,11 @@ import com.vxl.chien.VXLQuanLyChien;
 import com.vxl.mohinh.VXLNguoiChoi;
 import com.vxl.nhapvai.VXLBanDoRPG;
 import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class VXLChoDau {
+    private static final int SO_NGUOI_TOI_THIEU = 2;
 
     public final VXLPhong phong;
     public final byte ma;
@@ -200,8 +203,23 @@ public class VXLChoDau {
         if (nguoiChoi == null || this.started || nguoiChoi != this.chuPhong) {
             return;
         }
-        if (this.laySoNguoiChoi() == 0) {
-            nguoiChoi.startOKDlg2("Chưa có người chơi.");
+        boolean phaiChoDuNguoiSanSang = !VXLLoaiPhong.laBoss(this.phong.loai)
+                || this.maBanDo == VXLQuanLyChien.MA_BAN_DO_HAI_TOA_THAP;
+        if (phaiChoDuNguoiSanSang) {
+            int toiThieu = VXLQuanLyChien.laBanDoBoss(this.maBanDo) ? 1 : SO_NGUOI_TOI_THIEU;
+            if (this.laySoNguoiChoi() < toiThieu) {
+                nguoiChoi.startOKDlg2("Cần ít nhất " + toiThieu + " người chơi để bắt đầu.");
+                return;
+            }
+            for (int i = 0; i < this.nguoiChois.length; i++) {
+                VXLNguoiChoi thanhVien = this.nguoiChois[i];
+                if (thanhVien != null && thanhVien != this.chuPhong && !this.sanSang[i]) {
+                    nguoiChoi.startOKDlg2("Tất cả người chơi phải sẵn sàng.");
+                    return;
+                }
+            }
+        }
+        if (this.fight != null) {
             return;
         }
         this.started = true;
@@ -239,9 +257,45 @@ public class VXLChoDau {
         this.fight = null;
         this.quanLyNguoiChoiAo.xoa(this.chuPhong);
         for (int i = 0; i < this.sanSang.length; i++) {
-            this.sanSang[i] = false;
-            if (this.nguoiChois[i] != null) {
-                this.nguoiChois[i].isReady = false;
+            VXLNguoiChoi thanhVien = this.nguoiChois[i];
+            boolean laChuPhong = thanhVien != null && thanhVien == this.chuPhong;
+            this.sanSang[i] = laChuPhong;
+            if (thanhVien != null) {
+                thanhVien.isReady = laChuPhong;
+            }
+        }
+        this.dongBoPhongChoSauTran();
+    }
+
+    private void dongBoPhongChoSauTran() {
+        VXLNguoiChoi[] thanhViens = this.nguoiChois.clone();
+        VXLNguoiChoi chuPhongHienTai = this.chuPhong;
+        for (VXLNguoiChoi nguoiNhan : thanhViens) {
+            if (nguoiNhan == null || nguoiNhan.dichVu == null) {
+                continue;
+            }
+            try {
+                nguoiNhan.dichVu.guiThongTinChoDau(
+                        this.phong.ma, this.ma, this.ten, this.phong.loai);
+                nguoiNhan.dichVu.guiChonBanDoDau(this.maBanDo);
+                nguoiNhan.dichVu.guiSoNguoiDau(this.maxPlayers);
+                for (VXLNguoiChoi thanhVien : thanhViens) {
+                    if (thanhVien != null) {
+                        nguoiNhan.dichVu.guiNguoiChoiVaoDau(
+                                thanhVien, chuPhongHienTai, this.phong.ma, this.ma);
+                    }
+                }
+                for (VXLNguoiChoi thanhVien : thanhViens) {
+                    if (thanhVien != null) {
+                        nguoiNhan.dichVu.guiSanSangDau(
+                                thanhVien.ma, thanhVien == chuPhongHienTai);
+                    }
+                }
+                nguoiNhan.dichVu.guiTienDau(this.tien, this.phong.loai);
+            }
+            catch (IOException ex) {
+                Logger.getLogger(VXLChoDau.class.getName()).log(
+                        Level.FINE, "Không thể đồng bộ phòng chờ sau trận.", ex);
             }
         }
     }

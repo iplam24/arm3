@@ -8,11 +8,13 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Locale;
 import java.util.Vector;
 import java.util.concurrent.ConcurrentHashMap;
 
 public final class VXLMenuQuanTri {
     private static final int MA_BUA_DUC_LO = 349;
+    private static final int MA_BAO_HIEM = 353;
     private static final ConcurrentHashMap<Integer, TrangThaiMenu> TRANG_THAI =
             new ConcurrentHashMap<>();
 
@@ -52,6 +54,8 @@ public final class VXLMenuQuanTri {
             case VAT_PHAM -> xuLyMenuVatPham(quanTri, trangThai.maMucTieu, chiSo);
             case TAI_KHOAN -> xuLyMenuTaiKhoan(quanTri, trangThai.maMucTieu, chiSo);
             case MAY_CHU -> xuLyMenuMayChu(quanTri, chiSo);
+            case THONG_BAO -> xuLyMenuThongBao(quanTri, chiSo);
+            case BAO_TRI -> xuLyMenuBaoTri(quanTri, chiSo);
         }
     }
 
@@ -70,7 +74,9 @@ public final class VXLMenuQuanTri {
             case 0 -> moMenuNguoiChoi(quanTri, quanTri.ma);
             case 1 -> moDanhSachNguoiChoi(quanTri);
             case 2 -> moMenuMayChu(quanTri);
-            case 3 -> hienKetQua(quanTri, "/menu help", () -> VXLBoLenhQuanTri.huongDan());
+            case 3 -> moMenuThongBao(quanTri);
+            case 4 -> moMenuBaoTri(quanTri);
+            case 5 -> hienKetQua(quanTri, "/menu help", VXLBoLenhQuanTri::huongDan);
             default -> {
             }
         }
@@ -120,17 +126,25 @@ public final class VXLMenuQuanTri {
         switch (chiSo) {
             case 0 -> hienKetQua(quanTri, "/menu gold " + mucTieu.ten + " +100000",
                     () -> VXLKhoQuanTri.congVang(mucTieu.ten, 100000L));
-            case 1 -> hienKetQua(quanTri, "/menu gold " + mucTieu.ten + " -100000",
+            case 1 -> hienKetQua(quanTri, "/menu gold " + mucTieu.ten + " +1000000",
+                    () -> VXLKhoQuanTri.congVang(mucTieu.ten, 1000000L));
+            case 2 -> hienKetQua(quanTri, "/menu gold " + mucTieu.ten + " -100000",
                     () -> VXLKhoQuanTri.congVang(mucTieu.ten, -100000L));
-            case 2 -> hienKetQua(quanTri, "/menu gem " + mucTieu.ten + " +100",
+            case 3 -> hienKetQua(quanTri, "/menu gem " + mucTieu.ten + " +100",
                     () -> VXLKhoQuanTri.congNgoc(mucTieu.ten, 100L));
-            case 3 -> hienKetQua(quanTri, "/menu gem " + mucTieu.ten + " -100",
+            case 4 -> hienKetQua(quanTri, "/menu gem " + mucTieu.ten + " +1000",
+                    () -> VXLKhoQuanTri.congNgoc(mucTieu.ten, 1000L));
+            case 5 -> hienKetQua(quanTri, "/menu gem " + mucTieu.ten + " -100",
                     () -> VXLKhoQuanTri.congNgoc(mucTieu.ten, -100L));
-            case 4 -> hienKetQua(quanTri, "/menu exp " + mucTieu.ten + " +10000",
+            case 6 -> hienKetQua(quanTri, "/menu exp " + mucTieu.ten + " +10000",
                     () -> VXLKhoQuanTri.congKinhNghiem(mucTieu.ten, 10000L));
-            case 5 -> hienKetQua(quanTri, "/menu point " + mucTieu.ten + " +100",
+            case 7 -> hienKetQua(quanTri, "/menu exp " + mucTieu.ten + " +100000",
+                    () -> VXLKhoQuanTri.congKinhNghiem(mucTieu.ten, 100000L));
+            case 8 -> hienKetQua(quanTri, "/menu point " + mucTieu.ten + " +100",
                     () -> VXLKhoQuanTri.congDiemTiemNang(mucTieu.ten, 100L));
-            case 6 -> moMenuNguoiChoi(quanTri, maMucTieu);
+            case 9 -> hienKetQua(quanTri, "/menu point " + mucTieu.ten + " +1000",
+                    () -> VXLKhoQuanTri.congDiemTiemNang(mucTieu.ten, 1000L));
+            case 10 -> moMenuNguoiChoi(quanTri, maMucTieu);
             default -> {
             }
         }
@@ -145,10 +159,18 @@ public final class VXLMenuQuanTri {
         switch (chiSo) {
             case 0 -> hienKetQua(quanTri, "/menu level " + mucTieu.ten + " +1",
                     () -> VXLKhoQuanTri.datCap(mucTieu.ten, mucTieu.cap + 1));
-            case 1 -> hienKetQua(quanTri, "/menu rebel " + mucTieu.ten + " +1",
+            case 1 -> hienKetQua(quanTri, "/menu level " + mucTieu.ten + " +5",
+                    () -> VXLKhoQuanTri.datCap(mucTieu.ten, mucTieu.cap + 5));
+            case 2 -> hienKetQua(quanTri, "/menu level " + mucTieu.ten + " 50",
+                    () -> VXLKhoQuanTri.datCap(mucTieu.ten, 50));
+            case 3 -> hienKetQua(quanTri, "/menu level " + mucTieu.ten + " 100",
+                    () -> VXLKhoQuanTri.datCap(mucTieu.ten, 100));
+            case 4 -> hienKetQua(quanTri, "/menu rebel " + mucTieu.ten + " +1",
                     () -> VXLKhoQuanTri.datCapPhienQuan(mucTieu.ten,
                             Byte.toUnsignedInt(mucTieu.trainingSuccess) + 1));
-            case 2 -> moMenuNguoiChoi(quanTri, maMucTieu);
+            case 5 -> hienKetQua(quanTri, "/menu rebel " + mucTieu.ten + " 255",
+                    () -> VXLKhoQuanTri.datCapPhienQuan(mucTieu.ten, 255));
+            case 6 -> moMenuNguoiChoi(quanTri, maMucTieu);
             default -> {
             }
         }
@@ -161,9 +183,15 @@ public final class VXLMenuQuanTri {
             return;
         }
         switch (chiSo) {
-            case 0 -> hienKetQua(quanTri, "/menu item " + mucTieu.ten + " " + MA_BUA_DUC_LO,
+            case 0 -> hienKetQua(quanTri, "/menu item " + mucTieu.ten + " " + MA_BUA_DUC_LO + " 1",
                     () -> VXLKhoQuanTri.themVatPham(mucTieu.ten, MA_BUA_DUC_LO, 1));
-            case 1 -> moMenuNguoiChoi(quanTri, maMucTieu);
+            case 1 -> hienKetQua(quanTri, "/menu item " + mucTieu.ten + " " + MA_BUA_DUC_LO + " 10",
+                    () -> VXLKhoQuanTri.themVatPham(mucTieu.ten, MA_BUA_DUC_LO, 10));
+            case 2 -> hienKetQua(quanTri, "/menu item " + mucTieu.ten + " " + MA_BUA_DUC_LO + " 50",
+                    () -> VXLKhoQuanTri.themVatPham(mucTieu.ten, MA_BUA_DUC_LO, 50));
+            case 3 -> hienKetQua(quanTri, "/menu item " + mucTieu.ten + " " + MA_BAO_HIEM + " 10",
+                    () -> VXLKhoQuanTri.themVatPham(mucTieu.ten, MA_BAO_HIEM, 10));
+            case 4 -> moMenuNguoiChoi(quanTri, maMucTieu);
             default -> {
             }
         }
@@ -201,7 +229,83 @@ public final class VXLMenuQuanTri {
             case 2 -> hienKetQua(quanTri, "/menu threads", VXLBoLenhQuanTri::thongTinLuong);
             case 3 -> hienKetQua(quanTri, "/menu save all",
                     () -> VXLKhoQuanTri.luuNguoiChoi("all"));
-            case 4 -> moMenuChinh(quanTri);
+            case 4 -> hienKetQua(quanTri, "/menu gc", () -> {
+                Runtime rt = Runtime.getRuntime();
+                long truoc = rt.totalMemory() - rt.freeMemory();
+                System.gc();
+                long sau = rt.totalMemory() - rt.freeMemory();
+                long giam = Math.max(0L, truoc - sau);
+                return "Đã dọn dẹp bộ nhớ (GC)."
+                        + "\nGiải phóng: " + String.format(Locale.ROOT, "%.2f MB", giam / 1024D / 1024D)
+                        + "\nRAM đang dùng: " + String.format(Locale.ROOT, "%.2f MB", sau / 1024D / 1024D)
+                        + " / " + String.format(Locale.ROOT, "%.2f MB", rt.maxMemory() / 1024D / 1024D);
+            });
+            case 5 -> moMenuChinh(quanTri);
+            default -> {
+            }
+        }
+    }
+
+    private static void xuLyMenuThongBao(VXLNguoiChoi quanTri, int chiSo) {
+        switch (chiSo) {
+            case 0 -> hienKetQua(quanTri, "/menu fly Máy chủ sẽ bảo trì sau ít phút", () -> {
+                String noiDung = "Máy chủ sẽ bảo trì sau ít phút. Các xạ thủ vui lòng hoàn tất trận đấu!";
+                VXLThongBaoServer.guiMayBay(noiDung);
+                return "Đã phát máy bay: " + noiDung;
+            });
+            case 1 -> hienKetQua(quanTri, "/menu fly Chào mừng xạ thủ", () -> {
+                String noiDung = "Chào mừng các xạ thủ đến với thế giới Mobi Army 3!";
+                VXLThongBaoServer.guiMayBay(noiDung);
+                return "Đã phát máy bay: " + noiDung;
+            });
+            case 2 -> hienKetQua(quanTri, "/menu fly Sự kiện X2 EXP", () -> {
+                String noiDung = "Sự kiện X2 Kinh Nghiệm & Vàng đang diễn ra!";
+                VXLThongBaoServer.guiMayBay(noiDung);
+                return "Đã phát máy bay: " + noiDung;
+            });
+            case 3 -> hienKetQua(quanTri, "/menu announce Bảo trì sắp diễn ra", () -> {
+                String noiDung = "Máy chủ sẽ bảo trì trong ít phút nữa để nâng cấp hệ thống.";
+                VXLNguoiChoi.onChatFromToAllPlayer("HỆ THỐNG", noiDung);
+                return "Đã gửi chat hệ thống: " + noiDung;
+            });
+            case 4 -> hienKetQua(quanTri, "/menu announce Sự kiện X2", () -> {
+                String noiDung = "Sự kiện X2 toàn máy chủ đang diễn ra, chúc các bạn chơi game vui vẻ!";
+                VXLNguoiChoi.onChatFromToAllPlayer("HỆ THỐNG", noiDung);
+                return "Đã gửi chat hệ thống: " + noiDung;
+            });
+            case 5 -> hienKetQua(quanTri, "/menu announce Cảnh báo bảo mật", () -> {
+                String noiDung = "CẢNH BÁO: BQT không bao giờ hỏi mật khẩu của bạn. Tuyệt đối không chia sẻ tài khoản!";
+                VXLNguoiChoi.onChatFromToAllPlayer("HỆ THỐNG", noiDung);
+                return "Đã gửi chat hệ thống: " + noiDung;
+            });
+            case 6 -> hienKetQua(quanTri, "/menu modal Thông báo BQT", () -> {
+                String tieuDe = "THÔNG BÁO TỪ BQT";
+                String noiDung = "Chào các xạ thủ! Chúc các bạn có những giây phút trải nghiệm tuyệt vời cùng Mobi Army 3!";
+                VXLThongBaoServer.guiModalOK(tieuDe, noiDung);
+                return "Đã gửi thông báo popup toàn máy chủ.";
+            });
+            case 7 -> moMenuChinh(quanTri);
+            default -> {
+            }
+        }
+    }
+
+    private static void xuLyMenuBaoTri(VXLNguoiChoi quanTri, int chiSo) {
+        switch (chiSo) {
+            case 0 -> hienKetQua(quanTri, "/menu baotri status", VXLBaoTriMayChu::trangThai);
+            case 1 -> hienKetQua(quanTri, "/menu baotri on",
+                    () -> VXLBaoTriMayChu.bat(quanTri.ten, "Bảo trì nâng cấp hệ thống"));
+            case 2 -> hienKetQua(quanTri, "/menu baotri off",
+                    () -> VXLBaoTriMayChu.tat(quanTri.ten));
+            case 3 -> hienKetQua(quanTri, "/menu baotri 5",
+                    () -> VXLBaoTriMayChu.datLich(quanTri.ten, 5, "Bảo trì nâng cấp hệ thống sau 5 phút"));
+            case 4 -> hienKetQua(quanTri, "/menu baotri 10",
+                    () -> VXLBaoTriMayChu.datLich(quanTri.ten, 10, "Bảo trì nâng cấp hệ thống sau 10 phút"));
+            case 5 -> hienKetQua(quanTri, "/menu baotri 15",
+                    () -> VXLBaoTriMayChu.datLich(quanTri.ten, 15, "Bảo trì nâng cấp hệ thống sau 15 phút"));
+            case 6 -> hienKetQua(quanTri, "/menu baotri 30",
+                    () -> VXLBaoTriMayChu.datLich(quanTri.ten, 30, "Bảo trì nâng cấp hệ thống sau 30 phút"));
+            case 7 -> moMenuChinh(quanTri);
             default -> {
             }
         }
@@ -209,8 +313,8 @@ public final class VXLMenuQuanTri {
 
     private static void moMenuChinh(VXLNguoiChoi quanTri) {
         moDanhSach(quanTri, "MENU ADMIN",
-                List.of("Nhân vật của tôi", "Người chơi online", "Máy chủ",
-                        "Hướng dẫn lệnh nâng cao"),
+                List.of("Nhân vật của tôi", "Người chơi online", "Máy chủ & Hệ thống",
+                        "Thông báo toàn server", "Bảo trì máy chủ", "Hướng dẫn lệnh nâng cao"),
                 new TrangThaiMenu(LoaiMenu.CHINH, -1, List.of()));
     }
 
@@ -233,7 +337,7 @@ public final class VXLMenuQuanTri {
             cacMa.add(nguoiChoi.ma);
         }
         tenMuc.add("Quay lại");
-        moDanhSach(quanTri, "NGƯỜI CHƠI ONLINE", tenMuc,
+        moDanhSach(quanTri, "NGƯỜI CHƠI ONLINE (" + nguoiChois.size() + ")", tenMuc,
                 new TrangThaiMenu(LoaiMenu.DANH_SACH_NGUOI_CHOI, -1,
                         List.copyOf(cacMa)));
     }
@@ -245,8 +349,9 @@ public final class VXLMenuQuanTri {
             return;
         }
         moDanhSach(quanTri, "QUẢN TRỊ: " + mucTieu.ten,
-                List.of("Thông tin", "Tài nguyên", "Tiến trình", "Vật phẩm",
-                        "Tài khoản", "Lưu nhân vật", "Kick", "Quay lại"),
+                List.of("Thông tin chi tiết", "Tài nguyên (vàng/ngọc/exp)",
+                        "Tiến trình (cấp/phiến quân)", "Vật phẩm", "Tài khoản",
+                        "Lưu nhân vật", "Kick khỏi server", "Quay lại"),
                 new TrangThaiMenu(LoaiMenu.NGUOI_CHOI, maMucTieu, List.of()));
     }
 
@@ -257,8 +362,10 @@ public final class VXLMenuQuanTri {
             return;
         }
         moDanhSach(quanTri, "TÀI NGUYÊN: " + mucTieu.ten,
-                List.of("+100.000 vàng", "-100.000 vàng", "+100 ngọc", "-100 ngọc",
-                        "+10.000 EXP", "+100 điểm tiềm năng", "Quay lại"),
+                List.of("+100.000 vàng", "+1.000.000 vàng", "-100.000 vàng",
+                        "+100 ngọc", "+1.000 ngọc", "-100 ngọc",
+                        "+10.000 EXP", "+100.000 EXP",
+                        "+100 điểm tiềm năng", "+1.000 điểm tiềm năng", "Quay lại"),
                 new TrangThaiMenu(LoaiMenu.TAI_NGUYEN, maMucTieu, List.of()));
     }
 
@@ -269,7 +376,8 @@ public final class VXLMenuQuanTri {
             return;
         }
         moDanhSach(quanTri, "TIẾN TRÌNH: " + mucTieu.ten,
-                List.of("Tăng 1 cấp", "Tăng 1 mốc phiến quân", "Quay lại"),
+                List.of("Tăng 1 cấp", "Tăng 5 cấp", "Đặt cấp 50", "Đặt cấp 100",
+                        "Tăng 1 mốc phiến quân", "Đặt tối đa phiến quân (255)", "Quay lại"),
                 new TrangThaiMenu(LoaiMenu.TIEN_TRINH, maMucTieu, List.of()));
     }
 
@@ -280,7 +388,8 @@ public final class VXLMenuQuanTri {
             return;
         }
         moDanhSach(quanTri, "VẬT PHẨM: " + mucTieu.ten,
-                List.of("Thêm búa đục lỗ (349)", "Quay lại"),
+                List.of("Thêm búa đục lỗ x1 (349)", "Thêm búa đục lỗ x10 (349)",
+                        "Thêm búa đục lỗ x50 (349)", "Thêm bảo hiểm x10 (353)", "Quay lại"),
                 new TrangThaiMenu(LoaiMenu.VAT_PHAM, maMucTieu, List.of()));
     }
 
@@ -297,10 +406,37 @@ public final class VXLMenuQuanTri {
     }
 
     private static void moMenuMayChu(VXLNguoiChoi quanTri) {
-        moDanhSach(quanTri, "MÁY CHỦ",
-                List.of("Danh sách online", "Thông tin server", "Thông tin luồng",
-                        "Lưu tất cả", "Quay lại"),
+        moDanhSach(quanTri, "MÁY CHỦ & HỆ THỐNG",
+                List.of("Danh sách online chi tiết", "Thông tin server (RAM, Uptime)",
+                        "Thông tin luồng (Threads)", "Lưu tất cả nhân vật",
+                        "Dọn rác bộ nhớ (GC RAM)", "Quay lại"),
                 new TrangThaiMenu(LoaiMenu.MAY_CHU, -1, List.of()));
+    }
+
+    private static void moMenuThongBao(VXLNguoiChoi quanTri) {
+        moDanhSach(quanTri, "THÔNG BÁO TOÀN SERVER",
+                List.of("[Máy bay] Sắp bảo trì",
+                        "[Máy bay] Chào mừng tân thủ",
+                        "[Máy bay] Sự kiện X2 EXP",
+                        "[Chat] Thông báo bảo trì",
+                        "[Chat] Thông báo sự kiện X2",
+                        "[Chat] Cảnh báo bảo mật tài khoản",
+                        "[Popup] Gửi modal thông báo toàn server",
+                        "Quay lại"),
+                new TrangThaiMenu(LoaiMenu.THONG_BAO, -1, List.of()));
+    }
+
+    private static void moMenuBaoTri(VXLNguoiChoi quanTri) {
+        moDanhSach(quanTri, "BẢO TRÌ MÁY CHỦ",
+                List.of("Xem trạng thái bảo trì",
+                        "Bật bảo trì ngay",
+                        "Tắt bảo trì / Hủy hẹn giờ",
+                        "Hẹn bảo trì sau 5 phút",
+                        "Hẹn bảo trì sau 10 phút",
+                        "Hẹn bảo trì sau 15 phút",
+                        "Hẹn bảo trì sau 30 phút",
+                        "Quay lại"),
+                new TrangThaiMenu(LoaiMenu.BAO_TRI, -1, List.of()));
     }
 
     private static void moDanhSach(VXLNguoiChoi quanTri, String tieuDe,
@@ -346,7 +482,9 @@ public final class VXLMenuQuanTri {
         TIEN_TRINH,
         VAT_PHAM,
         TAI_KHOAN,
-        MAY_CHU
+        MAY_CHU,
+        THONG_BAO,
+        BAO_TRI
     }
 
     private record TrangThaiMenu(LoaiMenu loai, int maMucTieu,

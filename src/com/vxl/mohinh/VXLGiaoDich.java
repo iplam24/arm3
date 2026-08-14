@@ -130,7 +130,7 @@ public final class VXLGiaoDich {
                 VXLVatPham vatPham = nguoiChoi.itemBag[chiSo];
                 if (vatPham == null || vatPham.mau == null || soLuongHoacVang <= 0
                         || soLuongHoacVang > vatPham.soLuong || soLuongHoacVang > SO_LUONG_TOI_DA_MOI_MUC
-                        || nguoiChoi.vatPhamCoTrongBalo(vatPham)) {
+                        || nguoiChoi.vatPhamCoTrongBalo(vatPham) || khongTheGiaoDich(vatPham)) {
                     nguoiChoi.moHopThoaiOK("Vật phẩm hoặc số lượng giao dịch không hợp lệ.");
                     guiXoaVatPham(nguoiChoi, chiSo);
                     return;
@@ -313,7 +313,7 @@ public final class VXLGiaoDich {
             VXLVatPham vatPham = nguoiChoi.itemBag[muc.chiSo];
             if (vatPham == null || vatPham.mau == null || muc.soLuong <= 0
                     || muc.soLuong > vatPham.soLuong || muc.soLuong > SO_LUONG_TOI_DA_MOI_MUC
-                    || nguoiChoi.vatPhamCoTrongBalo(vatPham)) {
+                    || nguoiChoi.vatPhamCoTrongBalo(vatPham) || khongTheGiaoDich(vatPham)) {
                 return "Vật phẩm giao dịch đã thay đổi hoặc không còn đủ số lượng.";
             }
             muc.vatPham = vatPham;
@@ -332,12 +332,16 @@ public final class VXLGiaoDich {
             }
             VXLVatPham vatPham = nguoiChoi.itemBag[muc.chiSo];
             if (vatPham == null || vatPham != muc.vatPham || muc.soLuong > vatPham.soLuong
-                    || nguoiChoi.vatPhamCoTrongBalo(vatPham)
+                    || nguoiChoi.vatPhamCoTrongBalo(vatPham) || khongTheGiaoDich(vatPham)
                     || !dauVanTay(vatPham).equals(muc.dauVanTay)) {
                 return "Vật phẩm giao dịch đã bị thay đổi sau khi khóa.";
             }
         }
         return null;
+    }
+
+    private static boolean khongTheGiaoDich(VXLVatPham vatPham) {
+        return vatPham != null && vatPham.mau != null && vatPham.mau.noTrade;
     }
 
     private static boolean themVatPham(VXLVatPham[] tuiNhan, VXLNguoiChoi nguoiCho, DeNghi deNghiCho) {

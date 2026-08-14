@@ -114,6 +114,7 @@ public class VXLQuanLyMayChu {
                     }
                     vatPham.buyGem = ngoc;
                     vatPham.buyGold = vang;
+                    vatPham.noTrade = res.getInt("notrade") == 1;
                     itemTemplates.put(ma, vatPham);
                     if (vang + ngoc <= 0) continue;
                     if (loai == 10) {

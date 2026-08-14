@@ -8,6 +8,9 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
 public final class VXLBaoTriMayChu {
@@ -15,10 +18,19 @@ public final class VXLBaoTriMayChu {
     private static final DateTimeFormatter DINH_DANG_THOI_GIAN = DateTimeFormatter
             .ofPattern("dd/MM/yyyy HH:mm:ss")
             .withZone(ZoneId.of("Asia/Ho_Chi_Minh"));
+    private static final ScheduledExecutorService BO_HEN_GIO =
+            Executors.newSingleThreadScheduledExecutor(runnable -> {
+                Thread luong = new Thread(runnable, "lich-bao-tri-may-chu");
+                luong.setDaemon(true);
+                return luong;
+            });
     private static volatile boolean dangBaoTri;
     private static volatile String lyDo = LY_DO_MAC_DINH;
     private static volatile String nguoiBat = "";
     private static volatile Instant batLuc;
+    private static volatile Instant baoTriLuc;
+    private static volatile ScheduledFuture<?> lichBaoTri;
+    private static volatile long phienLich;
 
     private VXLBaoTriMayChu() {
     }
@@ -43,10 +55,42 @@ public final class VXLBaoTriMayChu {
     }
 
     public static synchronized String bat(String tenQuanTri, String lyDoMoi) {
+        huyLichNoiBo();
+        return batNoiBo(tenQuanTri, lyDoMoi);
+    }
+
+    public static synchronized String datLich(String tenQuanTri, int soPhut, String lyDoMoi) {
+        if (soPhut < 1 || soPhut > 7 * 24 * 60) {
+            throw new IllegalArgumentException("Số phút bảo trì phải từ 1 đến 10080.");
+        }
+        if (dangBaoTri) {
+            return "Máy chủ đang ở chế độ bảo trì. Hãy tắt bảo trì trước khi đặt lịch mới.";
+        }
+        huyLichNoiBo();
+        String lyDoHen = chuanHoaLyDo(lyDoMoi);
+        String nguoiHen = chuanHoaTenQuanTri(tenQuanTri);
+        Instant thoiDiemBaoTri = Instant.now().plusSeconds(TimeUnit.MINUTES.toSeconds(soPhut));
+        long phienMoi = ++phienLich;
+        lyDo = lyDoHen;
+        nguoiBat = nguoiHen;
+        baoTriLuc = thoiDiemBaoTri;
+        lichBaoTri = BO_HEN_GIO.schedule(
+                () -> batTheoLich(phienMoi, nguoiHen, lyDoHen), soPhut, TimeUnit.MINUTES);
+
+        String thongBao = "Máy chủ sẽ bảo trì sau " + soPhut + " phút. " + lyDoHen;
+        VXLNguoiChoi.onChatFromToAllPlayer("HỆ THỐNG", thongBao);
+        VXLThongBaoServer.guiMayBay(thongBao);
+        return "Đã đặt lịch bảo trì sau " + soPhut + " phút."
+                + "\nBắt đầu lúc: " + DINH_DANG_THOI_GIAN.format(thoiDiemBaoTri)
+                + "\nLý do: " + lyDoHen;
+    }
+
+    private static String batNoiBo(String tenQuanTri, String lyDoMoi) {
         boolean daBat = dangBaoTri;
         lyDo = chuanHoaLyDo(lyDoMoi);
-        nguoiBat = tenQuanTri == null || tenQuanTri.isBlank() ? "admin" : tenQuanTri.trim();
+        nguoiBat = chuanHoaTenQuanTri(tenQuanTri);
         batLuc = Instant.now();
+        baoTriLuc = null;
         dangBaoTri = true;
 
         String thongBao = "Máy chủ bắt đầu bảo trì. " + lyDo;
@@ -60,17 +104,28 @@ public final class VXLBaoTriMayChu {
 
     public static synchronized String tat(String tenQuanTri) {
         if (!dangBaoTri) {
+            if (coLichBaoTri()) {
+                huyLichNoiBo();
+                return "Đã hủy lịch bảo trì bởi " + chuanHoaTenQuanTri(tenQuanTri) + ".";
+            }
             return "Máy chủ hiện không ở chế độ bảo trì.";
         }
         dangBaoTri = false;
-        String nguoiTat = tenQuanTri == null || tenQuanTri.isBlank() ? "admin" : tenQuanTri.trim();
+        batLuc = null;
+        String nguoiTat = chuanHoaTenQuanTri(tenQuanTri);
         VXLNguoiChoi.onChatFromToAllPlayer("HỆ THỐNG",
                 "Bảo trì đã kết thúc. Người chơi có thể đăng nhập bình thường.");
         return "Đã tắt chế độ bảo trì bởi " + nguoiTat + ".";
     }
 
-    public static String trangThai() {
+    public static synchronized String trangThai() {
         if (!dangBaoTri) {
+            if (coLichBaoTri()) {
+                return "BẢO TRÌ: ĐÃ HẸN"
+                        + "\nLý do: " + lyDo
+                        + "\nNgười đặt: " + nguoiBat
+                        + "\nBắt đầu lúc: " + DINH_DANG_THOI_GIAN.format(baoTriLuc);
+            }
             return "BẢO TRÌ: TẮT";
         }
         Instant thoiDiemBat = batLuc;
@@ -80,8 +135,35 @@ public final class VXLBaoTriMayChu {
                 + (thoiDiemBat == null ? "" : "\nBật lúc: " + DINH_DANG_THOI_GIAN.format(thoiDiemBat));
     }
 
-    public static String trangThaiNgan() {
+    public static synchronized String trangThaiNgan() {
+        if (coLichBaoTri()) {
+            return "HẸN " + DINH_DANG_THOI_GIAN.format(baoTriLuc) + " - " + lyDo;
+        }
         return dangBaoTri ? "BẬT - " + lyDo : "TẮT";
+    }
+
+    private static synchronized void batTheoLich(long phien, String tenQuanTri, String lyDoHen) {
+        if (phien != phienLich || !coLichBaoTri() || dangBaoTri) {
+            return;
+        }
+        lichBaoTri = null;
+        baoTriLuc = null;
+        batNoiBo(tenQuanTri, lyDoHen);
+    }
+
+    private static boolean coLichBaoTri() {
+        ScheduledFuture<?> lich = lichBaoTri;
+        return lich != null && !lich.isCancelled() && !lich.isDone() && baoTriLuc != null;
+    }
+
+    private static void huyLichNoiBo() {
+        phienLich++;
+        ScheduledFuture<?> lich = lichBaoTri;
+        lichBaoTri = null;
+        baoTriLuc = null;
+        if (lich != null) {
+            lich.cancel(false);
+        }
     }
 
     private static int ngatNguoiDungThuong(String thongBao) {
@@ -110,5 +192,9 @@ public final class VXLBaoTriMayChu {
         }
         String ketQua = noiDung.trim();
         return ketQua.length() <= 160 ? ketQua : ketQua.substring(0, 160);
+    }
+
+    private static String chuanHoaTenQuanTri(String tenQuanTri) {
+        return tenQuanTri == null || tenQuanTri.isBlank() ? "admin" : tenQuanTri.trim();
     }
 }

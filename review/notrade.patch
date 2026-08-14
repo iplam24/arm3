@@ -1,0 +1,91 @@
+﻿*** Begin Patch
+*** Update File: src/com/vxl/vatpham/VXLMauVatPham.java
+@@
+     public boolean isUpToUp;
++    public boolean noTrade;
+     public int strRequire;
+@@
+         this.isUpToUp = isUpToUp;
++        this.noTrade = false;
+         this.thuocTinhs = new Vector();
+*** Update File: src/com/vxl/loi/VXLQuanLyMayChu.java
+@@
+                     vatPham.buyGem = ngoc;
+                     vatPham.buyGold = vang;
++                    vatPham.noTrade = res.getInt("notrade") == 1;
+                     itemTemplates.put(ma, vatPham);
+*** Update File: src/com/vxl/mohinh/VXLGiaoDich.java
+@@
+                 }
+                 VXLVatPham vatPham = nguoiChoi.itemBag[chiSo];
++                if (khongTheGiaoDich(vatPham)) {
++                    nguoiChoi.moHopThoaiOK("Vật phẩm này không thể giao dịch.");
++                    guiXoaVatPham(nguoiChoi, chiSo);
++                    return;
++                }
+                 if (vatPham == null || vatPham.mau == null || soLuongHoacVang <= 0
+                         || soLuongHoacVang > vatPham.soLuong || soLuongHoacVang > SO_LUONG_TOI_DA_MOI_MUC
+@@
+             }
+             VXLVatPham vatPham = nguoiChoi.itemBag[muc.chiSo];
++            if (khongTheGiaoDich(vatPham)) {
++                return "Vật phẩm này không thể giao dịch.";
++            }
+             if (vatPham == null || vatPham.mau == null || muc.soLuong <= 0
+@@
+             }
+             VXLVatPham vatPham = nguoiChoi.itemBag[muc.chiSo];
++            if (khongTheGiaoDich(vatPham)) {
++                return "Vật phẩm này không thể giao dịch.";
++            }
+             if (vatPham == null || vatPham != muc.vatPham || muc.soLuong > vatPham.soLuong
+@@
+         return null;
+     }
++
++    private static boolean khongTheGiaoDich(VXLVatPham vatPham) {
++        return vatPham != null && vatPham.mau != null && vatPham.mau.noTrade;
++    }
+ 
+     private static boolean themVatPham(VXLVatPham[] tuiNhan, VXLNguoiChoi nguoiCho, DeNghi deNghiCho) {
+*** Update File: sql/army3xk.sql
+@@
+   `buy_gold` int(11) NOT NULL,
+   `buy_gem` int(11) NOT NULL,
+-  `options` text NOT NULL
++  `options` text NOT NULL,
++  `notrade` tinyint(1) NOT NULL DEFAULT 0
+ ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+*** Update File: sql/army3_system_clean.sql
+@@
+   `buy_gold` int NOT NULL,
+   `buy_gem` int NOT NULL,
+   `options` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
++  `notrade` tinyint(1) NOT NULL DEFAULT '0',
+   PRIMARY KEY (`id`)
+*** Add File: sql/migrations/20260814_add_item_notrade.sql
++START TRANSACTION;
++
++SET @column_exists = (
++    SELECT COUNT(*)
++    FROM `information_schema`.`COLUMNS`
++    WHERE `TABLE_SCHEMA` = DATABASE()
++      AND `TABLE_NAME` = 'items'
++      AND `COLUMN_NAME` = 'notrade'
++);
++
++SET @alter_items = IF(
++    @column_exists = 0,
++    'ALTER TABLE `items` ADD COLUMN `notrade` TINYINT(1) NOT NULL DEFAULT 0 AFTER `options`',
++    'SELECT 1'
++);
++
++PREPARE add_notrade_statement FROM @alter_items;
++EXECUTE add_notrade_statement;
++DEALLOCATE PREPARE add_notrade_statement;
++
++COMMIT;
++
++-- Đặt notrade = 1 cho các vật phẩm không được phép giao dịch.
++-- Ví dụ: UPDATE `items` SET `notrade` = 1 WHERE `id` IN (15, 16, 17);
+*** End Patch

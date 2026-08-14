@@ -76,6 +76,10 @@ final class VXLDieuKhienBotTranDau {
         BO_LAP_LICH.execute(tacVu);
     }
 
+    void thucHienTriHoan(Runnable tacVu, long doTreMillis) {
+        BO_LAP_LICH.schedule(tacVu, Math.max(0L, doTreMillis), TimeUnit.MILLISECONDS);
+    }
+
     private void nhip() throws IOException {
         synchronized (this.tranDau) {
             if (this.tranDau.daKetThuc()) {
@@ -100,6 +104,9 @@ final class VXLDieuKhienBotTranDau {
                         TRE_BOT_TOI_THIEU, TRE_BOT_TOI_DA + 1L);
             }
             if (luot.bot && bayGio >= this.thoiDiemBotHanhDong && bayGio <= hanLuot) {
+                if (this.tranDau.xuLyLuotBossDacBiet(luot)) {
+                    return;
+                }
                 if (luot.camTu) {
                     this.xuLyLuotCamTu(luot);
                 } else {
@@ -112,7 +119,7 @@ final class VXLDieuKhienBotTranDau {
     }
 
     private void xuLyLuotBotBan(VXLChienBinh bot) throws IOException {
-        if (!bot.laBanSaoUltron() && !this.tranDau.laCheDoCamTu()) {
+        if (!bot.laBanSaoUltron() && !bot.coDinh && !this.tranDau.laCheDoCamTu()) {
             this.diChuyenTruocKhiBan(bot);
         }
         VXLChienBinh mucTieu = this.timMucTieuGanNhat(bot);

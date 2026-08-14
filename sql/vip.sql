@@ -1178,3 +1178,19 @@ WHERE `level` = 5
   );
 
 COMMIT;
+
+SET @notrade_column_exists = (
+    SELECT COUNT(*)
+    FROM `information_schema`.`COLUMNS`
+    WHERE `TABLE_SCHEMA` = DATABASE()
+      AND `TABLE_NAME` = 'items'
+      AND `COLUMN_NAME` = 'notrade'
+);
+SET @add_notrade_sql = IF(
+    @notrade_column_exists = 0,
+    'ALTER TABLE `items` ADD COLUMN `notrade` TINYINT(1) NOT NULL DEFAULT 0 AFTER `options`',
+    'SELECT 1'
+);
+PREPARE add_notrade_statement FROM @add_notrade_sql;
+EXECUTE add_notrade_statement;
+DEALLOCATE PREPARE add_notrade_statement;
