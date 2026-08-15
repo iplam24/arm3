@@ -143,6 +143,14 @@ implements IVXLDichVuGame {
         this.guiTin(ms);
     }
 
+    public void moHopThoaiNhapGiftcode(String tieuDe) throws IOException {
+        VXLTinNhan ms = new VXLTinNhan(123);
+        DataOutputStream ds = ms.boGhi();
+        ds.writeUTF(tieuDe != null ? tieuDe : "Nhập mã Giftcode");
+        ds.flush();
+        this.guiTin(ms);
+    }
+
     public void baoLoiTien(String noiDung) throws IOException {
         VXLTinNhan ms = new VXLTinNhan(10);
         DataOutputStream ds = ms.boGhi();

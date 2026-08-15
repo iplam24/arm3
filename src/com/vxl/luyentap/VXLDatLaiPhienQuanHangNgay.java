@@ -61,6 +61,27 @@ public final class VXLDatLaiPhienQuanHangNgay {
         }
     }
 
+    public static synchronized String datLaiToanBoNguoiChoi() throws Exception {
+        int soNguoiChoi = datLaiTrongCoSoDuLieu();
+        ArrayList<VXLNguoiChoi> nguoiChoiTrucTuyen =
+                new ArrayList<>(VXLNguoiChoi.players_id.values());
+        for (VXLNguoiChoi nguoiChoi : nguoiChoiTrucTuyen) {
+            if (nguoiChoi != null) {
+                nguoiChoi.datLaiTienDoPhienQuanHangNgay();
+                nguoiChoi.flushCache();
+            }
+        }
+        ZonedDateTime hienTai = ZonedDateTime.now(MUI_GIO_VIET_NAM);
+        LocalDate ngay = hienTai.toLocalDate();
+        ngayDaDatLai = ngay;
+        luuNgayDaDatLai(ngay);
+        VXLQuanLyMayChu.log("[PHIEN-QUAN-ADMIN] Admin đã reset bot/phiến quân: DB="
+                + soNguoiChoi + ", Online=" + nguoiChoiTrucTuyen.size());
+        return "Đã reset mốc Bot/Phiến quân về mốc 1 cho toàn bộ người chơi!\n"
+                + "- Đã cập nhật Database: " + soNguoiChoi + " tài khoản\n"
+                + "- Đã cập nhật Online: " + nguoiChoiTrucTuyen.size() + " người chơi.";
+    }
+
     private static void kiemTraAnToan() {
         try {
             kiemTraVaDatLaiNeuCan();

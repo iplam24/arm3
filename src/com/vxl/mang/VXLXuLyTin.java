@@ -235,7 +235,6 @@ implements IVXLXuLyTin {
                         break;
                     case 83:
                         this.khach.user.nguoiChoi.vaoLuyenTap();
-                        System.out.println("Client gÃƒÂ¡Ã‚Â»Ã‚Â­i lÃƒÂ¡Ã‚Â»Ã¢â‚¬Â¡nh vÃƒÆ’Ã‚Â o luyÃƒÂ¡Ã‚Â»Ã¢â‚¬Â¡n tÃƒÂ¡Ã‚ÂºÃ‚Â­p");
                         break;
                     case 21:
                         if (this.khach.user.nguoiChoi.inTraining) {

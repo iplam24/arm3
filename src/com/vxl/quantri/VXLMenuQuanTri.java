@@ -2,6 +2,7 @@ package com.vxl.quantri;
 
 import com.vxl.mang.VXLTinNhan;
 import com.vxl.mohinh.VXLNguoiChoi;
+import com.vxl.loi.VXLQuanLyMayChu;
 import com.vxl.vatpham.VXLDichVuNgocTrangBi;
 import java.io.IOException;
 import java.sql.SQLException;
@@ -56,6 +57,7 @@ public final class VXLMenuQuanTri {
             case MAY_CHU -> xuLyMenuMayChu(quanTri, chiSo);
             case THONG_BAO -> xuLyMenuThongBao(quanTri, chiSo);
             case BAO_TRI -> xuLyMenuBaoTri(quanTri, chiSo);
+            case TI_LE_EXP -> xuLyMenuTiLeExp(quanTri, chiSo);
         }
     }
 
@@ -170,7 +172,12 @@ public final class VXLMenuQuanTri {
                             Byte.toUnsignedInt(mucTieu.trainingSuccess) + 1));
             case 5 -> hienKetQua(quanTri, "/menu rebel " + mucTieu.ten + " 255",
                     () -> VXLKhoQuanTri.datCapPhienQuan(mucTieu.ten, 255));
-            case 6 -> moMenuNguoiChoi(quanTri, maMucTieu);
+            case 6 -> hienKetQua(quanTri, "/menu doublexp " + mucTieu.ten,
+                    () -> {
+                        mucTieu.kichHoatNhanDoiKinhNghiem();
+                        return "Đã kích hoạt x2 EXP 24h cho " + mucTieu.ten + ".";
+                    });
+            case 7 -> moMenuNguoiChoi(quanTri, maMucTieu);
             default -> {
             }
         }
@@ -240,7 +247,8 @@ public final class VXLMenuQuanTri {
                         + "\nRAM đang dùng: " + String.format(Locale.ROOT, "%.2f MB", sau / 1024D / 1024D)
                         + " / " + String.format(Locale.ROOT, "%.2f MB", rt.maxMemory() / 1024D / 1024D);
             });
-            case 5 -> moMenuChinh(quanTri);
+            case 5 -> moMenuTiLeExp(quanTri);
+            case 6 -> moMenuChinh(quanTri);
             default -> {
             }
         }
@@ -258,8 +266,10 @@ public final class VXLMenuQuanTri {
                 VXLThongBaoServer.guiMayBay(noiDung);
                 return "Đã phát máy bay: " + noiDung;
             });
-            case 2 -> hienKetQua(quanTri, "/menu fly Sự kiện X2 EXP", () -> {
-                String noiDung = "Sự kiện X2 Kinh Nghiệm & Vàng đang diễn ra!";
+            case 2 -> hienKetQua(quanTri, "/menu fly Sự kiện EXP", () -> {
+                String noiDung = VXLQuanLyMayChu.expRate == 1
+                        ? "Sự kiện Kinh Nghiệm đang diễn ra!"
+                        : "Sự kiện x" + VXLQuanLyMayChu.expRate + " Kinh Nghiệm đang diễn ra!";
                 VXLThongBaoServer.guiMayBay(noiDung);
                 return "Đã phát máy bay: " + noiDung;
             });
@@ -268,8 +278,10 @@ public final class VXLMenuQuanTri {
                 VXLNguoiChoi.onChatFromToAllPlayer("HỆ THỐNG", noiDung);
                 return "Đã gửi chat hệ thống: " + noiDung;
             });
-            case 4 -> hienKetQua(quanTri, "/menu announce Sự kiện X2", () -> {
-                String noiDung = "Sự kiện X2 toàn máy chủ đang diễn ra, chúc các bạn chơi game vui vẻ!";
+            case 4 -> hienKetQua(quanTri, "/menu announce Sự kiện EXP", () -> {
+                String noiDung = VXLQuanLyMayChu.expRate == 1
+                        ? "Sự kiện Kinh Nghiệm toàn máy chủ đang diễn ra!"
+                        : "Sự kiện x" + VXLQuanLyMayChu.expRate + " EXP toàn máy chủ đang diễn ra, chúc các bạn chơi game vui vẻ!";
                 VXLNguoiChoi.onChatFromToAllPlayer("HỆ THỐNG", noiDung);
                 return "Đã gửi chat hệ thống: " + noiDung;
             });
@@ -288,6 +300,49 @@ public final class VXLMenuQuanTri {
             default -> {
             }
         }
+    }
+
+    private static void xuLyMenuTiLeExp(VXLNguoiChoi quanTri, int chiSo) {
+        if (chiSo == 8) {
+            hienKetQua(quanTri, "/menu exprate",
+                    () -> "Tỉ lệ EXP server hiện tại: x" + VXLQuanLyMayChu.expRate);
+            return;
+        }
+        if (chiSo == 9) {
+            moMenuMayChu(quanTri);
+            return;
+        }
+        int heSo = switch (chiSo) {
+            case 0 -> 1;
+            case 1 -> 2;
+            case 2 -> 3;
+            case 3 -> 4;
+            case 4 -> 5;
+            case 5 -> 6;
+            case 6 -> 8;
+            case 7 -> 10;
+            default -> -1;
+        };
+        if (heSo == -1) {
+            moMenuMayChu(quanTri);
+            return;
+        }
+        int heSoCu = VXLQuanLyMayChu.expRate;
+        VXLQuanLyMayChu.expRate = heSo;
+        String thongBao = heSo == 1
+                ? "Máy chủ đã kết thúc sự kiện nhân EXP (Tỉ lệ x1)."
+                : "Máy chủ đang áp dụng sự kiện x" + heSo + " EXP toàn server!";
+        VXLThongBaoServer.guiMayBay(thongBao);
+        hienKetQua(quanTri, "/menu exprate " + heSo,
+                () -> "Đã đổi tỉ lệ EXP server từ x" + heSoCu + " -> x" + heSo + ".");
+    }
+
+    private static void moMenuTiLeExp(VXLNguoiChoi quanTri) {
+        moDanhSach(quanTri, "TỈ LỆ EXP SERVER (Hiện: x" + VXLQuanLyMayChu.expRate + ")",
+                List.of("Đặt x1 (Bình thường)", "Đặt x2 EXP", "Đặt x3 EXP", "Đặt x4 EXP",
+                        "Đặt x5 EXP", "Đặt x6 EXP", "Đặt x8 EXP", "Đặt x10 EXP",
+                        "Xem tỉ lệ hiện tại", "Quay lại"),
+                new TrangThaiMenu(LoaiMenu.TI_LE_EXP, -1, List.of()));
     }
 
     private static void xuLyMenuBaoTri(VXLNguoiChoi quanTri, int chiSo) {
@@ -377,7 +432,8 @@ public final class VXLMenuQuanTri {
         }
         moDanhSach(quanTri, "TIẾN TRÌNH: " + mucTieu.ten,
                 List.of("Tăng 1 cấp", "Tăng 5 cấp", "Đặt cấp 50", "Đặt cấp 100",
-                        "Tăng 1 mốc phiến quân", "Đặt tối đa phiến quân (255)", "Quay lại"),
+                        "Tăng 1 mốc phiến quân", "Đặt tối đa phiến quân (255)",
+                        "Bật x2 EXP 24h (buff cá nhân)", "Quay lại"),
                 new TrangThaiMenu(LoaiMenu.TIEN_TRINH, maMucTieu, List.of()));
     }
 
@@ -409,17 +465,20 @@ public final class VXLMenuQuanTri {
         moDanhSach(quanTri, "MÁY CHỦ & HỆ THỐNG",
                 List.of("Danh sách online chi tiết", "Thông tin server (RAM, Uptime)",
                         "Thông tin luồng (Threads)", "Lưu tất cả nhân vật",
-                        "Dọn rác bộ nhớ (GC RAM)", "Quay lại"),
+                        "Dọn rác bộ nhớ (GC RAM)",
+                        "Tỉ lệ EXP server (x" + VXLQuanLyMayChu.expRate + ") -> Điều chỉnh", "Quay lại"),
                 new TrangThaiMenu(LoaiMenu.MAY_CHU, -1, List.of()));
     }
 
     private static void moMenuThongBao(VXLNguoiChoi quanTri) {
+        int heSo = VXLQuanLyMayChu.expRate;
+        String expText = heSo == 1 ? "Không có sự kiện EXP" : "Sự kiện x" + heSo + " EXP";
         moDanhSach(quanTri, "THÔNG BÁO TOÀN SERVER",
                 List.of("[Máy bay] Sắp bảo trì",
                         "[Máy bay] Chào mừng tân thủ",
-                        "[Máy bay] Sự kiện X2 EXP",
+                        "[Máy bay] " + expText,
                         "[Chat] Thông báo bảo trì",
-                        "[Chat] Thông báo sự kiện X2",
+                        "[Chat] " + expText,
                         "[Chat] Cảnh báo bảo mật tài khoản",
                         "[Popup] Gửi modal thông báo toàn server",
                         "Quay lại"),
@@ -484,7 +543,8 @@ public final class VXLMenuQuanTri {
         TAI_KHOAN,
         MAY_CHU,
         THONG_BAO,
-        BAO_TRI
+        BAO_TRI,
+        TI_LE_EXP
     }
 
     private record TrangThaiMenu(LoaiMenu loai, int maMucTieu,

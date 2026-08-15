@@ -375,12 +375,12 @@ public final class VXLQuanLyLuyenTap {
         this.phatBanKyNangDacBiet = kyNangDacBiet;
         this.phatBanSieuCao = sieuCaoTrungMucTieu;
         int heSoDan = VXLCauHinhVatPhamChienDau.layHeSoSatThuong(maVatPhamDan);
-        int heSoTong = heSoDan * Math.max(100, this.chiSoNguoiChoi.heSoPhatBan) / 100;
-        int satThuongCoBan = VXLTinhSatThuong.tinhPhatBan(this.chiSoNguoiChoi.tanCong,
-                luc, VXLCauHinhPhienQuan.HE_SO_DAN_THUONG * heSoTong / 100);
-        satThuongCoBan = Math.max(1, satThuongCoBan
-                * VXLCauHinhVatPhamChienDau.layHeSoSatThuongTrangThai(
-                        this.phatBanSieuCao, this.phatBanKyNangDacBiet) / 100);
+        int heSoTrangThai = VXLCauHinhVatPhamChienDau.layHeSoSatThuongTrangThai(
+                this.phatBanSieuCao, this.phatBanKyNangDacBiet);
+        long heSoTich = (long)heSoDan * Math.max(100, this.chiSoNguoiChoi.heSoPhatBan)
+                * VXLCauHinhPhienQuan.HE_SO_DAN_THUONG * heSoTrangThai;
+        int heSoTong = (int)Math.max(1L, heSoTich / 1000000L);
+        int satThuongCoBan = VXLTinhSatThuong.tinhPhatBanCoDaoDong(this.chiSoNguoiChoi.tanCong, luc, heSoTong);
         int satThuongMoiVien = VXLCauHinhVatPhamChienDau.tinhSatThuongMoiVien(
                 satThuongCoBan, loaiDan, chiMang, avengerDan);
         int tranSatThuong = phatBan.truotRaNgoaiBanDo ? 0 : satThuongCoBan
@@ -800,16 +800,38 @@ public final class VXLQuanLyLuyenTap {
     private void xuLySkillHawkeye(int chiSoPhienQuan) throws IOException {
         short mucTieuX = this.phienQuanX[chiSoPhienQuan];
         short mucTieuY = this.phienQuanY[chiSoPhienQuan];
-        short[] xs = new short[]{(short)(mucTieuX - 20), (short)(mucTieuX - 5),
-                (short)(mucTieuX + 5), (short)(mucTieuX + 20)};
-        short[] ys = new short[]{mucTieuY, mucTieuY, mucTieuY, mucTieuY};
+        short[] xs = new short[]{
+                (short)(mucTieuX - 60), (short)(mucTieuX - 40), (short)(mucTieuX - 20),
+                (short)(mucTieuX),
+                (short)(mucTieuX + 20), (short)(mucTieuX + 40), (short)(mucTieuX + 60)
+        };
+        short[] ys = new short[xs.length];
+        for (int i = 0; i < xs.length; i++) {
+            xs[i] = (short)Math.max(4, Math.min(
+                    this.tinhDuongDan.layBanDo().getWidth() - 5, xs[i]));
+            ys[i] = this.tinhDuongDan.layBanDo().timViTriDat(xs[i], mucTieuY);
+            this.tinhDuongDan.layBanDo().taoLoTheoMatNa(xs[i], ys[i], "hgrenade.png");
+        }
         this.nguoiChoi.dichVu.guiSkillHawkeye((byte)0,
                 LOAI_DAN_HAWKEYE_SKILL, xs, ys);
         int satThuongMoiMui = VXLTinhSatThuong.tinhSauGiap(20 + this.chiSoNguoiChoi.tanCong,
                 this.giapPhienQuan);
         satThuongMoiMui = Math.max(8, satThuongMoiMui);
+        int tongSatThuong = 0;
+        for (int i = 0; i < xs.length; i++) {
+            for (int pq = 0; pq < SO_PHIEN_QUAN; pq++) {
+                if (this.phienQuanDaChet[pq]) {
+                    continue;
+                }
+                int dx = this.phienQuanX[pq] - xs[i];
+                int dy = this.phienQuanY[pq] - ys[i];
+                if (dx * dx + dy * dy <= 60 * 60) {
+                    tongSatThuong += satThuongMoiMui;
+                }
+            }
+        }
         this.apDungSatThuongSkillPhienQuan(chiSoPhienQuan,
-                satThuongMoiMui * xs.length);
+                Math.max(satThuongMoiMui * xs.length, tongSatThuong));
         this.lapLichKetThucSkillNguoiChoi(1800L);
     }
 
@@ -1581,11 +1603,11 @@ public final class VXLQuanLyLuyenTap {
         int heSoDan = danManh
                 ? VXLCauHinhPhienQuan.HE_SO_DAN_MANH
                 : VXLCauHinhPhienQuan.HE_SO_DAN_THUONG;
-        int satThuongCoBan = VXLTinhSatThuong.tinhPhatBan(
-                this.tanCongPhienQuan, luc, heSoDan);
-        satThuongCoBan = Math.max(1, satThuongCoBan
-                * VXLCauHinhVatPhamChienDau.layHeSoSatThuongTrangThai(
-                        sieuCaoTrungNguoiChoi, false) / 100);
+        int heSoTrangThaiPhienQuan = VXLCauHinhVatPhamChienDau.layHeSoSatThuongTrangThai(
+                sieuCaoTrungNguoiChoi, false);
+        int heSoTongPhienQuan = (int)Math.max(1L, (long)heSoDan * heSoTrangThaiPhienQuan / 100L);
+        int satThuongCoBan = VXLTinhSatThuong.tinhPhatBanCoDaoDong(
+                this.tanCongPhienQuan, luc, heSoTongPhienQuan);
         int satThuongMoiVien = VXLCauHinhVatPhamChienDau.tinhSatThuongMoiVien(
                 satThuongCoBan, loaiDan, (byte)0, (byte)0);
         int tranSatThuong = phatBan.truotRaNgoaiBanDo ? 0 : satThuongCoBan

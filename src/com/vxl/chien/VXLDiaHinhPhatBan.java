@@ -83,7 +83,7 @@ public final class VXLDiaHinhPhatBan {
             case 7, 25, 31, 37, 47 -> "h14x12.png";
             case 9 -> "rangehole.png";
             case 10 -> "rocket.png";
-            case 15, 22, 42, 43, 45, 57 -> "hgrenade.png";
+            case 15, 22, 42, 43, 45, 57, 83 -> "hgrenade.png";
             default -> "h32x26.png";
         };
     }

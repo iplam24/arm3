@@ -29,8 +29,8 @@ public final class VXLMenuDoiTruong {
         huyMenu(nguoiChoi);
         DANG_CHO_MENU.put(nguoiChoi.ma, Boolean.TRUE);
         Vector<String> menu = new Vector<>();
-        menu.add("Nhập Giftcode");
-        menu.add("Hướng dẫn");
+        menu.add("Luyện tập");
+        menu.add("Giftcode");
         nguoiChoi.dichVu.moDanhSach("ĐỘI TRƯỞNG", menu);
     }
 
@@ -42,10 +42,12 @@ public final class VXLMenuDoiTruong {
         int chiSo = tinNhan.boDoc().readUnsignedByte();
         switch (chiSo) {
             case 0 -> {
-                nguoiChoi.moHopThoaiOK("Hãy nhập mã Giftcode bằng cách gõ vào ô chat:\n/code <mã>\nVí dụ: /code TANTHU hoặc /code VIP2026");
+                nguoiChoi.vaoLuyenTap();
             }
             case 1 -> {
-                nguoiChoi.moHopThoaiOK("Ta là Đội Trưởng! Chúc chiến binh tham gia chiến trường vui vẻ và lập nhiều chiến công.");
+                if (nguoiChoi.dichVu != null) {
+                    nguoiChoi.dichVu.moHopThoaiNhapGiftcode("Nhập Giftcode");
+                }
             }
         }
     }

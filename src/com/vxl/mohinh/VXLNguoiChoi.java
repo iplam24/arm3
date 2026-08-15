@@ -234,12 +234,11 @@ public class VXLNguoiChoi {
         short npcId = ms.boDoc().readShort();
         switch (npcId) {
             case 2: {
-                this.npcDoiTruong();
+                com.vxl.nhapvai.VXLMenuDoiTruong.mo(this);
                 break;
             }
             case 3: {
                 this.npcDaiUy();
-                System.out.println("npcId: " + npcId);
                 break;
             }
             default: {
@@ -250,10 +249,6 @@ public class VXLNguoiChoi {
 
     public void npcDaiUy() throws IOException {
         VXLQuanLyPhong.guiPhongTisEmpty(this);
-    }
-
-    public void npcDoiTruong() throws IOException {
-        com.vxl.nhapvai.VXLMenuDoiTruong.mo(this);
     }
 
     public void doiKhu(VXLTinNhan ms) throws IOException {

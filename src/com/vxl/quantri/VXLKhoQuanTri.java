@@ -119,6 +119,14 @@ public final class VXLKhoQuanTri {
                         + " với " + tieuDe.kinhNghiem + " EXP.");
     }
 
+    public static String resetBot(String tenHoacAll) throws Exception {
+        if (tenHoacAll == null || tenHoacAll.isBlank() || "all".equalsIgnoreCase(tenHoacAll)
+                || "tatca".equalsIgnoreCase(tenHoacAll) || "toanbo".equalsIgnoreCase(tenHoacAll)) {
+            return com.vxl.luyentap.VXLDatLaiPhienQuanHangNgay.datLaiToanBoNguoiChoi();
+        }
+        return datCapPhienQuan(tenHoacAll, 1);
+    }
+
     public static String datCapPhienQuan(String ten, int cap) throws SQLException {
         int capMoi = (int)gioiHan(cap, 0, 255);
         VXLNguoiChoi online = timNguoiChoiTrucTuyen(ten);

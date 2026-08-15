@@ -95,9 +95,9 @@ public final class VXLCauHinhVatPhamChienDau {
     private static final VXLHoSoDan DAN_VAT_PHAM_DOC = danVatPham("Bom doc", 55, 1, 0D, false);
     private static final VXLHoSoDan DAN_VAT_PHAM_HEN_GIO = danVatPham("Bom hen gio", 57, 1, 0D, false);
     private static final VXLHoSoDan DAN_VAT_PHAM_LECH_DAN = danVatPham("Lech dan", 58, 1, 0D, false);
-    private static final VXLHoSoDan DAN_IRON_MAN = new VXLHoSoDan("Iron Man", (byte)1,
-            VXLHoSoDan.KieuBan.DAN_CHUM, 2, 2, 5D,
-            VAT_LY_NANG_PARABOL_NHE, false, false, 60, 120);
+    private static final VXLHoSoDan DAN_IRON_MAN = new VXLHoSoDan("Iron Man", (byte)81,
+            VXLHoSoDan.KieuBan.DAN_KEP, 2, 6, 0D,
+            VAT_LY_THANG_IT_ROI, false, false, 65, 130);
     private static final VXLHoSoDan DAN_SPIDER_MAN = new VXLHoSoDan("Spider-Man", (byte)1,
             VXLHoSoDan.KieuBan.DAN_CHUM, 1, 3, 5D,
             VAT_LY_THANG_IT_ROI, false, false, 100, 135);
@@ -114,8 +114,8 @@ public final class VXLCauHinhVatPhamChienDau {
             VXLHoSoDan.KieuBan.VONG_TARZAN, 1, 1, 0D,
             VAT_LY_TARZAN, false, true, 100, 100, null, VONG_TARZAN);
     private static final VXLHoSoDan DAN_WINTER_SOLDIER = new VXLHoSoDan("Winter Soldier", (byte)80,
-            VXLHoSoDan.KieuBan.DAN_KEP, 2, 2, 3D,
-            VAT_LY_XUYEN_NANG, true, false, 60, 120);
+            VXLHoSoDan.KieuBan.DAN_KEP, 2, 2, 0D,
+            VAT_LY_THANG_IT_ROI, true, false, 65, 130);
     private static final VXLHoSoDan DAN_HAWKEYE = new VXLHoSoDan("Hawkeye", (byte)79,
             VXLHoSoDan.KieuBan.DAN_CHUM, 4, 4, 3D,
             VAT_LY_TEN_NHE, false, false, 35, 140);
@@ -285,7 +285,10 @@ public final class VXLCauHinhVatPhamChienDau {
         if (loaiDanChuan == 5 || loaiDanChuan == 57) {
             return 0;
         }
-        return Byte.toUnsignedInt(avenger) == 5 ? 200 : 100;
+        VXLHoSoDan hoSoDan = layHoSoDan(loaiDan, avenger);
+        return Byte.toUnsignedInt(avenger) == 5
+                ? Math.max(hoSoDan.tranPhanTramSatThuong(), 200)
+                : hoSoDan.tranPhanTramSatThuong();
     }
 
     public static boolean laDanToNhen(byte loaiDan) {
@@ -318,7 +321,8 @@ public final class VXLCauHinhVatPhamChienDau {
             case 10 -> 19;
             case 11, 17, 19 -> 13;
             case 21 -> 10;
-            case 33, 79, 80, 82, 83 -> 18;
+            case 83 -> 32;
+            case 33, 79, 80, 82 -> 18;
             case 49 -> 16;
             case 57 -> 28;
             default -> 18;
@@ -441,7 +445,7 @@ public final class VXLCauHinhVatPhamChienDau {
 
     public static byte layLoaiDanTheoAvenger(byte avenger, byte loaiDanMacDinh) {
         return switch (Byte.toUnsignedInt(avenger)) {
-            case 1 -> 1;
+            case 1 -> 81;
             case 2 -> 0;
             case 3 -> 82;
             case 4 -> 33;

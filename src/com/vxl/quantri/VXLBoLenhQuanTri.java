@@ -25,6 +25,7 @@ public final class VXLBoLenhQuanTri {
             /admin point <tên> <số +/- >
             /admin level <tên> <cấp>
             /admin rebel <tên> <mốc>
+            /admin resetbot [all|tên]
             /admin item <tên> <itemId> [số lượng]
             /admin save [tên|all]
             /admin announce <nội dung>
@@ -33,6 +34,7 @@ public final class VXLBoLenhQuanTri {
             /admin kick <tên>
             /admin ban <tên> <on|off>
             /admin grant <tên> <on|off>
+            /admin exprate [hệ số x1, x2,...]
             """;
 
     private VXLBoLenhQuanTri() {
@@ -129,8 +131,19 @@ public final class VXLBoLenhQuanTri {
                     docBatTat(lay(thamSo, 2, "on/off")));
             case "grant", "admin" -> VXLKhoQuanTri.datQuyenQuanTri(lay(thamSo, 1, "tên người chơi"),
                     docBatTat(lay(thamSo, 2, "on/off")));
+            case "exprate", "rate", "tileexp", "expserver" -> datTiLeExp(thamSo);
+            case "resetbot", "rbot", "resetphienquan", "resetpq" -> resetBot(thamSo);
             default -> throw new IllegalArgumentException("Lệnh admin không tồn tại: " + lenh);
         };
+    }
+
+    private static String resetBot(String[] thamSo) {
+        String mucTieu = thamSo.length >= 2 ? thamSo[1] : "all";
+        try {
+            return VXLKhoQuanTri.resetBot(mucTieu);
+        } catch (Exception ex) {
+            throw new RuntimeException(ex.getMessage(), ex);
+        }
     }
 
     private static String thongBao(String phanConLai) {
@@ -187,6 +200,7 @@ public final class VXLBoLenhQuanTri {
                 + "Uptime: " + dinhDangThoiGian(runtimeBean.getUptime()) + "\n"
                 + "RAM: " + dinhDangDungLuong(boNhoDaDung) + " / "
                 + dinhDangDungLuong(runtime.maxMemory()) + "\n"
+                + "Tỉ lệ EXP: x" + VXLQuanLyMayChu.expRate + "\n"
                 + "Luồng: " + Thread.getAllStackTraces().size();
     }
 
@@ -212,6 +226,34 @@ public final class VXLBoLenhQuanTri {
             ketQua.append("\n... và ").append(luongs.size() - gioiHan).append(" luồng khác");
         }
         return ketQua.toString();
+    }
+
+    private static String datTiLeExp(String[] thamSo) {
+        if (thamSo.length < 2 || thamSo[1].isBlank()) {
+            return "Tỉ lệ EXP server hiện tại: x" + VXLQuanLyMayChu.expRate;
+        }
+        String chuoi = thamSo[1].trim().toLowerCase(Locale.ROOT);
+        if (chuoi.startsWith("x")) {
+            chuoi = chuoi.substring(1);
+        } else if (chuoi.endsWith("x")) {
+            chuoi = chuoi.substring(0, chuoi.length() - 1);
+        }
+        int heSo;
+        try {
+            heSo = Integer.parseInt(chuoi);
+        } catch (NumberFormatException e) {
+            throw new IllegalArgumentException("Hệ số EXP không hợp lệ (ví dụ: /admin exprate 2 hoặc x2).");
+        }
+        if (heSo < 1 || heSo > 1000) {
+            throw new IllegalArgumentException("Hệ số EXP phải nằm trong khoảng từ 1 đến 1000.");
+        }
+        int heSoCu = VXLQuanLyMayChu.expRate;
+        VXLQuanLyMayChu.expRate = heSo;
+        String thongBao = heSo == 1
+                ? "Máy chủ đã kết thúc sự kiện nhân EXP (Tỉ lệ x1)."
+                : "Máy chủ đang áp dụng sự kiện x" + heSo + " EXP toàn server!";
+        VXLThongBaoServer.guiMayBay(thongBao);
+        return "Đã đổi tỉ lệ EXP server từ x" + heSoCu + " -> x" + heSo + ".";
     }
 
     private static String lay(String[] thamSo, int chiSo, String ten) {

@@ -89,7 +89,8 @@ public final class VXLNhiemVu {
         int capCu = this.nguoiChoi.cap;
         long hienTai = System.currentTimeMillis() / 1000L;
         int heSoSuKien = this.nhanDoiKinhNghiemDen > hienTai ? 2 : 1;
-        long thucNhan = (long)soKinhNghiem * HE_SO_KINH_NGHIEM_CO_BAN * heSoSuKien;
+        long thucNhan = (long)soKinhNghiem * HE_SO_KINH_NGHIEM_CO_BAN * heSoSuKien
+                * Math.max(1, com.vxl.loi.VXLQuanLyMayChu.expRate);
         int gioiHan = thucNhan > Integer.MAX_VALUE ? Integer.MAX_VALUE : (int)thucNhan;
         long kinhNghiemMoi = (long)Math.max(0, this.nguoiChoi.kinhNghiem) + gioiHan;
         this.nguoiChoi.kinhNghiem = (int)Math.min(Integer.MAX_VALUE, kinhNghiemMoi);

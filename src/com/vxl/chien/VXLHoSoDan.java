@@ -78,8 +78,7 @@ public record VXLHoSoDan(String ten, byte loaiClient, KieuBan kieuBan,
 
     public int tinhSatThuongMoiVien(int tongSatThuong, byte chiMang) {
         int tong = Math.max(1, tongSatThuong);
-        int soVien = this.laySoVienGaySatThuong(chiMang);
-        return Math.max(1, (tong + soVien - 1) / soVien);
+        return Math.max(1, (tong * this.phanTramSatThuongMoiVien + 99) / 100);
     }
 
     public double[] taoDoLechGoc(byte chiMang) {

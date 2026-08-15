@@ -215,6 +215,7 @@ final class VXLDieuKhienBotTranDau {
                 }
             }
         }
+        this.tranDau.ghiNhanNapDanSauPhatBan(camTu);
         if (!this.tranDau.kiemTraKetThuc()) {
             this.tranDau.chuyenLuotBotSauHanhDong(camTu,
                     daKichNo ? TRE_SAU_NO_CAM_TU : TRE_SAU_DI_CHUYEN_CAM_TU);

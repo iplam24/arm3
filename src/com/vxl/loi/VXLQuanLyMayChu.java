@@ -57,6 +57,7 @@ public class VXLQuanLyMayChu {
     public static int eventDurationMinutes;
     public static int worldTreasureIntervalMinutes;
     public static int worldBossHp;
+    public static volatile int expRate = 1;
     public static byte vBig;
     public static byte vData;
     public static byte vItem;
@@ -311,6 +312,7 @@ public class VXLQuanLyMayChu {
         wheelGemCost = VXLQuanLyMayChu.cfgInt(configMap, wheelGemCost, "lucky-wheel-gem-cost", "wheel-gem-cost");
         worldTreasureIntervalMinutes = VXLQuanLyMayChu.cfgInt(configMap, worldTreasureIntervalMinutes, "world-treasure-spawn-minutes", "world-treasure-interval-minutes");
         worldBossHp = VXLQuanLyMayChu.cfgInt(configMap, worldBossHp, "world-boss-hp");
+        expRate = Math.max(1, VXLQuanLyMayChu.cfgInt(configMap, expRate, "server-exp-rate", "exp-rate", "tile-exp"));
     }
 
     private static String cfgStr(HashMap<String, String> map, String def, String... keys) {
