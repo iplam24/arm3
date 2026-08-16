@@ -801,9 +801,9 @@ public final class VXLQuanLyLuyenTap {
         short mucTieuX = this.phienQuanX[chiSoPhienQuan];
         short mucTieuY = this.phienQuanY[chiSoPhienQuan];
         short[] xs = new short[]{
-                (short)(mucTieuX - 60), (short)(mucTieuX - 40), (short)(mucTieuX - 20),
+                (short)(mucTieuX - 120), (short)(mucTieuX - 80), (short)(mucTieuX - 40),
                 (short)(mucTieuX),
-                (short)(mucTieuX + 20), (short)(mucTieuX + 40), (short)(mucTieuX + 60)
+                (short)(mucTieuX + 40), (short)(mucTieuX + 80), (short)(mucTieuX + 120)
         };
         short[] ys = new short[xs.length];
         for (int i = 0; i < xs.length; i++) {

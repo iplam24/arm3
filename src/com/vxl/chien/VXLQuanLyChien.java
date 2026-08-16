@@ -443,9 +443,9 @@ public class VXLQuanLyChien {
     private void xuLySkillHawkeye(VXLChienBinh nguoiDung, VXLChienBinh mucTieu)
             throws IOException {
         short[] cacX = new short[]{
-                (short)(mucTieu.x - 60), (short)(mucTieu.x - 40), (short)(mucTieu.x - 20),
+                (short)(mucTieu.x - 120), (short)(mucTieu.x - 80), (short)(mucTieu.x - 40),
                 (short)(mucTieu.x),
-                (short)(mucTieu.x + 20), (short)(mucTieu.x + 40), (short)(mucTieu.x + 60)
+                (short)(mucTieu.x + 40), (short)(mucTieu.x + 80), (short)(mucTieu.x + 120)
         };
         short[] cacY = new short[cacX.length];
         for (int i = 0; i < cacX.length; i++) {
