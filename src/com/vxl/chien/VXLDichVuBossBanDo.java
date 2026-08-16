@@ -190,3 +190,4 @@ final class VXLDichVuBossBanDo {
             short body, short hat, short wing, byte loaiClient) {
     }
 }
+

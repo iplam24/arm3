@@ -26,6 +26,7 @@ public final class VXLBoLenhQuanTri {
             /admin level <tên> <cấp>
             /admin rebel <tên> <mốc>
             /admin resetbot [all|tên]
+            /admin resetboss [all|tên]
             /admin item <tên> <itemId> [số lượng]
             /admin save [tên|all]
             /admin announce <nội dung>
@@ -132,7 +133,7 @@ public final class VXLBoLenhQuanTri {
             case "grant", "admin" -> VXLKhoQuanTri.datQuyenQuanTri(lay(thamSo, 1, "tên người chơi"),
                     docBatTat(lay(thamSo, 2, "on/off")));
             case "exprate", "rate", "tileexp", "expserver" -> datTiLeExp(thamSo);
-            case "resetbot", "rbot", "resetphienquan", "resetpq" -> resetBot(thamSo);
+            case "resetbot", "rbot", "resetphienquan", "resetpq", "resetboss", "rboss" -> resetBot(thamSo);
             default -> throw new IllegalArgumentException("Lệnh admin không tồn tại: " + lenh);
         };
     }

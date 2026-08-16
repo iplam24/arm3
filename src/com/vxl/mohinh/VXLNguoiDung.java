@@ -30,7 +30,7 @@ import com.vxl.vatpham.VXLVatPham;
 
 public class VXLNguoiDung {
     public static final ConcurrentMap<String, VXLNguoiDung> users = new ConcurrentHashMap<>();
-    private VXLPhien khach;
+    private VXLPhien khach; public VXLPhien layPhien() { return this.khach; }
     public VXLDichVuGame dichVu;
     private int user_id; public int getUserId(){ return user_id; }
     private String tenDangNhap;

@@ -1401,4 +1401,9 @@ public class VXLNguoiChoi {
     public void xuLyVatPhamLuyenTap(VXLTinNhan ms) throws IOException {
         this.luyenTap.dungVatPham(ms);
     }
+
+    public synchronized void datCapPhienQuan(int cap) {
+        this.trainingSuccess = (byte)Math.max(1, Math.min(255, cap));
+        this.flushCache();
+    }
 }

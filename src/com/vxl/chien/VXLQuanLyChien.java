@@ -1341,6 +1341,12 @@ public class VXLQuanLyChien {
             if (kieuKyNang == 2 && this.xuLyKyNangRongGapTha(boss)) {
                 return true;
             }
+            VXLChienBinh mucTieu = this.timMucTieuGanNhat(boss);
+            if (mucTieu != null && (Math.abs(mucTieu.x - boss.x) <= 260 && Math.abs(mucTieu.y - boss.y) <= 180)) {
+                if (this.xuLyKyNangRongCan(boss)) {
+                    return true;
+                }
+            }
         }
         return false;
     }

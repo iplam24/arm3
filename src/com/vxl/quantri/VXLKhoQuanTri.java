@@ -1,14 +1,15 @@
 package com.vxl.quantri;
 
-import com.alibaba.fastjson2.JSON;
-import com.alibaba.fastjson2.JSONObject;
-import com.vxl.dulieu.VXLTieuDeCap;
 import com.vxl.loi.VXLCoSoDuLieu;
 import com.vxl.loi.VXLQuanLyMayChu;
 import com.vxl.mohinh.VXLNguoiChoi;
-import com.vxl.tienich.VXLTienIch;
+import com.vxl.mohinh.VXLNguoiDung;
 import com.vxl.vatpham.VXLMauVatPham;
 import com.vxl.vatpham.VXLVatPham;
+import com.vxl.dulieu.VXLTieuDeCap;
+import com.vxl.tienich.VXLTienIch;
+import com.alibaba.fastjson2.JSON;
+import com.alibaba.fastjson2.JSONObject;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -17,6 +18,10 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
+import java.util.Objects;
+import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -124,7 +129,22 @@ public final class VXLKhoQuanTri {
                 || "tatca".equalsIgnoreCase(tenHoacAll) || "toanbo".equalsIgnoreCase(tenHoacAll)) {
             return com.vxl.luyentap.VXLDatLaiPhienQuanHangNgay.datLaiToanBoNguoiChoi();
         }
-        return datCapPhienQuan(tenHoacAll, 1);
+        VXLNguoiChoi online = timNguoiChoiTrucTuyen(tenHoacAll);
+        if (online != null) {
+            online.datLaiTienDoPhienQuanHangNgay();
+            online.flushCache();
+            return "Đã reset Phiến quân, 2 Tòa Tháp và Boss về mốc 1 cho " + online.ten + ".";
+        }
+        return suaNgoaiTuyen(tenHoacAll, duLieu -> {
+            duLieu.chiSo.put("trainingSuccess", 1);
+            duLieu.chiSo.put("trainingRebelDefeated", 0);
+            duLieu.chiSo.put("kamikazeKills", 0);
+            duLieu.chiSo.put("bossKills", 0);
+            duLieu.chiSo.put("dailyKamikazeKills", 0);
+            duLieu.chiSo.put("dailyBossKills", 0);
+            duLieu.chiSo.put("dailyKamikazeClaimed", false);
+            duLieu.chiSo.put("dailyBossClaimed", false);
+        }, duLieu -> "Đã reset Phiến quân, 2 Tòa Tháp và Boss về mốc 1 cho " + duLieu.ten + ".");
     }
 
     public static String datCapPhienQuan(String ten, int cap) throws SQLException {
@@ -132,10 +152,12 @@ public final class VXLKhoQuanTri {
         VXLNguoiChoi online = timNguoiChoiTrucTuyen(ten);
         if (online != null) {
             online.trainingSuccess = (byte)capMoi;
-            online.flushCache();
             return "Mốc phiến quân của " + online.ten + " = " + capMoi + ".";
         }
-        return suaNgoaiTuyen(ten, duLieu -> duLieu.chiSo.put("trainingSuccess", capMoi),
+        return suaNgoaiTuyen(ten, duLieu -> {
+            duLieu.chiSo.put("trainingSuccess", capMoi);
+            duLieu.chiSo.put("trainingRebelDefeated", Math.max(0, capMoi - 1));
+        },
                 duLieu -> "Mốc phiến quân của " + duLieu.ten + " = " + capMoi + ".");
     }
 
@@ -188,160 +210,149 @@ public final class VXLKhoQuanTri {
             }
         }
         VXLNguoiChoi online = timNguoiChoiTrucTuyen(ten);
-        if (online != null && khoa) {
-            online.dichVu.dongKetNoi();
+        if (online != null) {
+            VXLQuanLyMayChu.log("[ADMIN] Admin đã khóa tài khoản của " + online.ten + ".");
+            if (online.dichVu != null && online.dichVu.layKhach() != null) { VXLQuanLyMayChu.disconnect(online.dichVu.layKhach()); }
         }
-        return "Trạng thái khóa của " + ten + " = " + khoa + ".";
+        return "Đã " + (khoa ? "khóa" : "mở khóa") + " tài khoản của " + ten + ".";
+    }
+
+    public static String luuNguoiChoi(String tenHoacAll) {
+        if (tenHoacAll == null || tenHoacAll.isBlank() || "all".equalsIgnoreCase(tenHoacAll)) {
+            int dem = 0;
+            for (VXLNguoiChoi online : VXLNguoiChoi.players_id.values()) {
+                if (online != null) {
+                    online.flushCache();
+                    dem++;
+                }
+            }
+            return "Đã lưu " + dem + " người chơi trực tuyến.";
+        }
+        VXLNguoiChoi online = timNguoiChoiTrucTuyen(tenHoacAll);
+        if (online == null) {
+            return "Không tìm thấy người chơi " + tenHoacAll + " đang online.";
+        }
+        online.flushCache();
+        return "Đã lưu dữ liệu cho " + online.ten + ".";
     }
 
     public static String thongTinNguoiChoi(String ten) throws SQLException {
         VXLNguoiChoi online = timNguoiChoiTrucTuyen(ten);
         if (online != null) {
-            return "[ONLINE] " + online.ten + " | ID=" + online.ma + " | cấp=" + online.cap
-                    + " | EXP=" + online.kinhNghiem + " | vàng=" + online.vang
-                    + " | ngọc=" + online.ngoc + " | điểm=" + online.point
-                    + " | phiến quân=" + Byte.toUnsignedInt(online.trainingSuccess)
-                    + " | admin=" + online.quanTri;
+            return "THÔNG TIN " + online.ten.toUpperCase(Locale.ROOT)
+                    + "\n- Cấp: " + online.cap + " (" + online.kinhNghiem + " EXP)"
+                    + "\n- Vàng: " + online.vang + " | Ngọc: " + online.ngoc
+                    + "\n- Điểm tiềm năng: " + online.point
+                    + "\n- Tiến độ: phiến quân=" + Byte.toUnsignedInt(online.trainingSuccess)
+                    + "\n- Trạng thái: Trực tuyến (ID " + online.ma + ")"
+                    + "\n- Quyền admin: " + (online.quanTri ? "CÓ" : "KHÔNG");
         }
-        try (Connection conn = VXLCoSoDuLieu.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(
-                     "SELECT p.*, a.username, a.is_admin, a.is_banned FROM players p "
-                             + "JOIN accounts a ON a.id = p.account_id "
-                             + "WHERE LOWER(p.name) = LOWER(?) LIMIT 1")) {
-            stmt.setString(1, ten);
-            try (ResultSet rs = stmt.executeQuery()) {
-                if (!rs.next()) {
-                    return "Không tìm thấy người chơi " + ten + ".";
-                }
-                JSONObject chiSo = docJson(rs.getString("stats_json"));
-                int kinhNghiem = docInt(chiSo, "exp", VXLTienIch.layKinhNghiemCapMot());
-                return "[OFFLINE] " + rs.getString("name") + " | ID=" + rs.getInt("id")
-                        + " | tài khoản=" + rs.getString("username")
-                        + " | cấp=" + VXLTienIch.layCap(kinhNghiem) + " | EXP=" + kinhNghiem
-                        + " | vàng=" + rs.getInt("gold") + " | ngọc=" + rs.getInt("gem")
-                        + " | điểm=" + docInt(chiSo, "point", 0)
-                        + " | admin=" + rs.getBoolean("is_admin")
-                        + " | khóa=" + rs.getBoolean("is_banned");
-            }
-        }
+
+        final String[] ketQua = new String[1];
+        suaNgoaiTuyen(ten, duLieu -> {
+            int exp = docInt(duLieu.chiSo, "exp", VXLTienIch.layKinhNghiemCapMot());
+            int point = docInt(duLieu.chiSo, "point", 0);
+            int rebel = docInt(duLieu.chiSo, "trainingSuccess", 1);
+            ketQua[0] = "THÔNG TIN " + duLieu.ten.toUpperCase(Locale.ROOT)
+                    + "\n- Cấp: " + VXLTienIch.layCap(exp) + " (" + exp + " EXP)"
+                    + "\n- Vàng: " + duLieu.vang + " | Ngọc: " + duLieu.ngoc
+                    + "\n- Điểm tiềm năng: " + point
+                    + "\n- Tiến độ: phiến quân=" + rebel
+                    + "\n- Trạng thái: Ngoại tuyến"
+                    + "\n- Quyền admin: " + (duLieu.quanTri ? "CÓ" : "KHÔNG");
+        }, duLieu -> ketQua[0]);
+        return ketQua[0];
     }
 
     public static String danhSachTrucTuyen() {
-        List<VXLNguoiChoi> danhSach = new ArrayList<>();
-        for (VXLNguoiChoi nguoiChoi : VXLNguoiChoi.players_id.values()) {
-            if (nguoiChoi != null) {
-                danhSach.add(nguoiChoi);
-            }
+        List<VXLNguoiChoi> danhSach = new ArrayList<>(VXLNguoiChoi.players_id.values());
+        danhSach.removeIf(Objects::isNull);
+        if (danhSach.isEmpty()) {
+            return "Hiện không có người chơi nào trực tuyến.";
         }
-        danhSach.sort(Comparator.comparing(nguoiChoi -> nguoiChoi.ten == null ? "" : nguoiChoi.ten,
-                String.CASE_INSENSITIVE_ORDER));
-        StringBuilder ketQua = new StringBuilder("Kết nối: ")
-                .append(VXLQuanLyMayChu.getOnlineCount())
-                .append(" | Đã vào nhân vật: ").append(danhSach.size());
-        for (VXLNguoiChoi nguoiChoi : danhSach) {
-            ketQua.append("\n- ").append(nguoiChoi.ten)
-                    .append(" (ID ").append(nguoiChoi.ma)
-                    .append(", cấp ").append(nguoiChoi.cap).append(')');
+        danhSach.sort(Comparator.comparingInt((VXLNguoiChoi p) -> p.cap).reversed()
+                .thenComparing(p -> p.ten == null ? "" : p.ten));
+        StringBuilder sb = new StringBuilder("DANH SÁCH ONLINE (" + danhSach.size() + "):");
+        int gioiHan = Math.min(20, danhSach.size());
+        for (int i = 0; i < gioiHan; i++) {
+            VXLNguoiChoi p = danhSach.get(i);
+            sb.append("\n").append(i + 1).append(". ").append(p.ten)
+                    .append(" (cấp ").append(p.cap).append(", vàng ").append(p.vang)
+                    .append(", ngọc ").append(p.ngoc).append(")");
         }
-        return ketQua.toString();
-    }
-
-    public static String luuNguoiChoi(String ten) {
-        if (ten == null || ten.isBlank() || "all".equalsIgnoreCase(ten)) {
-            int daLuu = 0;
-            for (VXLNguoiChoi nguoiChoi : VXLNguoiChoi.players_id.values()) {
-                if (nguoiChoi != null) {
-                    nguoiChoi.flushCache();
-                    daLuu++;
-                }
-            }
-            return "Đã lưu " + daLuu + " người chơi trực tuyến.";
+        if (danhSach.size() > gioiHan) {
+            sb.append("\n... và ").append(danhSach.size() - gioiHan).append(" người chơi khác.");
         }
-        VXLNguoiChoi nguoiChoi = timNguoiChoiTrucTuyen(ten);
-        if (nguoiChoi == null) {
-            return "Người chơi " + ten + " không trực tuyến.";
-        }
-        nguoiChoi.flushCache();
-        return "Đã lưu " + nguoiChoi.ten + ".";
+        return sb.toString();
     }
 
     public static void ghiNhatKy(VXLNguoiChoi quanTri, String lenh, boolean thanhCong, String ketQua) {
+        String nguoiDung = quanTri == null ? "SYSTEM" : quanTri.ten;
+        String dong = "[" + (thanhCong ? "OK" : "ERR") + "] Admin " + nguoiDung
+                + " thực hiện: " + lenh + " => " + ketQua.replace("\n", " ");
+        if (thanhCong) {
+            VXLQuanLyMayChu.log(dong);
+        } else {
+            LOGGER.log(Level.WARNING, dong);
+        }
+    }
+
+    private static String suaNgoaiTuyen(String ten, Consumer<DuLieuNguoiChoi> boCapNhat,
+            Function<DuLieuNguoiChoi, String> taoThongBao) throws SQLException {
+        DuLieuNguoiChoi duLieu = docNguoiChoiNgoaiTuyen(ten);
+        if (duLieu == null) {
+            return "Không tìm thấy người chơi " + ten + ".";
+        }
+        boCapNhat.accept(duLieu);
+        ghiNguoiChoiNgoaiTuyen(duLieu);
+        return taoThongBao.apply(duLieu);
+    }
+
+    private static DuLieuNguoiChoi docNguoiChoiNgoaiTuyen(String ten) throws SQLException {
+        String sql = "SELECT p.id, p.name, p.gold, p.gem, p.stats_json, a.is_admin "
+                + "FROM players p JOIN accounts a ON a.id = p.account_id "
+                + "WHERE LOWER(p.name) = LOWER(?) LIMIT 1";
         try (Connection conn = VXLCoSoDuLieu.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(
-                     "INSERT INTO admin_audit_log(admin_player_id, command_text, success, result_text) "
-                             + "VALUES (?, ?, ?, ?)")) {
-            stmt.setInt(1, quanTri == null ? 0 : quanTri.ma);
-            stmt.setString(2, rutGon(lenh, 500));
-            stmt.setBoolean(3, thanhCong);
-            stmt.setString(4, rutGon(ketQua, 1000));
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setString(1, ten);
+            try (ResultSet res = stmt.executeQuery()) {
+                if (!res.next()) {
+                    return null;
+                }
+                DuLieuNguoiChoi duLieu = new DuLieuNguoiChoi();
+                duLieu.ma = res.getInt("id");
+                duLieu.ten = res.getString("name");
+                duLieu.vang = res.getInt("gold");
+                duLieu.ngoc = res.getInt("gem");
+                duLieu.quanTri = res.getBoolean("is_admin");
+                String statsRaw = res.getString("stats_json");
+                duLieu.chiSo = statsRaw == null || statsRaw.isBlank()
+                        ? new JSONObject()
+                        : JSON.parseObject(statsRaw);
+                return duLieu;
+            }
+        }
+    }
+
+    private static void ghiNguoiChoiNgoaiTuyen(DuLieuNguoiChoi duLieu) throws SQLException {
+        String sql = "UPDATE players SET gold = ?, gem = ?, stats_json = ? WHERE id = ? LIMIT 1";
+        try (Connection conn = VXLCoSoDuLieu.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setInt(1, duLieu.vang);
+            stmt.setInt(2, duLieu.ngoc);
+            stmt.setString(3, duLieu.chiSo == null ? "{}" : duLieu.chiSo.toJSONString());
+            stmt.setInt(4, duLieu.ma);
             stmt.executeUpdate();
         }
-        catch (SQLException ex) {
-            LOGGER.log(Level.FINE, "Không thể ghi nhật ký admin.", ex);
-        }
     }
 
-    private static String suaNgoaiTuyen(String ten, BoSuaDuLieu boSua,
-            BoTaoThongBao boTaoThongBao) throws SQLException {
-        try (Connection conn = VXLCoSoDuLieu.getConnection()) {
-            conn.setAutoCommit(false);
-            try (PreparedStatement doc = conn.prepareStatement(
-                    "SELECT id, name, gold, gem, stats_json FROM players "
-                            + "WHERE LOWER(name) = LOWER(?) LIMIT 1 FOR UPDATE")) {
-                doc.setString(1, ten);
-                try (ResultSet rs = doc.executeQuery()) {
-                    if (!rs.next()) {
-                        conn.rollback();
-                        return "Không tìm thấy người chơi " + ten + ".";
-                    }
-                    DuLieuNguoiChoi duLieu = new DuLieuNguoiChoi(rs.getInt("id"),
-                            rs.getString("name"), rs.getInt("gold"), rs.getInt("gem"),
-                            docJson(rs.getString("stats_json")));
-                    boSua.sua(duLieu);
-                    try (PreparedStatement ghi = conn.prepareStatement(
-                            "UPDATE players SET gold = ?, gem = ?, stats_json = ? WHERE id = ? LIMIT 1")) {
-                        ghi.setInt(1, duLieu.vang);
-                        ghi.setInt(2, duLieu.ngoc);
-                        ghi.setString(3, duLieu.chiSo.toJSONString());
-                        ghi.setInt(4, duLieu.ma);
-                        ghi.executeUpdate();
-                    }
-                    conn.commit();
-                    return boTaoThongBao.tao(duLieu);
-                }
-            }
-            catch (SQLException | RuntimeException ex) {
-                conn.rollback();
-                throw ex;
-            }
-            finally {
-                conn.setAutoCommit(true);
-            }
-        }
-    }
-
-    private static JSONObject docJson(String json) {
-        if (json == null || json.isBlank()) {
-            return new JSONObject();
-        }
-        try {
-            Object giaTri = JSON.parse(json);
-            return giaTri instanceof JSONObject ? (JSONObject)giaTri : new JSONObject();
-        }
-        catch (RuntimeException ex) {
-            return new JSONObject();
-        }
-    }
-
-    private static int docInt(JSONObject doiTuong, String khoa, int macDinh) {
-        Object giaTri = doiTuong == null ? null : doiTuong.get(khoa);
-        if (giaTri == null) {
+    private static int docInt(JSONObject json, String khoa, int macDinh) {
+        if (json == null || !json.containsKey(khoa)) {
             return macDinh;
         }
         try {
-            return Integer.parseInt(giaTri.toString());
-        }
-        catch (NumberFormatException ex) {
+            return json.getIntValue(khoa);
+        } catch (Exception e) {
             return macDinh;
         }
     }
@@ -350,41 +361,16 @@ public final class VXLKhoQuanTri {
         return (int)gioiHan(giaTri, 0L, Integer.MAX_VALUE);
     }
 
-    private static long gioiHan(long giaTri, long nhoNhat, long lonNhat) {
-        return Math.max(nhoNhat, Math.min(lonNhat, giaTri));
+    private static long gioiHan(long giaTri, long toiThieu, long toiDa) {
+        return Math.max(toiThieu, Math.min(toiDa, giaTri));
     }
 
-    private static String rutGon(String giaTri, int doDai) {
-        if (giaTri == null) {
-            return "";
-        }
-        String chuoi = giaTri.trim();
-        return chuoi.length() <= doDai ? chuoi : chuoi.substring(0, doDai);
-    }
-
-    private static final class DuLieuNguoiChoi {
-        private final int ma;
-        private final String ten;
-        private int vang;
-        private int ngoc;
-        private final JSONObject chiSo;
-
-        private DuLieuNguoiChoi(int ma, String ten, int vang, int ngoc, JSONObject chiSo) {
-            this.ma = ma;
-            this.ten = ten;
-            this.vang = vang;
-            this.ngoc = ngoc;
-            this.chiSo = chiSo;
-        }
-    }
-
-    @FunctionalInterface
-    private interface BoSuaDuLieu {
-        void sua(DuLieuNguoiChoi duLieu);
-    }
-
-    @FunctionalInterface
-    private interface BoTaoThongBao {
-        String tao(DuLieuNguoiChoi duLieu);
+    private static class DuLieuNguoiChoi {
+        int ma;
+        String ten;
+        int vang;
+        int ngoc;
+        boolean quanTri;
+        JSONObject chiSo;
     }
 }

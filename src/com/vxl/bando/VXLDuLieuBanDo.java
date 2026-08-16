@@ -42,8 +42,8 @@ public class VXLDuLieuBanDo {
         try {
             int resourceId = switch (ma) {
                 case 166 -> 161;
-                case 167 -> 20;
-                case 168 -> 19;
+                case 167 -> 168;
+                case 168 -> 168;
                 default -> ma;
             };
             String[] paths = new String[]{

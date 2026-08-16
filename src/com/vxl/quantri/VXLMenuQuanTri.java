@@ -247,8 +247,9 @@ public final class VXLMenuQuanTri {
                         + "\nRAM đang dùng: " + String.format(Locale.ROOT, "%.2f MB", sau / 1024D / 1024D)
                         + " / " + String.format(Locale.ROOT, "%.2f MB", rt.maxMemory() / 1024D / 1024D);
             });
-            case 5 -> moMenuTiLeExp(quanTri);
-            case 6 -> moMenuChinh(quanTri);
+            case 5 -> hienKetQua(quanTri, "/menu resetboss all", () -> { try { return VXLKhoQuanTri.resetBot("all"); } catch (Exception ex) { return "Không thể reset: " + ex.getMessage(); } });
+            case 6 -> moMenuTiLeExp(quanTri);
+            case 7 -> moMenuChinh(quanTri);
             default -> {
             }
         }
@@ -466,6 +467,7 @@ public final class VXLMenuQuanTri {
                 List.of("Danh sách online chi tiết", "Thông tin server (RAM, Uptime)",
                         "Thông tin luồng (Threads)", "Lưu tất cả nhân vật",
                         "Dọn rác bộ nhớ (GC RAM)",
+                        "Reset Phiến quân, 2 Tòa Tháp & Boss",
                         "Tỉ lệ EXP server (x" + VXLQuanLyMayChu.expRate + ") -> Điều chỉnh", "Quay lại"),
                 new TrangThaiMenu(LoaiMenu.MAY_CHU, -1, List.of()));
     }
