@@ -1,7 +1,7 @@
 START TRANSACTION;
 
 INSERT INTO `sprite_images` (`id`, `image_id`, `x`, `y`, `width`, `height`)
-VALUES (2129, 4, 256, 0, 24, 16)
+VALUES (1694, 4, 256, 0, 24, 16)
 ON DUPLICATE KEY UPDATE
     `image_id` = VALUES(`image_id`),
     `x` = VALUES(`x`),

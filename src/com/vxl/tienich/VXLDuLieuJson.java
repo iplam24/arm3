@@ -13,44 +13,112 @@ public final class VXLDuLieuJson {
     }
 
     public byte getByte(String khoa) {
-        return Byte.parseByte(this.doiTuong.get(khoa).toString());
+        return getByte(khoa, (byte)0);
+    }
+
+    public byte getByte(String khoa, byte macDinh) {
+        if (this.doiTuong == null) return macDinh;
+        Object o = this.doiTuong.get(khoa);
+        if (o == null) return macDinh;
+        try {
+            return Byte.parseByte(o.toString());
+        } catch (Exception e) {
+            return macDinh;
+        }
     }
 
     public short getShort(String khoa) {
-        return Short.parseShort(this.doiTuong.get(khoa).toString());
+        return getShort(khoa, (short)0);
+    }
+
+    public short getShort(String khoa, short macDinh) {
+        if (this.doiTuong == null) return macDinh;
+        Object o = this.doiTuong.get(khoa);
+        if (o == null) return macDinh;
+        try {
+            return Short.parseShort(o.toString());
+        } catch (Exception e) {
+            return macDinh;
+        }
     }
 
     public int getInt(String khoa) {
-        return Integer.parseInt(this.doiTuong.get(khoa).toString());
+        return getInt(khoa, 0);
+    }
+
+    public int getInt(String khoa, int macDinh) {
+        if (this.doiTuong == null) return macDinh;
+        Object o = this.doiTuong.get(khoa);
+        if (o == null) return macDinh;
+        try {
+            return Integer.parseInt(o.toString());
+        } catch (Exception e) {
+            return macDinh;
+        }
     }
 
     public long getLong(String khoa) {
-        return Long.parseLong(this.doiTuong.get(khoa).toString());
+        return getLong(khoa, 0L);
+    }
+
+    public long getLong(String khoa, long macDinh) {
+        if (this.doiTuong == null) return macDinh;
+        Object o = this.doiTuong.get(khoa);
+        if (o == null) return macDinh;
+        try {
+            return Long.parseLong(o.toString());
+        } catch (Exception e) {
+            return macDinh;
+        }
     }
 
     public String getString(String khoa) {
-        return this.doiTuong.get(khoa).toString();
+        return getString(khoa, "");
+    }
+
+    public String getString(String khoa, String macDinh) {
+        if (this.doiTuong == null) return macDinh;
+        Object o = this.doiTuong.get(khoa);
+        if (o == null) return macDinh;
+        return o.toString();
     }
 
     public boolean getBoolean(String khoa) {
-        return Boolean.parseBoolean(this.doiTuong.get(khoa).toString());
+        return getBoolean(khoa, false);
+    }
+
+    public boolean getBoolean(String khoa, boolean macDinh) {
+        if (this.doiTuong == null) return macDinh;
+        Object o = this.doiTuong.get(khoa);
+        if (o == null) return macDinh;
+        try {
+            return Boolean.parseBoolean(o.toString());
+        } catch (Exception e) {
+            return macDinh;
+        }
     }
 
     public JSONArray getJSONArray(String khoa) {
-        return (JSONArray) JSON.parse(this.doiTuong.get(khoa).toString());
+        if (this.doiTuong == null) return null;
+        Object o = this.doiTuong.get(khoa);
+        if (o == null) return null;
+        try {
+            if (o instanceof JSONArray) return (JSONArray)o;
+            return (JSONArray) JSON.parse(o.toString());
+        } catch (Exception e) {
+            return null;
+        }
     }
 
     public boolean containsKey(String khoa) {
-        return this.doiTuong.containsKey(khoa);
+        return this.doiTuong != null && this.doiTuong.containsKey(khoa);
     }
 
-    public boolean containsValue(String khoa) {
-        return this.doiTuong.containsValue(khoa);
+    public boolean containsValue(Object giaTri) {
+        return this.doiTuong != null && this.doiTuong.containsValue(giaTri);
     }
 
     public boolean isEmpty() {
-        return this.doiTuong.isEmpty();
+        return this.doiTuong == null || this.doiTuong.isEmpty();
     }
-
 }
-

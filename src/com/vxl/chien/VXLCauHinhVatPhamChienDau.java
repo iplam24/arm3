@@ -152,7 +152,7 @@ public final class VXLCauHinhVatPhamChienDau {
             case 5, 31, 57, 134, 135 -> 0;
             case 27, 37, 132, 133, 156, 282, 283 -> 1;
             case 17, 18, 19, 55, 123, 124, 125, 126, 127 -> 2;
-            case 32, 58, 140, 141, 142 -> 9;
+            case 32, 58, 140, 141, 142, 249 -> 9;
             case 30, 56, 146, 147, 148 -> 10;
             case 28, 54, 143, 144, 145 -> 11;
             case 29, 153, 154, 155 -> 19;
@@ -212,6 +212,7 @@ public final class VXLCauHinhVatPhamChienDau {
             case 32 -> 21;
             case 141 -> 22;
             case 142 -> 23;
+            case 249 -> 23;
             case 123 -> 24;
             case 124 -> 25;
             case 125 -> 26;

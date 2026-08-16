@@ -62,7 +62,11 @@ final class VXLPhatTinTranDau {
                 boss.chiSo, xCu, yCu, mucTieu.chiSo, xTha, yTha));
     }
     void guiDiChuyen(VXLChienBinh daDiChuyen) {
-        this.guiTungNguoi(chienBinh -> chienBinh.nguoiChoi.dichVu.guiDiChuyenDau(daDiChuyen.chiSo, daDiChuyen.x, daDiChuyen.y));
+        this.guiTungNguoi(chienBinh -> {
+            if (chienBinh != daDiChuyen) {
+                chienBinh.nguoiChoi.dichVu.guiDiChuyenDau(daDiChuyen.chiSo, daDiChuyen.x, daDiChuyen.y);
+            }
+        });
     }
 
     void guiCapNhatXY(VXLChienBinh daDiChuyen) {

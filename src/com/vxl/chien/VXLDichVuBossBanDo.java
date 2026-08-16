@@ -166,7 +166,7 @@ final class VXLDichVuBossBanDo {
         for (int i = 0; i < CHI_SO_BOSS_DAU_TIEN && i < this.chienBinhs.length; i++) {
             VXLChienBinh chienBinh = this.chienBinhs[i];
             if (chienBinh != null && !chienBinh.bot && chienBinh.nguoiChoi != null) {
-                eloCaoNhat = Math.max(eloCaoNhat, Math.max(0, chienBinh.nguoiChoi.cup));
+                eloCaoNhat = Math.max(eloCaoNhat, Math.max(0, chienBinh.nguoiChoi.towerElo));
             }
         }
         return eloCaoNhat;

@@ -800,38 +800,21 @@ public final class VXLQuanLyLuyenTap {
     private void xuLySkillHawkeye(int chiSoPhienQuan) throws IOException {
         short mucTieuX = this.phienQuanX[chiSoPhienQuan];
         short mucTieuY = this.phienQuanY[chiSoPhienQuan];
-        short[] xs = new short[]{
-                (short)(mucTieuX - 120), (short)(mucTieuX - 80), (short)(mucTieuX - 40),
-                (short)(mucTieuX),
-                (short)(mucTieuX + 40), (short)(mucTieuX + 80), (short)(mucTieuX + 120)
-        };
-        short[] ys = new short[xs.length];
-        for (int i = 0; i < xs.length; i++) {
+        int soMuiTen = 5;
+        short[] xs = new short[soMuiTen];
+        short[] ys = new short[soMuiTen];
+        for (int i = 0; i < soMuiTen; i++) {
             xs[i] = (short)Math.max(4, Math.min(
-                    this.tinhDuongDan.layBanDo().getWidth() - 5, xs[i]));
+                    this.tinhDuongDan.layBanDo().getWidth() - 5, mucTieuX));
             ys[i] = this.tinhDuongDan.layBanDo().timViTriDat(xs[i], mucTieuY);
-            this.tinhDuongDan.layBanDo().taoLoTheoMatNa(xs[i], ys[i], "hgrenade.png");
         }
+        this.tinhDuongDan.layBanDo().taoLoTheoMatNa(xs[0], ys[0], "hgrenade.png");
         this.nguoiChoi.dichVu.guiSkillHawkeye((byte)0,
                 LOAI_DAN_HAWKEYE_SKILL, xs, ys);
         int satThuongMoiMui = VXLTinhSatThuong.tinhSauGiap(20 + this.chiSoNguoiChoi.tanCong,
                 this.giapPhienQuan);
         satThuongMoiMui = Math.max(8, satThuongMoiMui);
-        int tongSatThuong = 0;
-        for (int i = 0; i < xs.length; i++) {
-            for (int pq = 0; pq < SO_PHIEN_QUAN; pq++) {
-                if (this.phienQuanDaChet[pq]) {
-                    continue;
-                }
-                int dx = this.phienQuanX[pq] - xs[i];
-                int dy = this.phienQuanY[pq] - ys[i];
-                if (dx * dx + dy * dy <= 60 * 60) {
-                    tongSatThuong += satThuongMoiMui;
-                }
-            }
-        }
-        this.apDungSatThuongSkillPhienQuan(chiSoPhienQuan,
-                Math.max(satThuongMoiMui * xs.length, tongSatThuong));
+        this.apDungSatThuongSkillPhienQuan(chiSoPhienQuan, satThuongMoiMui * soMuiTen);
         this.lapLichKetThucSkillNguoiChoi(1800L);
     }
 

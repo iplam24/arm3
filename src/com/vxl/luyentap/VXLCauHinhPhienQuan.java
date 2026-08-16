@@ -17,7 +17,7 @@ final class VXLCauHinhPhienQuan {
     private static final int SO_LOAI_TRANG_BI = 6;
     private static final int LOAI_VU_KHI = 5;
     private static final int MA_AVENGER_DAU = 391;
-    private static final int MA_AVENGER_CUOI = 400;
+    private static final int MA_AVENGER_CUOI = 401;
     private static final int MA_SPIDER_MAN = 413;
     private static final short VU_KHI_AT = 57;
     private static final short VU_KHI_K98 = 27;

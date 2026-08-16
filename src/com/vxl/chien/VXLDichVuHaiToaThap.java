@@ -146,7 +146,7 @@ final class VXLDichVuHaiToaThap {
         for (int i = 0; i < SO_NGUOI_CHOI_TOI_DA && i < this.chienBinhs.length; i++) {
             VXLChienBinh chienBinh = this.chienBinhs[i];
             if (chienBinh != null && !chienBinh.bot && chienBinh.nguoiChoi != null) {
-                eloCaoNhat = Math.max(eloCaoNhat, Math.max(0, chienBinh.nguoiChoi.cup));
+                eloCaoNhat = Math.max(eloCaoNhat, Math.max(0, chienBinh.nguoiChoi.towerElo));
             }
         }
         return eloCaoNhat;

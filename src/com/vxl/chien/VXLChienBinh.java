@@ -71,7 +71,7 @@ public class VXLChienBinh {
     public byte chiSoChuBanSaoUltron = -1;
     public VXLChienBinh nguoiGaySatThuongCuoi;
     public VXLChienBinh nguonDoc;
-    private long thoiDiemSanSangBan;
+    public long thoiDiemSanSangBan;
 
     public VXLChienBinh(VXLNguoiChoi nguoiChoi, byte chiSo, short x, short y) {
         nguoiChoi.dongBoTrangBiNhanVat();

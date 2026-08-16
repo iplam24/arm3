@@ -55,6 +55,9 @@ final class VXLXuLyKetThucTranDau {
         }
         if (this.cheDoBoss && ketQua == KET_QUA_THANG && !chienBinh.daRoiTran) {
             nguoiChoi.ghiNhanHaBoss(1);
+            nguoiChoi.towerElo = Math.max(0, nguoiChoi.towerElo + 3);
+        } else if (this.cheDoCamTu && ketQua == KET_QUA_THANG && !chienBinh.daRoiTran) {
+            nguoiChoi.towerElo = Math.max(0, nguoiChoi.towerElo + 3);
         }
         if (!this.cheDoBoss && ketQua == KET_QUA_THANG && !chienBinh.daRoiTran) {
             nguoiChoi.ghiNhanThangPvp();
@@ -73,11 +76,12 @@ final class VXLXuLyKetThucTranDau {
                 + "\n\n" + bangKetQua;
         try {
             if (chienBinh.coPhien()) {
-                nguoiChoi.dichVu.guiKetThucDau(ketQua, kinhNghiemThucNhan, phanThuong.vang(), phanThuong.ngoc());
+                if (!this.cheDoBoss && !this.cheDoCamTu) {
+                    nguoiChoi.dichVu.guiKetThucDau(ketQua, kinhNghiemThucNhan, phanThuong.vang(), phanThuong.ngoc());
+                }
                 nguoiChoi.dichVu.capNhatCup((byte)0, nguoiChoi.cup);
                 nguoiChoi.dichVu.capNhatKDVaKDA();
                 nguoiChoi.dichVu.capNhat();
-                nguoiChoi.moHopThoaiOK(thongBao);
             }
         }
         catch (IOException ex) {

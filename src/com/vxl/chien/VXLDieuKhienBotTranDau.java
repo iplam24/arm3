@@ -20,10 +20,10 @@ final class VXLDieuKhienBotTranDau {
     private static final int NUA_RONG_HITBOX_CAM_TU = 8;
     private static final byte HIEU_UNG_BOM_TU_SAT = 24;
     private static final short ICON_BOM_TU_SAT = 1007;
-    private static final long TRE_BOT_TOI_THIEU = 900L;
-    private static final long TRE_BOT_TOI_DA = 1400L;
-    private static final long TRE_SAU_DI_CHUYEN_CAM_TU = 450L;
-    private static final long TRE_SAU_NO_CAM_TU = 900L;
+    private static final long TRE_BOT_TOI_THIEU = 200L;
+    private static final long TRE_BOT_TOI_DA = 450L;
+    private static final long TRE_SAU_DI_CHUYEN_CAM_TU = 50L;
+    private static final long TRE_SAU_NO_CAM_TU = 200L;
     private static final long TRE_SAU_DAN_BAN_SAO_ULTRON = 1000L;
     private static final int TI_LE_PHIEN_QUAN_BAN_GOC_CAO = 70;
     private static final int SO_LUONG_LUONG_BOT = Math.max(2,
@@ -62,7 +62,7 @@ final class VXLDieuKhienBotTranDau {
             catch (Exception ex) {
                 Logger.getLogger(VXLDieuKhienBotTranDau.class.getName()).log(Level.WARNING, "Lỗi vòng lặp chiến đấu của bot.", ex);
             }
-        }, 700L, 700L, TimeUnit.MILLISECONDS);
+        }, 150L, 150L, TimeUnit.MILLISECONDS);
     }
 
     synchronized void dung() {
@@ -100,8 +100,10 @@ final class VXLDieuKhienBotTranDau {
             if (chiSoLuot != this.luotDangTheoDoi || hanLuot != this.hanLuotDangTheoDoi) {
                 this.luotDangTheoDoi = chiSoLuot;
                 this.hanLuotDangTheoDoi = hanLuot;
-                this.thoiDiemBotHanhDong = bayGio + ThreadLocalRandom.current().nextLong(
-                        TRE_BOT_TOI_THIEU, TRE_BOT_TOI_DA + 1L);
+                this.thoiDiemBotHanhDong = luot.camTu || this.tranDau.laCheDoCamTu()
+                        ? bayGio + 50L
+                        : bayGio + ThreadLocalRandom.current().nextLong(
+                                TRE_BOT_TOI_THIEU, TRE_BOT_TOI_DA + 1L);
             }
             if (luot.bot && bayGio >= this.thoiDiemBotHanhDong && bayGio <= hanLuot) {
                 if (this.tranDau.xuLyLuotBossDacBiet(luot)) {

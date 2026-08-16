@@ -123,7 +123,7 @@ public final class VXLDatLaiPhienQuanHangNgay {
                     + "'$.trainingRebelDefeated', 0, '$.trainingSuccess', 1, "
                     + "'$.kamikazeKills', 0, '$.bossKills', 0, "
                     + "'$.dailyKamikazeKills', 0, '$.dailyBossKills', 0, "
-                    + "'$.dailyKamikazeClaimed', false, '$.dailyBossClaimed', false)";
+                    + "'$.dailyKamikazeClaimed', false, '$.dailyBossClaimed', false, '$.towerElo', 0)";
             try (PreparedStatement stmt = conn.prepareStatement(sql)) {
                 soDong[0] = stmt.executeUpdate();
             }

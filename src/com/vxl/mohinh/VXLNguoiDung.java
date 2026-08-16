@@ -414,6 +414,7 @@ public class VXLNguoiDung {
                             this.nguoiChoi.cap = VXLTienIch.layCap(this.nguoiChoi.kinhNghiem);
                             this.nguoiChoi.point = p.getShort("point");
                             this.nguoiChoi.trainingSuccess = p.getByte("trainingSuccess");
+                            this.nguoiChoi.towerElo = p.getInt("towerElo");
                             this.nguoiChoi.busyHammer = p.getByte("busyHammer");
                             this.nguoiChoi.nHammer = p.getByte("nHammer");
                             this.nguoiChoi.kill = p.getInt("kill");
@@ -557,6 +558,7 @@ public class VXLNguoiDung {
                 this.nguoiChoi.cap = VXLTienIch.layCap(this.nguoiChoi.kinhNghiem);
                 this.nguoiChoi.point = p.getShort("point");
                 this.nguoiChoi.trainingSuccess = p.getByte("trainingSuccess");
+                this.nguoiChoi.towerElo = p.getInt("towerElo");
                 this.nguoiChoi.busyHammer = p.getByte("busyHammer");
                 this.nguoiChoi.nHammer = p.getByte("nHammer");
                 this.nguoiChoi.kill = p.getInt("kill");

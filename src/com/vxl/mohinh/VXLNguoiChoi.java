@@ -45,6 +45,7 @@ public class VXLNguoiChoi {
     public int ngoc;
     public int kinhNghiem;
     public int cup;
+    public int towerElo;
     public int cap;
     public boolean quanTri;
     public int clan = -1;
@@ -107,6 +108,7 @@ public class VXLNguoiChoi {
     }
 
     public void taiTienTrinhGame(JSONObject duLieu) {
+        this.towerElo = Math.max(0, docInt(duLieu, "towerElo", 0));
         this.nhiemVu.tai(duLieu);
         this.luyenTap.tai(duLieu);
     }
@@ -456,6 +458,22 @@ public class VXLNguoiChoi {
             this.hat = (short)-1;
             this.wing = (short)-1;
             this.avenger = (byte)8;
+        } else if (ma == 400) {
+            this.head = (short)246;
+            this.body = (short)247;
+            this.leg = (short)248;
+            this.wp = (short)-1;
+            this.hat = (short)-1;
+            this.wing = (short)-1;
+            this.avenger = (byte)0;
+        } else if (ma == 401) {
+            this.head = (short)250;
+            this.body = (short)251;
+            this.leg = (short)252;
+            this.wp = (short)-1;
+            this.hat = (short)-1;
+            this.wing = (short)-1;
+            this.avenger = (byte)0;
         } else if (ma == 413) {
             this.head = (short)278;
             this.body = (short)279;
@@ -466,7 +484,7 @@ public class VXLNguoiChoi {
             this.avenger = (byte)0;
         } else {
             VXLVatPham t = this.itemBody[5];
-            if (t == null || t.ma != 413 && (t.ma < 391 || t.ma > 400)) {
+            if (t == null || t.ma != 413 && t.ma != 400 && t.ma != 401 && (t.ma < 391 || t.ma > 398)) {
                 byte loai = vatPham.mau.loai;
                 short part = vatPham.mau.part;
                 if (loai == 0) {
@@ -1216,6 +1234,7 @@ public class VXLNguoiChoi {
         duLieu.put("nHammer", this.nHammer);
         duLieu.put("exp", this.kinhNghiem);
         duLieu.put("point", this.point);
+        duLieu.put("towerElo", this.towerElo);
         this.nhiemVu.ghiVao(duLieu);
         this.luyenTap.ghiVao(duLieu);
         JSONArray pointAdds = new JSONArray();
@@ -1363,6 +1382,7 @@ public class VXLNguoiChoi {
     }
 
     public synchronized void datLaiTienDoPhienQuanHangNgay() {
+        this.towerElo = 0;
         this.luyenTap.datLaiHangNgay();
         this.flushCache();
     }
@@ -1405,5 +1425,15 @@ public class VXLNguoiChoi {
     public synchronized void datCapPhienQuan(int cap) {
         this.trainingSuccess = (byte)Math.max(1, Math.min(255, cap));
         this.flushCache();
+    }
+
+    private static int docInt(JSONObject duLieu, String khoa, int macDinh) {
+        Object giaTri = duLieu != null ? duLieu.get(khoa) : null;
+        if (giaTri == null) return macDinh;
+        try {
+            return Integer.parseInt(giaTri.toString());
+        } catch (NumberFormatException ex) {
+            return macDinh;
+        }
     }
 }

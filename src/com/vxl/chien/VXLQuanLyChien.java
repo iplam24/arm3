@@ -29,10 +29,10 @@ public class VXLQuanLyChien {
     private static final int MAX_FIGHTERS = 40;
     private static final int NO_TANG_MOI_LAN_DOI_LUOT = 10;
     private static final long THOI_GIAN_CHO_KET_THUC_PHAT_BAN = 20_000L;
-    private static final long TRE_PHAT_BAN_CO_BAN = 1_200L;
-    private static final long TRE_MOI_DIEM_DUONG_DAN = 28L;
-    private static final long TRE_PHAT_BAN_TOI_THIEU = 1_800L;
-    private static final long TRE_PHAT_BAN_TOI_DA = 7_000L;
+    private static final long TRE_PHAT_BAN_CO_BAN = 400L;
+    private static final long TRE_MOI_DIEM_DUONG_DAN = 15L;
+    private static final long TRE_PHAT_BAN_TOI_THIEU = 800L;
+    private static final long TRE_PHAT_BAN_TOI_DA = 3_000L;
     private static final long TRE_KET_THUC_SKILL_ROI = 1_800L;
     private static final long TRE_QUAY_LAI_PHONG_CHO = 5_000L;
     private static final byte LOAI_DAN_HAWKEYE_SKILL = 9;
@@ -212,6 +212,7 @@ public class VXLQuanLyChien {
         chienBinh.y = toaDo[1];
         chienBinh.heSoDiChuyen = 100;
         this.phatDiChuyen(chienBinh);
+        nguoiChoi.dichVu.guiCapNhatXYLuyenTap(chienBinh.chiSo, chienBinh.x, chienBinh.y);
     }
 
     public synchronized void capNhatXY(VXLNguoiChoi nguoiChoi, VXLTinNhan ms) throws IOException {
@@ -442,38 +443,19 @@ public class VXLQuanLyChien {
 
     private void xuLySkillHawkeye(VXLChienBinh nguoiDung, VXLChienBinh mucTieu)
             throws IOException {
-        short[] cacX = new short[]{
-                (short)(mucTieu.x - 120), (short)(mucTieu.x - 80), (short)(mucTieu.x - 40),
-                (short)(mucTieu.x),
-                (short)(mucTieu.x + 40), (short)(mucTieu.x + 80), (short)(mucTieu.x + 120)
-        };
-        short[] cacY = new short[cacX.length];
-        for (int i = 0; i < cacX.length; i++) {
-            cacX[i] = (short)Math.max(4, Math.min(this.map.getWidth() - 5, cacX[i]));
+        int soMuiTen = 5;
+        short[] cacX = new short[soMuiTen];
+        short[] cacY = new short[soMuiTen];
+        for (int i = 0; i < soMuiTen; i++) {
+            cacX[i] = (short)Math.max(4, Math.min(this.map.getWidth() - 5, mucTieu.x));
             cacY[i] = this.map.timViTriDat(cacX[i], mucTieu.y);
-            this.map.taoLoTheoMatNa(cacX[i], cacY[i], "hgrenade.png");
         }
+        this.map.taoLoTheoMatNa(cacX[0], cacY[0], "hgrenade.png");
         this.phatTin.guiDiemRoiSkill(nguoiDung.chiSo, LOAI_DAN_HAWKEYE_SKILL, cacX, cacY);
         int satThuongMoiMui = Math.max(8,
                 VXLTinhSatThuong.tinhSauGiap(20 + nguoiDung.tanCong, mucTieu.giap));
-        Map<VXLChienBinh, Integer> satThuongTheoMucTieu = new LinkedHashMap<>();
-        for (int i = 0; i < cacX.length; i++) {
-            for (VXLChienBinh chienBinh : this.chienBinhs) {
-                if (chienBinh == null || chienBinh.chet || chienBinh.daRoiTran
-                        || this.cungDoi(nguoiDung, chienBinh)) {
-                    continue;
-                }
-                int dx = chienBinh.x - cacX[i];
-                int dy = chienBinh.y - cacY[i];
-                if (dx * dx + dy * dy <= 60 * 60) {
-                    satThuongTheoMucTieu.merge(chienBinh, satThuongMoiMui, Integer::sum);
-                }
-            }
-        }
-        for (Map.Entry<VXLChienBinh, Integer> muc : satThuongTheoMucTieu.entrySet()) {
-            this.satThuong(nguoiDung, muc.getKey(),
-                    Math.min(satThuongMoiMui * cacX.length, muc.getValue()), true, false, false);
-        }
+        int tongSatThuong = satThuongMoiMui * soMuiTen;
+        this.satThuong(nguoiDung, mucTieu, tongSatThuong, true, false, false);
         this.batDauChoKetThucSkill(nguoiDung, TRE_KET_THUC_SKILL_ROI);
         this.kiemTraKetThuc();
     }
@@ -1114,8 +1096,9 @@ public class VXLQuanLyChien {
             return;
         }
         this.daYeuCauDonTran = true;
+        long tre = (this.cheDoBoss || this.cheDoCamTu) ? 2_000L : TRE_QUAY_LAI_PHONG_CHO;
         this.dieuKhienBot.thucHienTriHoan(
-                this.wait::ketThucDau, TRE_QUAY_LAI_PHONG_CHO);
+                this.wait::ketThucDau, tre);
     }
 
     synchronized void sangLuot(byte luotDaKetThuc) throws IOException {
@@ -1190,6 +1173,14 @@ public class VXLQuanLyChien {
     }
 
     private byte timLuotTheoNapDan(int sauViTri) {
+        if (this.cheDoCamTu || this.cheDoBoss) {
+            for (int i = 0; i < this.chienBinhs.length; i++) {
+                VXLChienBinh cb = this.chienBinhs[i];
+                if (cb != null && !cb.bot && !cb.chet && !cb.daRoiTran) {
+                    this.napDan[i] = 0;
+                }
+            }
+        }
         return (byte)VXLHangDoiNapDan.timViTriTiepTheo(
                 this.napDan, this.thuTuHanhDongNapDan, sauViTri, viTri -> {
                     VXLChienBinh chienBinh = this.chienBinhs[viTri];
@@ -1214,6 +1205,14 @@ public class VXLQuanLyChien {
         if (bot == null || this.daKetThuc || this.luotHienTai != bot.chiSo) {
             return;
         }
+        if (tre <= 60L) {
+            try {
+                this.sangLuot(bot.chiSo);
+            } catch (IOException ex) {
+                Logger.getLogger(VXLQuanLyChien.class.getName()).log(Level.WARNING, "Lỗi chuyển lượt bot tức thì.", ex);
+            }
+            return;
+        }
         this.phatBanDangChoKetThuc = bot.chiSo;
         this.hanLuot = System.currentTimeMillis() + Math.max(0L, tre);
         this.lapLichHetLuot(bot.chiSo, this.hanLuot);
@@ -1224,6 +1223,7 @@ public class VXLQuanLyChien {
             return;
         }
         VXLChienBinh tiepTheo = this.chienBinhs[this.luotHienTai];
+        tiepTheo.thoiDiemSanSangBan = 0L;
         if (tiepTheo.kyNangAvenger != null) {
             tiepTheo.kyNangAvenger.batDauLuot();
         }

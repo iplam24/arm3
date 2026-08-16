@@ -1,0 +1,17 @@
+START TRANSACTION;
+
+INSERT INTO `sprite_images` (`id`, `image_id`, `x`, `y`, `width`, `height`)
+VALUES (1694, 4, 256, 0, 24, 16)
+ON DUPLICATE KEY UPDATE
+    `image_id` = VALUES(`image_id`),
+    `x` = VALUES(`x`),
+    `y` = VALUES(`y`),
+    `width` = VALUES(`width`),
+    `height` = VALUES(`height`);
+
+UPDATE `clans`
+SET `icon_id` = 1694
+WHERE `icon_id` IN (2128, 2129);
+
+COMMIT;
+

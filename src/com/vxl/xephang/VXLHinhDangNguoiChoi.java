@@ -31,6 +31,24 @@ public record VXLHinhDangNguoiChoi(short dau, short mu, short than, short chan, 
                     continue;
                 }
                 int ma = vatPham.getIntValue("id");
+                if (ma == 400) {
+                    dau = 246;
+                    than = 247;
+                    chan = 248;
+                    vuKhi = -1;
+                    mu = -1;
+                    canh = -1;
+                    continue;
+                }
+                if (ma == 401) {
+                    dau = 250;
+                    than = 251;
+                    chan = 252;
+                    vuKhi = -1;
+                    mu = -1;
+                    canh = -1;
+                    continue;
+                }
                 if (ma == 413) {
                     dau = 278;
                     than = 279;

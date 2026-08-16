@@ -26,7 +26,7 @@ public final class VXLClanService {
     private static final byte MA_THUOC_TINH_TRANG_THAI = 31;
     private static final int CLAN_LOGO_FIRST_IMAGE = 1617;
     private static final int CLAN_LOGO_LAST_IMAGE = 1693;
-    private static final short CLAN_VIETNAM_IMAGE = 2129;
+    private static final short CLAN_VIETNAM_IMAGE = 1694;
     private static final VXLBieuTuongClan[] BIEU_TUONG_CLAN = taoDanhSachBieuTuongClan();
     private static final VXLVatPhamClan[] VAT_PHAM_CLAN = new VXLVatPhamClan[]{
         new VXLVatPhamClan((short)364, (byte)0, (byte)1, 100_000, 10, (byte)6, (short)5),

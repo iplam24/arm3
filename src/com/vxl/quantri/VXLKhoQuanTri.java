@@ -144,6 +144,7 @@ public final class VXLKhoQuanTri {
             duLieu.chiSo.put("dailyBossKills", 0);
             duLieu.chiSo.put("dailyKamikazeClaimed", false);
             duLieu.chiSo.put("dailyBossClaimed", false);
+            duLieu.chiSo.put("towerElo", 0);
         }, duLieu -> "Đã reset Phiến quân, 2 Tòa Tháp và Boss về mốc 1 cho " + duLieu.ten + ".");
     }
 
@@ -243,7 +244,7 @@ public final class VXLKhoQuanTri {
                     + "\n- Cấp: " + online.cap + " (" + online.kinhNghiem + " EXP)"
                     + "\n- Vàng: " + online.vang + " | Ngọc: " + online.ngoc
                     + "\n- Điểm tiềm năng: " + online.point
-                    + "\n- Tiến độ: phiến quân=" + Byte.toUnsignedInt(online.trainingSuccess)
+                    + "\n- Tiến độ: phiến quân=" + Byte.toUnsignedInt(online.trainingSuccess) + " | Elo boss=" + online.towerElo
                     + "\n- Trạng thái: Trực tuyến (ID " + online.ma + ")"
                     + "\n- Quyền admin: " + (online.quanTri ? "CÓ" : "KHÔNG");
         }
@@ -257,7 +258,7 @@ public final class VXLKhoQuanTri {
                     + "\n- Cấp: " + VXLTienIch.layCap(exp) + " (" + exp + " EXP)"
                     + "\n- Vàng: " + duLieu.vang + " | Ngọc: " + duLieu.ngoc
                     + "\n- Điểm tiềm năng: " + point
-                    + "\n- Tiến độ: phiến quân=" + rebel
+                    + "\n- Tiến độ: phiến quân=" + rebel + " | Elo boss=" + docInt(duLieu.chiSo, "towerElo", 0)
                     + "\n- Trạng thái: Ngoại tuyến"
                     + "\n- Quyền admin: " + (duLieu.quanTri ? "CÓ" : "KHÔNG");
         }, duLieu -> ketQua[0]);
