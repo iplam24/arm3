@@ -31,4 +31,22 @@ public final class VXLTinhSatThuong {
         long ketQuaDaoDong = (long)satThuong * (100L + daoDong) / 100L;
         return (int)Math.max(1L, Math.min(Integer.MAX_VALUE, ketQuaDaoDong));
     }
+
+    public static boolean tinhTiLeChiMang(int mayMan) {
+        if (mayMan <= 0) {
+            return false;
+        }
+        // Tỷ lệ chí mạng cơ bản từ may mắn: 5% + mayMan / 10, tối đa 65%
+        int tiLe = Math.min(65, 5 + mayMan / 10);
+        return ThreadLocalRandom.current().nextInt(100) < tiLe;
+    }
+
+    public static boolean tinhKhangHieuUng(int mayMan) {
+        if (mayMan <= 0) {
+            return false;
+        }
+        // Kháng hiệu ứng bất lợi từ chỉ số may mắn: mayMan / 15, tối đa 50%
+        int tiLeKhang = Math.min(50, mayMan / 15);
+        return ThreadLocalRandom.current().nextInt(100) < tiLeKhang;
+    }
 }

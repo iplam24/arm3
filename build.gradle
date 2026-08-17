@@ -48,7 +48,7 @@ sourceSets {
 }
 
 jar {
-    archiveFileName = 'vxldeptrai.jar'
+    archiveFileName = 'mobiarmy3.jar'
     preserveFileTimestamps = false
     reproducibleFileOrder = true
     manifest {

@@ -315,27 +315,26 @@ public final class VXLCauHinhVatPhamChienDau {
             return 24;
         }
         return switch (Byte.toUnsignedInt(hoSoDan.loaiClient())) {
-            case 0 -> 24;
-            case 1 -> 14;
-            case 2 -> 18;
-            case 9 -> 18;
-            case 10 -> 19;
-            case 11, 17, 19 -> 13;
-            case 21 -> 10;
-            case 83 -> 32;
-            case 33, 79, 80, 82 -> 18;
-            case 49 -> 16;
-            case 57 -> 28;
-            default -> 18;
+            case 0 -> 40;
+            case 1 -> 28;
+            case 2 -> 36;
+            case 9 -> 36;
+            case 10 -> 40;
+            case 11, 17, 19 -> 30;
+            case 21 -> 28;
+            case 83 -> 50;
+            case 79 -> 55;
+            case 33, 80, 82 -> 35;
+            case 49 -> 30;
+            case 57 -> 45;
+            default -> 32;
         };
     }
 
     public static int tinhSatThuongNoTaiViTri(short[] vaChamDiaHinhX,
             short[] vaChamDiaHinhY, short mucTieuX, short mucTieuY, byte loaiDan,
             byte avenger, int satThuongMoiVien, int tranSatThuong) {
-        if (Byte.toUnsignedInt(loaiDan) == 21 && avenger == 0) {
-            return 0;
-        }
+        // all gun types can deal splash damage
         int banKinh = layBanKinhNo(loaiDan, avenger);
         if (banKinh <= 0 || satThuongMoiVien <= 0 || tranSatThuong <= 0
                 || vaChamDiaHinhX == null || vaChamDiaHinhY == null) {

@@ -35,7 +35,7 @@ public record VXLHinhDangNguoiChoi(short dau, short mu, short than, short chan, 
                     dau = 246;
                     than = 247;
                     chan = 248;
-                    vuKhi = -1;
+                    vuKhi = 249;
                     mu = -1;
                     canh = -1;
                     continue;
@@ -44,7 +44,7 @@ public record VXLHinhDangNguoiChoi(short dau, short mu, short than, short chan, 
                     dau = 250;
                     than = 251;
                     chan = 252;
-                    vuKhi = -1;
+                    vuKhi = 249;
                     mu = -1;
                     canh = -1;
                     continue;
@@ -68,25 +68,44 @@ public record VXLHinhDangNguoiChoi(short dau, short mu, short than, short chan, 
                     vuKhi = -1;
                     continue;
                 }
-                VXLMauVatPham mau = VXLQuanLyMayChu.itemTemplates == null
-                        ? null : VXLQuanLyMayChu.itemTemplates.get(ma);
-                if (mau == null) {
-                    continue;
-                }
-                switch (mau.loai) {
-                    case 0 -> dau = mau.part;
-                    case 1 -> chan = mau.part;
-                    case 2 -> than = mau.part;
-                    case 3 -> mu = mau.part;
-                    case 4 -> canh = mau.part;
-                    case 5 -> vuKhi = mau.part;
-                    default -> {
+                if (!coVatPhamBienHinhJson(trangBi)) {
+                    VXLMauVatPham mau = VXLQuanLyMayChu.itemTemplates == null
+                            ? null : VXLQuanLyMayChu.itemTemplates.get(ma);
+                    if (mau == null) {
+                        continue;
+                    }
+                    switch (mau.loai) {
+                        case 0 -> dau = mau.part;
+                        case 1 -> chan = mau.part;
+                        case 2 -> than = mau.part;
+                        case 3 -> mu = mau.part;
+                        case 4 -> canh = mau.part;
+                        case 5 -> vuKhi = mau.part;
+                        default -> {
+                        }
                     }
                 }
             }
         } catch (RuntimeException ignored) {
         }
         return new VXLHinhDangNguoiChoi(dau, mu, than, chan, canh, vuKhi);
+    }
+
+        private static boolean coVatPhamBienHinhJson(JSONArray trangBi) {
+        if (trangBi == null) {
+            return false;
+        }
+        for (int i = 0; i < trangBi.size(); i++) {
+            JSONObject vatPham = trangBi.getJSONObject(i);
+            if (vatPham == null) {
+                continue;
+            }
+            int ma = vatPham.getIntValue("id");
+            if (ma == 400 || ma == 401 || ma == 413 || (ma >= 391 && ma <= 398)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private static VXLHinhDangNguoiChoi rong() {

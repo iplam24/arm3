@@ -34,10 +34,10 @@ try {
     & powershell -ExecutionPolicy Bypass -File "build-all-current.ps1"
     $jarBuildDir = Join-Path $buildsDir "JAR"
     New-Item -ItemType Directory -Force -Path $jarBuildDir | Out-Null
-    Copy-Item -LiteralPath "build\release-clients\vxldeptrai-mobile.jar" -Destination (Join-Path $jarBuildDir "vxldeptrai-mobile.jar") -Force
-    Copy-Item -LiteralPath "build\release-clients\vxldeptrai-mobile.jad" -Destination (Join-Path $jarBuildDir "vxldeptrai-mobile.jad") -Force
-    Copy-Item -LiteralPath "build\release-clients\vxldeptrai-base.jar" -Destination (Join-Path $jarBuildDir "vxldeptrai-base.jar") -Force
-    Copy-Item -LiteralPath "build\release-clients\vxldeptrai-base.jad" -Destination (Join-Path $jarBuildDir "vxldeptrai-base.jad") -Force
+    Copy-Item -LiteralPath "build\release-clients\mobiarmy3-mobile.jar" -Destination (Join-Path $jarBuildDir "mobiarmy3-mobile.jar") -Force
+    Copy-Item -LiteralPath "build\release-clients\mobiarmy3-mobile.jad" -Destination (Join-Path $jarBuildDir "mobiarmy3-mobile.jad") -Force
+    Copy-Item -LiteralPath "build\release-clients\mobiarmy3-base.jar" -Destination (Join-Path $jarBuildDir "mobiarmy3-base.jar") -Force
+    Copy-Item -LiteralPath "build\release-clients\mobiarmy3-base.jad" -Destination (Join-Path $jarBuildDir "mobiarmy3-base.jad") -Force
     Write-Host "Copied J2ME clients to $jarBuildDir" -ForegroundColor Green
 } finally {
     Pop-Location
@@ -59,7 +59,7 @@ try {
     & cmd /c "build-apk.bat"
     $androidBuildDir = Join-Path $buildsDir "Android"
     New-Item -ItemType Directory -Force -Path $androidBuildDir | Out-Null
-    $builtUnityApk = Join-Path $androidBuildDir "LoCheo3.apk"
+    $builtUnityApk = Join-Path $androidBuildDir "mobiarmy3.apk"
     if (Test-Path $builtUnityApk) {
         Write-Host "Unity Native Android APK created: $builtUnityApk" -ForegroundColor Green
     } else {
@@ -78,9 +78,9 @@ try {
     New-Item -ItemType Directory -Force -Path $flutterBuildDir | Out-Null
     $builtApk = "build\app\outputs\flutter-apk\app-release.apk"
     if (Test-Path $builtApk) {
-        Copy-Item -LiteralPath $builtApk -Destination (Join-Path $flutterBuildDir "MobiArmy3-Flutter.apk") -Force
+        Copy-Item -LiteralPath $builtApk -Destination (Join-Path $flutterBuildDir "mobiarmy3-flutter.apk") -Force
         Copy-Item -LiteralPath $builtApk -Destination (Join-Path $flutterRoot "dist\Mobiarmy3J2me.apk") -Force
-        Write-Host "Copied Flutter APK to $flutterBuildDir\MobiArmy3-Flutter.apk" -ForegroundColor Green
+        Write-Host "Copied Flutter APK to $flutterBuildDir\mobiarmy3-flutter.apk" -ForegroundColor Green
     } else {
         Write-Warning "Flutter APK build file not found at $builtApk"
     }

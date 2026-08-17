@@ -120,7 +120,8 @@ final class VXLXuLyVatPhamTrongTran {
             if (dongDoi == null || dongDoi.bot || dongDoi.chet || !this.cungDoi(nguoiDung, dongDoi)) {
                 continue;
             }
-            int soMau = dongDoi.hoiMau(Math.max(1, dongDoi.mauToiDa * 30 / 100));
+            int bonusDongDoi = Math.min(30, nguoiDung.dongDoi / 5);
+            int soMau = dongDoi.hoiMau(Math.max(1, dongDoi.mauToiDa * (30 + bonusDongDoi) / 100));
             if (soMau > 0) {
                 daHoi = true;
                 this.tranDau.phatCapNhatMau(dongDoi);

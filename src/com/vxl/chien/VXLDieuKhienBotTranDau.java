@@ -40,6 +40,7 @@ final class VXLDieuKhienBotTranDau {
     private final VXLTinhDuongDan tinhDuongDan;
     private ScheduledFuture<?> tacVuBot;
     private byte luotDangTheoDoi = -1;
+    private byte luotCamTuDaXuLy = -1;
     private long hanLuotDangTheoDoi = Long.MIN_VALUE;
     private long thoiDiemBotHanhDong;
 
@@ -53,6 +54,7 @@ final class VXLDieuKhienBotTranDau {
     synchronized void batDau() {
         this.dung();
         this.luotDangTheoDoi = -1;
+        this.luotCamTuDaXuLy = -1;
         this.hanLuotDangTheoDoi = Long.MIN_VALUE;
         this.thoiDiemBotHanhDong = 0L;
         this.tacVuBot = BO_LAP_LICH.scheduleWithFixedDelay(() -> {
@@ -92,6 +94,17 @@ final class VXLDieuKhienBotTranDau {
                 this.tranDau.sangLuot(chiSoLuot);
                 return;
             }
+            if (this.tranDau.laCheDoCamTu() && this.luotCamTuDaXuLy != chiSoLuot) {
+                this.luotCamTuDaXuLy = chiSoLuot;
+                System.out.println("[CAM-TU-BOM] phase=TURN index=" + chiSoLuot + " owner=" + luot.ten);
+                this.xuLyTatCaCamTu();
+                if (this.tranDau.daKetThuc()) {
+                    return;
+                }
+            }
+            if (!luot.bot) {
+                return;
+            }
             if (this.tranDau.dangChoKetThucPhatBan(chiSoLuot)) {
                 return;
             }
@@ -105,17 +118,18 @@ final class VXLDieuKhienBotTranDau {
                         : bayGio + ThreadLocalRandom.current().nextLong(
                                 TRE_BOT_TOI_THIEU, TRE_BOT_TOI_DA + 1L);
             }
-            if (luot.bot && bayGio >= this.thoiDiemBotHanhDong && bayGio <= hanLuot) {
+            if (bayGio >= this.thoiDiemBotHanhDong && bayGio <= hanLuot) {
                 if (this.tranDau.xuLyLuotBossDacBiet(luot)) {
                     return;
                 }
-                if (luot.camTu) {
+                if (this.tranDau.laCheDoCamTu() && this.luotCamTuDaXuLy != chiSoLuot) {
+                this.luotCamTuDaXuLy = chiSoLuot;
+                    this.xuLyLuotHaiToaThap(luot);
+                } else if (luot.camTu) {
                     this.xuLyLuotCamTu(luot);
                 } else {
                     this.xuLyLuotBotBan(luot);
                 }
-            } else if (bayGio > hanLuot) {
-                this.tranDau.sangLuot(chiSoLuot);
             }
         }
     }
@@ -148,10 +162,16 @@ final class VXLDieuKhienBotTranDau {
                 boolean banGocCao = this.tranDau.laCheDoCamTu()
                         && ThreadLocalRandom.current().nextInt(100)
                         < TI_LE_PHIEN_QUAN_BAN_GOC_CAO;
-                VXLTinhDuongDan.CachBanBot cachBan = this.tinhDuongDan.timCachBanBot(
-                        bot, mucTieu, loaiDan, this.tranDau.layGioX(),
-                        this.tranDau.layGioY(), banGocCao);
-                if (cachBan.satThuongDuKien() <= 0) {
+                VXLTinhDuongDan.CachBanBot cachBan = this.tranDau.laCheDoCamTu()
+                        ? new VXLTinhDuongDan.CachBanBot(
+                                this.tinhDuongDan.gocDanDaoToiMucTieu(
+                                        bot, mucTieu,
+                                        this.tinhDuongDan.lucCanThietToiMucTieu(bot, mucTieu)),
+                                this.tinhDuongDan.lucCanThietToiMucTieu(bot, mucTieu), (int) 0)
+                        : this.tinhDuongDan.timCachBanBot(
+                                bot, mucTieu, loaiDan, this.tranDau.layGioX(),
+                                this.tranDau.layGioY(), banGocCao);
+                if (!this.tranDau.laCheDoCamTu() && cachBan.satThuongDuKien() <= 0) {
                     VXLChienBinh mucTieuKhac = this.timMucTieuGanNhat(bot, mucTieu);
                     if (mucTieuKhac != null) {
                         VXLTinhDuongDan.CachBanBot cachBanKhac =
@@ -191,10 +211,64 @@ final class VXLDieuKhienBotTranDau {
         }
     }
 
+    private void xuLyLuotHaiToaThap(VXLChienBinh luot) throws IOException {
+        this.xuLyTatCaCamTu();
+        if (this.tranDau.daKetThuc()) {
+            return;
+        }
+        if (!luot.camTu) {
+            this.xuLyLuotBotBan(luot);
+        } else {
+            this.tranDau.ghiNhanNapDanSauPhatBan(luot);
+            if (!this.tranDau.kiemTraKetThuc()) {
+                this.tranDau.chuyenLuotBotSauHanhDong(luot, TRE_SAU_DI_CHUYEN_CAM_TU + 300L);
+            }
+        }
+    }
+
+    private void xuLyTatCaCamTu() throws IOException {
+        for (VXLChienBinh camTu : this.chienBinhs) {
+            if (camTu != null && camTu.bot && camTu.camTu && !camTu.chet && !camTu.daRoiTran) {
+                this.xuLyLuotCamTuDonLe(camTu);
+                if (this.tranDau.daKetThuc()) {
+                    return;
+                }
+            }
+        }
+    }
+
+    private void xuLyLuotCamTuDonLe(VXLChienBinh camTu) throws IOException {
+        VXLChienBinh mucTieu = this.timNguoiChoiGanNhat(camTu);
+        if (mucTieu == null) {
+            return;
+        }
+        if (!this.daApSatNguoiChoi(camTu, mucTieu)) {
+            this.diChuyenCamTu(camTu, mucTieu);
+        }
+        boolean daKichNo = this.daApSatNguoiChoi(camTu, mucTieu);
+        if (daKichNo) {
+            this.tranDau.phatDungVatPham(camTu, HIEU_UNG_BOM_TU_SAT, ICON_BOM_TU_SAT);
+            this.tranDau.satThuong(camTu, camTu, camTu.mauToiDa, true, true, false);
+            for (VXLChienBinh chienBinh : this.chienBinhs) {
+                if (chienBinh == null || chienBinh.chet || chienBinh.daRoiTran
+                        || this.tranDau.cungDoi(camTu, chienBinh)) {
+                    continue;
+                }
+                int noX = chienBinh.x - camTu.x;
+                int noY = chienBinh.y - camTu.y;
+                if (noX * noX + noY * noY <= TAM_NO_CAM_TU * TAM_NO_CAM_TU) {
+                    int satThuong = Math.max(camTu.tanCong, chienBinh.mauToiDa * 28 / 100);
+                    this.tranDau.satThuong(camTu, chienBinh, satThuong, true, true, false);
+                }
+            }
+        }
+    }
+
     private void xuLyLuotCamTu(VXLChienBinh camTu) throws IOException {
         VXLChienBinh mucTieu = this.timNguoiChoiGanNhat(camTu);
         if (mucTieu == null) {
             this.tranDau.kiemTraKetThuc();
+            this.tranDau.sangLuot(camTu.chiSo);
             return;
         }
         if (!this.daApSatNguoiChoi(camTu, mucTieu)) {

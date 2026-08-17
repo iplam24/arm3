@@ -13,9 +13,9 @@ $logPath = Join-Path $logDirectory "build-jar-$timestamp.log"
 $latestLogPath = Join-Path $outputRoot 'latest.log'
 $latestInfoPath = Join-Path $outputRoot 'latest.txt'
 $gradleLibDirectory = Join-Path $projectRoot 'build\libs'
-$releaseJarPath = Join-Path $releaseDirectory 'vxldeptrai.jar'
-$bundleJarPath = Join-Path $bundleDirectory 'vxldeptrai.jar'
-$bundleZipPath = Join-Path $releaseDirectory "vxldeptrai-server-$timestamp.zip"
+$releaseJarPath = Join-Path $releaseDirectory 'mobiarmy3.jar'
+$bundleJarPath = Join-Path $bundleDirectory 'mobiarmy3.jar'
+$bundleZipPath = Join-Path $releaseDirectory "mobiarmy3-server-$timestamp.zip"
 $detailsPath = Join-Path $releaseDirectory 'build-details.txt'
 $hashPath = Join-Path $releaseDirectory 'sha256.txt'
 $gradleProblemsReportPath = Join-Path $projectRoot 'build\reports\problems\problems-report.html'
@@ -193,7 +193,7 @@ try {
 @echo off
 setlocal
 cd /d "%~dp0"
-java -Dfile.encoding=UTF-8 -Dstdout.encoding=UTF-8 -Dstderr.encoding=UTF-8 -Xms512M -Xmx1024M -jar "vxldeptrai.jar"
+java -Dfile.encoding=UTF-8 -Dstdout.encoding=UTF-8 -Dstderr.encoding=UTF-8 -Xms512M -Xmx1024M -jar "mobiarmy3.jar"
 set "EXIT_CODE=%ERRORLEVEL%"
 echo.
 echo Server exited with code %EXIT_CODE%.
@@ -214,7 +214,7 @@ exit /b %EXIT_CODE%
     $jarHash = Get-FileHash -Algorithm SHA256 -LiteralPath $releaseJarPath
     $zipHash = Get-FileHash -Algorithm SHA256 -LiteralPath $bundleZipPath
     Set-Content -LiteralPath $hashPath -Value @(
-        "$($jarHash.Hash)  vxldeptrai.jar"
+        "$($jarHash.Hash)  mobiarmy3.jar"
         "$($zipHash.Hash)  $($zipFile.Name)"
     ) -Encoding ASCII
 

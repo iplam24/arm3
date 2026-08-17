@@ -876,44 +876,41 @@ implements IVXLDichVuGame {
         ds.writeByte(whoNext);
         ds.writeShort(x);
         ds.writeShort(y);
+
         int alive = 0;
-        for (VXLChienBinh chienBinh : chienBinhs) {
-            if (chienBinh != null && !chienBinh.chet && !chienBinh.daRoiTran) {
+        for (VXLChienBinh cb : chienBinhs) {
+            if (cb != null && !cb.chet && !cb.daRoiTran) {
                 alive++;
             }
         }
         ds.writeByte(alive);
 
-        boolean[] daGhi = new boolean[chienBinhs.length];
         int hienTai = Byte.toUnsignedInt(whoNext);
-        if (hienTai < chienBinhs.length) {
-            VXLChienBinh chienBinh = chienBinhs[hienTai];
-            if (chienBinh != null && !chienBinh.chet && !chienBinh.daRoiTran) {
-                ds.writeByte(chienBinh.chiSo);
-                ds.writeShort(layNapDanAnToan(napDan, hienTai));
-                daGhi[hienTai] = true;
-            }
+        boolean[] daGhi = new boolean[chienBinhs.length];
+
+        if (hienTai < chienBinhs.length && chienBinhs[hienTai] != null
+                && !chienBinhs[hienTai].chet && !chienBinhs[hienTai].daRoiTran) {
+            ds.writeByte(chienBinhs[hienTai].chiSo);
+            ds.writeShort(0);
+            daGhi[hienTai] = true;
         }
 
-        for (int lan = 0; lan < alive; lan++) {
+        for (int lan = (hienTai < daGhi.length && daGhi[hienTai] ? 1 : 0); lan < alive; lan++) {
             int chon = -1;
             int napNhoNhat = Integer.MAX_VALUE;
             long thuTuNhoNhat = Long.MAX_VALUE;
             int khoangCachVongNhoNhat = Integer.MAX_VALUE;
             for (int viTri = 0; viTri < chienBinhs.length; viTri++) {
-                VXLChienBinh chienBinh = chienBinhs[viTri];
-                if (daGhi[viTri] || chienBinh == null || chienBinh.chet
-                        || chienBinh.daRoiTran) {
+                VXLChienBinh cb = chienBinhs[viTri];
+                if (daGhi[viTri] || cb == null || cb.chet || cb.daRoiTran) {
                     continue;
                 }
                 int nap = layNapDanAnToan(napDan, viTri);
                 long thuTu = layThuTuHanhDongAnToan(thuTuHanhDong, viTri);
-                int khoangCachVong = (viTri - hienTai + chienBinhs.length)
-                        % chienBinhs.length;
-                if (nap < napNhoNhat
-                        || nap == napNhoNhat && (thuTu < thuTuNhoNhat
-                        || thuTu == thuTuNhoNhat
-                        && khoangCachVong < khoangCachVongNhoNhat)) {
+                int khoangCachVong = (viTri - hienTai + chienBinhs.length) % chienBinhs.length;
+                if (chon < 0 || nap < napNhoNhat
+                        || (nap == napNhoNhat && (thuTu < thuTuNhoNhat
+                        || (thuTu == thuTuNhoNhat && khoangCachVong < khoangCachVongNhoNhat)))) {
                     chon = viTri;
                     napNhoNhat = nap;
                     thuTuNhoNhat = thuTu;
@@ -929,6 +926,7 @@ implements IVXLDichVuGame {
         }
         ds.writeByte(giay);
         ds.flush();
+        System.out.println("[TURN-PACKET] next=" + whoNext + " alive=" + alive + " seconds=" + Byte.toUnsignedInt(giay));
         this.guiTin(ms);
     }
 

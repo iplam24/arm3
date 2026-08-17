@@ -43,6 +43,16 @@ public record VXLPhanThuongTranDau(int kinhNghiem, int vang, int ngoc, int cupTh
             kinhNghiem += 200 * soCamTu + 5 * soCamTu * (soCamTu - 1);
             vang += soCamTu * 100;
         }
+
+        // Tăng thêm thưởng EXP và Vàng từ chỉ số May mắn và Đồng đội
+        int bonusMayManExp = Math.min(100, chienBinh.mayMan / 2);
+        int bonusMayManVang = Math.min(150, chienBinh.mayMan);
+        int bonusDongDoiExp = Math.min(50, chienBinh.dongDoi / 4);
+        int bonusDongDoiVang = Math.min(100, chienBinh.dongDoi / 2);
+
+        kinhNghiem = (int)((long)kinhNghiem * (100L + bonusMayManExp + bonusDongDoiExp) / 100L);
+        vang = (int)((long)vang * (100L + bonusMayManVang + bonusDongDoiVang) / 100L);
+
         return new VXLPhanThuongTranDau(kinhNghiem, vang, 0, cupThayDoi);
     }
 }

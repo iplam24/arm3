@@ -31,6 +31,14 @@ public class VXLChienBinh {
     public final VXLHieuUngClan hieuUngClan;
     public int tanCong;
     public final int giap;
+    public int mayMan;
+    public int dongDoi;
+    public int tocDo;
+    public int satThuongChongTang;
+    public int satThuongSungTruong;
+    public int satThuongTieuLien;
+    public int satThuongChuoi;
+    public int satThuongHoaCai;
     public short x;
     public short y;
     public int hp;
@@ -93,14 +101,31 @@ public class VXLChienBinh {
         int hpGoc = Math.max(100, layDiemCong(nguoiChoi, 0, 100));
         int tanCongGoc = 20 + Math.max(0, layDiemCong(nguoiChoi, 1, 0));
         int giapGoc = Math.max(0, layDiemCong(nguoiChoi, 2, 0));
+        int mayManGoc = Math.max(0, layDiemCong(nguoiChoi, 3, 0));
+        int dongDoiGoc = Math.max(0, layDiemCong(nguoiChoi, 4, 0));
+        int tocDoGoc = Math.max(0, layDiemCong(nguoiChoi, 5, 0));
+
         long hpCong = 0;
         long tanCongCong = 0;
         long giapCong = 0;
+        long mayManCong = 0;
+        long dongDoiCong = 0;
+        long tocDoCong = 0;
+
         long hpPhanTram = 0;
         long tanCongPhanTram = 0;
         long giapPhanTram = 0;
+        long mayManPhanTram = 0;
+        long dongDoiPhanTram = 0;
+        long tocDoPhanTram = 0;
         long tatCaPhanTram = 0;
         long diChuyenPhanTram = 0;
+
+        long chongTangPhanTram = 0;
+        long sungTruongPhanTram = 0;
+        long tieuLienPhanTram = 0;
+        long chuoiPhanTram = 0;
+        long hoaCaiPhanTram = 0;
 
         VXLVatPham[] itemBody = nguoiChoi.itemBody;
         if (itemBody != null) {
@@ -111,12 +136,26 @@ public class VXLChienBinh {
                 hpCong += vatPham.tongThamSoHieuLucTheoMa(0);
                 tanCongCong += vatPham.tongThamSoHieuLucTheoMa(1);
                 giapCong += vatPham.tongThamSoHieuLucTheoMa(2);
+                mayManCong += vatPham.tongThamSoHieuLucTheoMa(3);
+                dongDoiCong += vatPham.tongThamSoHieuLucTheoMa(4);
+                tocDoCong += vatPham.tongThamSoHieuLucTheoMa(5);
+
                 hpPhanTram += vatPham.tongThamSoHieuLucTheoMa(6);
                 tanCongPhanTram += vatPham.tongThamSoHieuLucTheoMa(7);
                 giapPhanTram += vatPham.tongThamSoHieuLucTheoMa(8);
+                mayManPhanTram += vatPham.tongThamSoHieuLucTheoMa(9);
+                dongDoiPhanTram += vatPham.tongThamSoHieuLucTheoMa(10);
+                tocDoPhanTram += vatPham.tongThamSoHieuLucTheoMa(11);
+
                 tatCaPhanTram += vatPham.tongThamSoHieuLucTheoMa(18);
+                tatCaPhanTram += Math.max(0, vatPham.tongThamSoHieuLucTheoMa(17)) * 2L;
                 diChuyenPhanTram += vatPham.tongThamSoHieuLucTheoMa(26);
-                tatCaPhanTram += Math.max(0, vatPham.tongThamSoHieuLucTheoMa(17)) * 2;
+
+                chongTangPhanTram += vatPham.tongThamSoHieuLucTheoMa(21);
+                sungTruongPhanTram += vatPham.tongThamSoHieuLucTheoMa(22);
+                tieuLienPhanTram += vatPham.tongThamSoHieuLucTheoMa(23);
+                chuoiPhanTram += vatPham.tongThamSoHieuLucTheoMa(24);
+                hoaCaiPhanTram += vatPham.tongThamSoHieuLucTheoMa(25);
             }
         }
 
@@ -129,7 +168,24 @@ public class VXLChienBinh {
         this.giap = gioiHan((giapGoc + giapCong)
                 * (100L + giapPhanTram + tatCaPhanTram + this.hieuUngClan.phanTramPhongThu()) / 100L,
                 0, GIOI_HAN_CHI_SO);
-        this.heSoDiChuyenTrangBi = gioiHan(100L + diChuyenPhanTram
+        this.mayMan = gioiHan((mayManGoc + mayManCong)
+                * (100L + mayManPhanTram + tatCaPhanTram) / 100L,
+                0, GIOI_HAN_CHI_SO);
+        this.dongDoi = gioiHan((dongDoiGoc + dongDoiCong)
+                * (100L + dongDoiPhanTram + tatCaPhanTram) / 100L,
+                0, GIOI_HAN_CHI_SO);
+        this.tocDo = gioiHan((tocDoGoc + tocDoCong)
+                * (100L + tocDoPhanTram + tatCaPhanTram) / 100L,
+                0, GIOI_HAN_CHI_SO);
+
+        this.satThuongChongTang = (int)chongTangPhanTram;
+        this.satThuongSungTruong = (int)sungTruongPhanTram;
+        this.satThuongTieuLien = (int)tieuLienPhanTram;
+        this.satThuongChuoi = (int)chuoiPhanTram;
+        this.satThuongHoaCai = (int)hoaCaiPhanTram;
+
+        long tocDoBonusDiChuyen = (long)this.tocDo * 2L;
+        this.heSoDiChuyenTrangBi = gioiHan(100L + diChuyenPhanTram + tocDoBonusDiChuyen
                 + this.hieuUngClan.phanTramTocDo(), 100, 400);
         this.hp = this.mauToiDa;
     }
@@ -174,6 +230,9 @@ public class VXLChienBinh {
         this.mauToiDa = gioiHan(mauToiDa, 1, GIOI_HAN_CHI_SO);
         this.tanCong = gioiHan(tanCong, 1, GIOI_HAN_CHI_SO);
         this.giap = gioiHan(giap, 0, GIOI_HAN_CHI_SO);
+        this.mayMan = 0;
+        this.dongDoi = 0;
+        this.tocDo = 0;
         this.hp = this.mauToiDa;
     }
 
@@ -241,6 +300,9 @@ public class VXLChienBinh {
     }
 
     public int layThoiGianNapDan() {
+        if (this.camTu) {
+            return THOI_GIAN_NAP_DAN_MAC_DINH;
+        }
         int thoiGianNap = layThoiGianNapDanTheoMaVuKhi(this.maVuKhi);
         if (this.nguoiChoi != null && this.nguoiChoi.itemBody != null
                 && this.nguoiChoi.itemBody.length > 5) {
@@ -253,10 +315,34 @@ public class VXLChienBinh {
                         ? gioiHanNapDan(theoCauHinh) : THOI_GIAN_NAP_DAN_MAC_DINH;
             }
         }
+        if (this.tocDo > 0) {
+            long giamTheoTocDo = Math.min(250L, (long)this.tocDo * 2L);
+            thoiGianNap = (int)Math.max(THOI_GIAN_NAP_DAN_TOI_THIEU, thoiGianNap - giamTheoTocDo);
+        }
         if (this.luotNapNhanh > 0) {
             thoiGianNap = gioiHanNapDan((long)thoiGianNap * 80L / 100L);
         }
         return thoiGianNap;
+    }
+
+    public int layPhanTramSatThuongVuKhi(short maVuKhi) {
+        byte nhom = VXLCauHinhVatPhamChienDau.layNhomSungClientTheoVuKhi(maVuKhi);
+        int satThuong = switch (nhom) {
+            case 0 -> laSungChongTang(maVuKhi) ? this.satThuongChongTang : 0;
+            case 1 -> this.satThuongSungTruong;
+            case 2 -> this.satThuongHoaCai;
+            case 3 -> this.satThuongChuoi;
+            case 5 -> this.satThuongTieuLien;
+            default -> 0;
+        };
+        return satThuong + this.hieuUngClan.phanTramSatThuong(maVuKhi);
+    }
+
+    private static boolean laSungChongTang(short maVuKhi) {
+        return switch (maVuKhi) {
+            case 5, 31, 57, 134, 135 -> true;
+            default -> false;
+        };
     }
 
     public static int layThoiGianNapDanTheoMaVuKhi(short maVuKhi) {

@@ -388,6 +388,18 @@ public class VXLNguoiChoi {
         this.moHopThoaiOK("Bạn mua thành công " + vatPham.ten);
     }
 
+        public boolean coVatPhamBienHinh() {
+        if (this.itemBody == null) {
+            return false;
+        }
+        for (VXLVatPham t : this.itemBody) {
+            if (t != null && (t.ma == 400 || t.ma == 401 || t.ma == 413 || (t.ma >= 391 && t.ma <= 398))) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     public void datTrangBiChoNhanVat(VXLVatPham vatPham) {
         if (vatPham == null || vatPham.mau == null) {
             return;
@@ -462,7 +474,7 @@ public class VXLNguoiChoi {
             this.head = (short)246;
             this.body = (short)247;
             this.leg = (short)248;
-            this.wp = (short)-1;
+            this.wp = (short)249;
             this.hat = (short)-1;
             this.wing = (short)-1;
             this.avenger = (byte)0;
@@ -470,7 +482,7 @@ public class VXLNguoiChoi {
             this.head = (short)250;
             this.body = (short)251;
             this.leg = (short)252;
-            this.wp = (short)-1;
+            this.wp = (short)249;
             this.hat = (short)-1;
             this.wing = (short)-1;
             this.avenger = (byte)0;
@@ -483,8 +495,7 @@ public class VXLNguoiChoi {
             this.wing = (short)-1;
             this.avenger = (byte)0;
         } else {
-            VXLVatPham t = this.itemBody[5];
-            if (t == null || t.ma != 413 && t.ma != 400 && t.ma != 401 && (t.ma < 391 || t.ma > 398)) {
+            if (!this.coVatPhamBienHinh()) {
                 byte loai = vatPham.mau.loai;
                 short part = vatPham.mau.part;
                 if (loai == 0) {
