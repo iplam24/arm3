@@ -103,6 +103,8 @@ find_server_jar() {
     local candidates=(
         "$PROJECT_DIR/vxldeptrai.jar"
         "$PROJECT_DIR/build/libs/vxldeptrai.jar"
+        "$PROJECT_DIR/mobiarmy3.jar"
+        "$PROJECT_DIR/build/libs/mobiarmy3.jar"
         "$PROJECT_DIR/build/libs/LoCheo3-1.0.0.jar"
     )
 
@@ -229,7 +231,7 @@ prepare_gradle
 "$GRADLE_BIN" --no-daemon --console=plain clean jar
 
 if ! find_server_jar; then
-    echo "ERROR: Build completed but vxldeptrai.jar was not found." >&2
+    echo "ERROR: Build completed but server JAR was not found." >&2
     exit 1
 fi
 
