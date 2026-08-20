@@ -676,7 +676,7 @@ public class VXLQuanLyChien {
             }
         }
         int heSoTrangThai = VXLCauHinhVatPhamChienDau.layHeSoSatThuongTrangThai(
-                sieuCaoTrungMucTieu, kyNangDacBiet);
+                sieuCaoTrungMucTieu, kyNangDacBiet, kichHoatChiMangMayMan);
         int haoQuangDongDoiTanCong = this.tinhHaoQuangDongDoiTanCong(nguoiBan);
         long phanTramSatThuongVuKhi = (long)nguoiBan.layPhanTramSatThuongVuKhi(nguoiBan.maVuKhi) + haoQuangDongDoiTanCong;
         long heSoTich = (long)heSoDan * Math.max(100, nguoiBan.heSoPhatBan)
@@ -889,6 +889,11 @@ public class VXLQuanLyChien {
         if (chienBinh.luotLechDan > 0) {
             chienBinh.luotLechDan--;
         }
+        chienBinh.kyNangDacBiet = false;
+        chienBinh.vatPhamDanDacBiet = -1;
+        chienBinh.skillRiengPhatToi = false;
+        chienBinh.soPhatToiThieu = 1;
+        chienBinh.heSoPhatBan = 100;
     }
 
     private void capNhatVatPhamTheoLuot() throws IOException {

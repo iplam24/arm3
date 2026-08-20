@@ -359,7 +359,7 @@ public final class VXLQuanLyLuyenTap {
             soPhat = 1;
         }
         boolean kichHoatChiMangMayMan = !kyNangDacBiet && VXLTinhSatThuong.tinhTiLeChiMang(this.chiSoNguoiChoi.mayMan);
-        byte chiMang = (byte)(kyNangDacBiet || kichHoatChiMangMayMan ? 1 : 0);
+        byte chiMang = (byte)(kyNangDacBiet ? 1 : 0);
         this.kyNangDacBietPhatToi = false;
         this.skillRiengPhatToi = false;
         this.phatBanXuyenGiap = this.chiSoNguoiChoi.luotXuyenGiap > 0;
@@ -377,7 +377,7 @@ public final class VXLQuanLyLuyenTap {
         this.phatBanSieuCao = sieuCaoTrungMucTieu;
         int heSoDan = VXLCauHinhVatPhamChienDau.layHeSoSatThuong(maVatPhamDan);
         int heSoTrangThai = VXLCauHinhVatPhamChienDau.layHeSoSatThuongTrangThai(
-                this.phatBanSieuCao, this.phatBanKyNangDacBiet);
+                this.phatBanSieuCao, this.phatBanKyNangDacBiet, kichHoatChiMangMayMan);
         long phanTramSatThuongVuKhi = (long)this.chiSoNguoiChoi.layPhanTramSatThuongVuKhi(this.chiSoNguoiChoi.maVuKhi);
         long heSoTich = (long)heSoDan * Math.max(100, this.chiSoNguoiChoi.heSoPhatBan)
                 * VXLCauHinhPhienQuan.HE_SO_DAN_THUONG * heSoTrangThai
@@ -1255,6 +1255,13 @@ public final class VXLQuanLyLuyenTap {
                 this.thuTuHanhDongNapDan, viTri, this.boDemThuTuHanhDongNapDan);
         if (viTri == 0) {
             this.napDanSauHanhDongNguoiChoi = -1;
+            this.kyNangDacBietPhatToi = false;
+            this.skillRiengPhatToi = false;
+            if (this.chiSoNguoiChoi != null) {
+                this.chiSoNguoiChoi.vatPhamDanDacBiet = -1;
+                this.chiSoNguoiChoi.soPhatToiThieu = 1;
+                this.chiSoNguoiChoi.heSoPhatBan = 100;
+            }
         }
 
         int luotTiepTheo = VXLHangDoiNapDan.timViTriTiepTheo(

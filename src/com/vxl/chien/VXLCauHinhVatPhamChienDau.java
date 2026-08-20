@@ -406,12 +406,18 @@ public final class VXLCauHinhVatPhamChienDau {
     }
 
     public static int layHeSoSatThuongTrangThai(boolean sieuCao, boolean kyNangDacBiet) {
+        return layHeSoSatThuongTrangThai(sieuCao, kyNangDacBiet, false);
+    }
+
+    public static int layHeSoSatThuongTrangThai(boolean sieuCao, boolean kyNangDacBiet, boolean chiMangMayMan) {
         long heSo = 100L;
         if (sieuCao) {
             heSo = heSo * HE_SO_SAT_THUONG_SIEU_CAO / 100L;
         }
         if (kyNangDacBiet) {
             heSo = heSo * HE_SO_SAT_THUONG_KY_NANG_DAC_BIET / 100L;
+        } else if (chiMangMayMan) {
+            heSo = heSo * 135L / 100L;
         }
         return (int)Math.max(100L, Math.min(300L, heSo));
     }
