@@ -127,6 +127,7 @@ public class VXLChienBinh {
         long chuoiPhanTram = 0;
         long hoaCaiPhanTram = 0;
 
+        java.util.List<Integer> phanTramTanCongTungVi = new java.util.ArrayList<>();
         VXLVatPham[] itemBody = nguoiChoi.itemBody;
         if (itemBody != null) {
             for (VXLVatPham vatPham : itemBody) {
@@ -147,6 +148,21 @@ public class VXLChienBinh {
                 dongDoiPhanTram += vatPham.tongThamSoHieuLucTheoMa(10);
                 tocDoPhanTram += vatPham.tongThamSoHieuLucTheoMa(11);
 
+                // Thu thập % tấn công từ option đồ
+                for (int i = 0; i < vatPham.itemOptions.size(); i++) {
+                    VXLThuocTinhVatPham op = (VXLThuocTinhVatPham)vatPham.itemOptions.get(i);
+                    if (op != null && op.optionTemplate != null && op.optionTemplate.ma == 7 && op.thamSo > 0) {
+                        phanTramTanCongTungVi.add(op.thamSo);
+                    }
+                }
+                // Thu thập % tấn công từ từng viên ngọc đính trên đồ
+                java.util.Vector ngocThuocTinhs = com.vxl.vatpham.VXLChiSoNgoc.layThuocTinh(vatPham);
+                for (Object obj : ngocThuocTinhs) {
+                    if (obj instanceof VXLThuocTinhVatPham op && op.optionTemplate != null && op.optionTemplate.ma == 7 && op.thamSo > 0) {
+                        phanTramTanCongTungVi.add(op.thamSo);
+                    }
+                }
+
                 tatCaPhanTram += vatPham.tongThamSoHieuLucTheoMa(18);
                 tatCaPhanTram += Math.max(0, vatPham.tongThamSoHieuLucTheoMa(17)) * 2L;
                 diChuyenPhanTram += vatPham.tongThamSoHieuLucTheoMa(26);
@@ -162,9 +178,46 @@ public class VXLChienBinh {
         this.mauToiDa = gioiHan((hpGoc + hpCong)
                 * (100L + hpPhanTram + tatCaPhanTram + this.hieuUngClan.phanTramSinhLuc()) / 100L,
                 100, GIOI_HAN_CHI_SO);
-        this.tanCong = gioiHan((tanCongGoc + tanCongCong)
-                * (100L + tanCongPhanTram + tatCaPhanTram + this.hieuUngClan.phanTramHoaLuc()) / 100L,
-                1, GIOI_HAN_CHI_SO);
+
+        /*
+         * ====================================================================================
+         * CÁC CÔNG THỨC CŨ ĐƯỢC LƯU LẠI ĐỂ THAM KHẢO / CHUYỂN ĐỔI KHI CẦN:
+         *
+         * [CÔNG THỨC 1 - TÁCH RỜI 1 + 2 + 3]:
+         * long dameDo = tanCongCong;
+         * long dameNenTang = tanCongGoc + tanCongCong;
+         * long dameNgocPhanTram = (dameNenTang * tanCongPhanTram) / 100L;
+         * long dame2 = tanCongGoc + dameNgocPhanTram;
+         * long dameTatCaPhanTram = (dameNenTang * (tatCaPhanTram + this.hieuUngClan.phanTramHoaLuc())) / 100L;
+         * long dame3 = tanCongGoc + dameTatCaPhanTram;
+         * long tongTanCong = dameDo + dame2 + dame3;
+         * this.tanCong = gioiHan(tongTanCong, 1, GIOI_HAN_CHI_SO);
+         *
+         * [CÔNG THỨC 2 - CHUẨN TEAMOBI CỘNG DỒN % TUYẾN TÍNH]:
+         * this.tanCong = gioiHan((tanCongGoc + tanCongCong)
+         *         * (100L + tanCongPhanTram + tatCaPhanTram + this.hieuUngClan.phanTramHoaLuc()) / 100L,
+         *         1, GIOI_HAN_CHI_SO);
+         * ====================================================================================
+         */
+
+        // [CÔNG THỨC 3 - NHÂN LŨY TIẾN / LÃI KÉP THEO TỪNG VIÊN NGỌC]:
+        // Khởi đầu = Dame Nền Tảng (Dame Gốc tiềm năng + Dame Đồ cộng thẳng)
+        double dameLuyTien = (double)(tanCongGoc + tanCongCong);
+        // Mỗi viên ngọc nhân dồn tiếp nối: Dame = Dame + (Dame * %Ngọc / 100)
+        for (int pt : phanTramTanCongTungVi) {
+            dameLuyTien = dameLuyTien + (dameLuyTien * (double)pt / 100.0);
+        }
+        // Áp dụng % Tất Cả Chỉ Số
+        if (tatCaPhanTram > 0) {
+            dameLuyTien = dameLuyTien + (dameLuyTien * (double)tatCaPhanTram / 100.0);
+        }
+        // Áp dụng % Hỏa Lực Clan
+        int clanHoaLuc = this.hieuUngClan.phanTramHoaLuc();
+        if (clanHoaLuc > 0) {
+            dameLuyTien = dameLuyTien + (dameLuyTien * (double)clanHoaLuc / 100.0);
+        }
+
+        this.tanCong = gioiHan((long)Math.round(dameLuyTien), 1, GIOI_HAN_CHI_SO);
         this.giap = gioiHan((giapGoc + giapCong)
                 * (100L + giapPhanTram + tatCaPhanTram + this.hieuUngClan.phanTramPhongThu()) / 100L,
                 0, GIOI_HAN_CHI_SO);
@@ -258,8 +311,8 @@ public class VXLChienBinh {
         }
         int tanCongGoc = 20 + Math.max(0, layDiemCong(this.nguoiChoi, 1, 0));
         long tanCongCong = 0;
-        long tanCongPhanTram = 0;
         long tatCaPhanTram = 0;
+        java.util.List<Integer> phanTramTanCongTungVi = new java.util.ArrayList<>();
         VXLVatPham[] itemBody = this.nguoiChoi.itemBody;
         if (itemBody != null) {
             for (VXLVatPham vatPham : itemBody) {
@@ -267,14 +320,53 @@ public class VXLChienBinh {
                     continue;
                 }
                 tanCongCong += vatPham.tongThamSoHieuLucTheoMa(1);
-                tanCongPhanTram += vatPham.tongThamSoHieuLucTheoMa(7);
+                for (int i = 0; i < vatPham.itemOptions.size(); i++) {
+                    VXLThuocTinhVatPham op = (VXLThuocTinhVatPham)vatPham.itemOptions.get(i);
+                    if (op != null && op.optionTemplate != null && op.optionTemplate.ma == 7 && op.thamSo > 0) {
+                        phanTramTanCongTungVi.add(op.thamSo);
+                    }
+                }
+                java.util.Vector ngocThuocTinhs = com.vxl.vatpham.VXLChiSoNgoc.layThuocTinh(vatPham);
+                for (Object obj : ngocThuocTinhs) {
+                    if (obj instanceof VXLThuocTinhVatPham op && op.optionTemplate != null && op.optionTemplate.ma == 7 && op.thamSo > 0) {
+                        phanTramTanCongTungVi.add(op.thamSo);
+                    }
+                }
                 tatCaPhanTram += vatPham.tongThamSoHieuLucTheoMa(18);
                 tatCaPhanTram += Math.max(0, vatPham.tongThamSoHieuLucTheoMa(17)) * 2L;
             }
         }
-        this.tanCong = gioiHan((tanCongGoc + tanCongCong)
-                * (100L + tanCongPhanTram + tatCaPhanTram + this.hieuUngClan.phanTramHoaLuc()) / 100L,
-                1, GIOI_HAN_CHI_SO);
+
+        /*
+         * [CÔNG THỨC 1 - TÁCH RỜI 1 + 2 + 3]:
+         * long dameDo = tanCongCong;
+         * long dameNenTang = tanCongGoc + tanCongCong;
+         * long dameNgocPhanTram = (dameNenTang * tanCongPhanTram) / 100L;
+         * long dame2 = tanCongGoc + dameNgocPhanTram;
+         * long dameTatCaPhanTram = (dameNenTang * (tatCaPhanTram + this.hieuUngClan.phanTramHoaLuc())) / 100L;
+         * long dame3 = tanCongGoc + dameTatCaPhanTram;
+         * long tongTanCong = dameDo + dame2 + dame3;
+         * this.tanCong = gioiHan(tongTanCong, 1, GIOI_HAN_CHI_SO);
+         *
+         * [CÔNG THỨC 2 - CHUẨN TEAMOBI CỘNG DỒN % TUYẾN TÍNH]:
+         * this.tanCong = gioiHan((tanCongGoc + tanCongCong)
+         *         * (100L + tanCongPhanTram + tatCaPhanTram + this.hieuUngClan.phanTramHoaLuc()) / 100L,
+         *         1, GIOI_HAN_CHI_SO);
+         */
+
+        // [CÔNG THỨC 3 - NHÂN LŨY TIẾN / LÃI KÉP THEO TỪNG VIÊN NGỌC]:
+        double dameLuyTien = (double)(tanCongGoc + tanCongCong);
+        for (int pt : phanTramTanCongTungVi) {
+            dameLuyTien = dameLuyTien + (dameLuyTien * (double)pt / 100.0);
+        }
+        if (tatCaPhanTram > 0) {
+            dameLuyTien = dameLuyTien + (dameLuyTien * (double)tatCaPhanTram / 100.0);
+        }
+        int clanHoaLuc = this.hieuUngClan.phanTramHoaLuc();
+        if (clanHoaLuc > 0) {
+            dameLuyTien = dameLuyTien + (dameLuyTien * (double)clanHoaLuc / 100.0);
+        }
+        this.tanCong = gioiHan((long)Math.round(dameLuyTien), 1, GIOI_HAN_CHI_SO);
     }
 
     public int batDauNapDan() {

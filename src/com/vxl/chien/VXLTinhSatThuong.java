@@ -9,7 +9,7 @@ public final class VXLTinhSatThuong {
     }
 
     public static int tinhPhatBan(int tanCong, byte luc, int heSoPhanTram) {
-        long satThuongCoBan = Math.max(1, tanCong) + Math.max(0, luc) / 2L;
+        long satThuongCoBan = Math.max(1, tanCong);
         long ketQua = satThuongCoBan * Math.max(1, heSoPhanTram) / 100L;
         return (int)Math.min(Integer.MAX_VALUE, Math.max(1L, ketQua));
     }
@@ -24,7 +24,7 @@ public final class VXLTinhSatThuong {
     }
 
     public static int tinhPhatBanCoDaoDong(int tanCong, byte luc, int heSoPhanTram) {
-        long satThuongCoBan = Math.max(1, tanCong) + Math.max(0, luc) / 2L;
+        long satThuongCoBan = Math.max(1, tanCong);
         long ketQua = satThuongCoBan * Math.max(1, heSoPhanTram) / 100L;
         int satThuong = (int)Math.min(Integer.MAX_VALUE, Math.max(1L, ketQua));
         int daoDong = ThreadLocalRandom.current().nextInt(-PHAN_TRAM_DAO_DONG, PHAN_TRAM_DAO_DONG + 1);

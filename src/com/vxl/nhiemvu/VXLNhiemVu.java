@@ -15,7 +15,7 @@ public final class VXLNhiemVu {
     private static final int NHIEM_VU_NGAY_BOSS = 1;
     private static final int NHIEM_VU_NGAY_PVP = 3;
     private static final int HE_SO_KINH_NGHIEM_CO_BAN = 3;
-    private static final int DIEM_TIEM_NANG_MOI_CAP = 3;
+    private static final int DIEM_TIEM_NANG_MOI_CAP = 5;
     private static final ThanhTich[] CAC_THANH_TICH = new ThanhTich[]{
         new ThanhTich((byte)0, "Đấu trường I", "Thắng 5 trận PvP", 0, 5, 299, 0),
         new ThanhTich((byte)1, "Đấu trường II", "Thắng 25 trận PvP", 0, 25, 304, 1),

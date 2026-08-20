@@ -73,6 +73,8 @@ try {
 Write-Step "5. Building Flutter Android APK (D:\MobiArmy3Flutter)..."
 Push-Location $flutterRoot
 try {
+    Write-Host "Syncing Unity library to Flutter..." -ForegroundColor Cyan
+    & cmd /c "export-unity.bat"
     & flutter build apk --release --target-platform android-arm,android-arm64
     $flutterBuildDir = Join-Path $buildsDir "APKFLUTTER"
     New-Item -ItemType Directory -Force -Path $flutterBuildDir | Out-Null
