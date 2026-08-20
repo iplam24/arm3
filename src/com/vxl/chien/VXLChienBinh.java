@@ -14,8 +14,8 @@ public class VXLChienBinh {
     public static final byte LOAI_BOSS_RONG = 2;
     private static final int GIOI_HAN_CHI_SO = 30000;
     private static final int MA_THUOC_TINH_THOI_GIAN_NAP_DAN = 14;
-    public static final int THOI_GIAN_NAP_DAN_TOI_THIEU = 250;
-    public static final int THOI_GIAN_NAP_DAN_MAC_DINH = THOI_GIAN_NAP_DAN_TOI_THIEU;
+    public static final int THOI_GIAN_NAP_DAN_TOI_THIEU = 100;
+    public static final int THOI_GIAN_NAP_DAN_MAC_DINH = 300;
     public static final int THOI_GIAN_NAP_DAN_TOI_DA = Short.MAX_VALUE;
     public final VXLNguoiChoi nguoiChoi;
     public final byte chiSo;
@@ -300,7 +300,7 @@ public class VXLChienBinh {
     }
 
     public int layThoiGianNapDan() {
-        if (this.camTu) {
+        if (this.bot) {
             return THOI_GIAN_NAP_DAN_MAC_DINH;
         }
         int thoiGianNap = layThoiGianNapDanTheoMaVuKhi(this.maVuKhi);

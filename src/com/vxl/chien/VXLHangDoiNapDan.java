@@ -45,6 +45,8 @@ public final class VXLHangDoiNapDan {
         for (int viTri = 0; viTri < napDan.length; viTri++) {
             if (kiemTraViTri.hopLe(viTri)) {
                 napDan[viTri] = Math.max(0, napDan[viTri] - nhoNhat);
+            } else {
+                napDan[viTri] = 0;
             }
         }
         return timViTriSanSang(napDan, thuTuHanhDong, sauViTri, kiemTraViTri);

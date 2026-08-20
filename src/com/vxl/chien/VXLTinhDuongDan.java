@@ -175,8 +175,8 @@ final class VXLTinhDuongDan {
         long diemTotNhat = Long.MAX_VALUE;
         long diemSieuCaoTotNhat = Long.MAX_VALUE;
         boolean banSangPhai = mucTieu.x >= nguoiBan.x;
-        int gocBatDau = banSangPhai ? 35 : 91;
-        int gocKetThuc = banSangPhai ? 89 : 145;
+        int gocBatDau = banSangPhai ? 0 : 91;
+        int gocKetThuc = banSangPhai ? 89 : 180;
         for (int luc = 10; luc <= Byte.toUnsignedInt(LUC_TOI_DA); luc += 2) {
             for (int goc = gocBatDau; goc <= gocKetThuc; goc += 2) {
                 VXLHeThongDan.KetQuaPhatBan phatBan = this.taoPhatBan(

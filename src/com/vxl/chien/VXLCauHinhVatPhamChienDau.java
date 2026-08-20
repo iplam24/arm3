@@ -323,7 +323,7 @@ public final class VXLCauHinhVatPhamChienDau {
             case 11, 17, 19 -> 30;
             case 21 -> 28;
             case 83 -> 50;
-            case 79 -> 55;
+            case 79 -> 40;
             case 33, 80, 82 -> 35;
             case 49 -> 30;
             case 57 -> 45;
