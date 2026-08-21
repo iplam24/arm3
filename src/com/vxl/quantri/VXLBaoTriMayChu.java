@@ -78,7 +78,7 @@ public final class VXLBaoTriMayChu {
                 () -> batTheoLich(phienMoi, nguoiHen, lyDoHen), soPhut, TimeUnit.MINUTES);
 
         String thongBao = "Máy chủ sẽ bảo trì sau " + soPhut + " phút. " + lyDoHen;
-        VXLNguoiChoi.onChatFromToAllPlayer("HỆ THỐNG", thongBao);
+        VXLThongBaoServer.guiThongBaoChat("HỆ THỐNG", thongBao);
         VXLThongBaoServer.guiMayBay(thongBao);
         return "Đã đặt lịch bảo trì sau " + soPhut + " phút."
                 + "\nBắt đầu lúc: " + DINH_DANG_THOI_GIAN.format(thoiDiemBaoTri)
@@ -94,7 +94,7 @@ public final class VXLBaoTriMayChu {
         dangBaoTri = true;
 
         String thongBao = "Máy chủ bắt đầu bảo trì. " + lyDo;
-        VXLNguoiChoi.onChatFromToAllPlayer("HỆ THỐNG", thongBao);
+        VXLThongBaoServer.guiThongBaoChat("HỆ THỐNG", thongBao);
         int soNguoiBiNgat = ngatNguoiDungThuong(thongBaoDangNhap());
         return (daBat ? "Đã cập nhật chế độ bảo trì." : "Đã bật chế độ bảo trì.")
                 + "\nLý do: " + lyDo

@@ -804,10 +804,21 @@ public final class VXLHeThongDan {
             int mucTieu;
             boolean trongBanDo;
             boolean bl = trongBanDo = x >= 0 && x < this.banDo.getWidth() && y >= 0 && y < this.banDo.getHeight();
+            boolean uuTienMucTieu = this.banDo.layMaBanDo() == VXLQuanLyChien.MA_BAN_DO_BAO_VAY;
+            if (uuTienMucTieu && trongBanDo && this.boTimMucTieu != null
+                    && (mucTieu = this.boTimMucTieu.timMucTieu(x, y, 0, mucTieuBoQua)) >= 0
+                    && mucTieuDaTrung.add(mucTieu)) {
+                cacMucTieu.add(mucTieu);
+                if (!xuyenNguoi) {
+                    return new KetQuaVaCham((short)x, (short)y);
+                }
+            }
             if (!xuyenDiaHinh && trongBanDo && this.banDo.coVaCham((short)x, (short)y)) {
                 return new KetQuaVaCham((short)x, (short)y, true, false);
             }
-            if (trongBanDo && this.boTimMucTieu != null && (mucTieu = this.boTimMucTieu.timMucTieu(x, y, 0, mucTieuBoQua)) >= 0 && mucTieuDaTrung.add(mucTieu)) {
+            if (!uuTienMucTieu && trongBanDo && this.boTimMucTieu != null
+                    && (mucTieu = this.boTimMucTieu.timMucTieu(x, y, 0, mucTieuBoQua)) >= 0
+                    && mucTieuDaTrung.add(mucTieu)) {
                 cacMucTieu.add(mucTieu);
                 if (!xuyenNguoi) {
                     return new KetQuaVaCham((short)x, (short)y);

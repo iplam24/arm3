@@ -197,9 +197,6 @@ public class VXLQuanLyMayChu {
     }
 
     private static short chuanHoaBieuTuongCap(short icon) {
-        if (icon >= 1302 && icon <= 1304) {
-            return (short)(1248 + icon - 1302);
-        }
         return icon;
     }
 

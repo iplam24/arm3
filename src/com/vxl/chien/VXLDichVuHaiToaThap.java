@@ -23,7 +23,8 @@ final class VXLDichVuHaiToaThap {
     private static final int BUOC_TIM_SPAWN_CAM_TU = 18;
     private static final int SO_LAN_TIM_SPAWN_CAM_TU = 36;
     private static final int[] VI_TRI_PHIEN_QUAN = new int[]{8, 9};
-    private static final int[] VI_TRI_CAM_TU = new int[]{11, 12, 16, 13, 17, 15, 18, 14};
+    private static final int[] VI_TRI_CAM_TU_HAI_TOA_THAP = new int[]{11, 12, 16, 13, 17, 15, 18, 14};
+    private static final int[] VI_TRI_CAM_TU_BAO_VAY = new int[]{10, 11, 12, 13, 14, 15};
     private static final short DAU_PHIEN_QUAN = -1;
     private static final short QUAN_PHIEN_QUAN = 157;
     private static final short AO_PHIEN_QUAN = 158;
@@ -40,13 +41,15 @@ final class VXLDichVuHaiToaThap {
 
     private final VXLQuanLyBanDo banDo;
     private final VXLChienBinh[] chienBinhs;
+    private final boolean baoVay;
     private final VXLChienBinh[] dich;
     private int soDich;
     private boolean daKhoiTao;
 
-    VXLDichVuHaiToaThap(VXLQuanLyBanDo banDo, VXLChienBinh[] chienBinhs) {
+    VXLDichVuHaiToaThap(byte maBanDo, VXLQuanLyBanDo banDo, VXLChienBinh[] chienBinhs) {
         this.banDo = banDo;
         this.chienBinhs = chienBinhs;
+        this.baoVay = maBanDo == VXLQuanLyChien.MA_BAN_DO_BAO_VAY;
         this.dich = new VXLChienBinh[SO_PHIEN_QUAN
                 + SO_CAM_TU_CO_BAN
                 + (SO_NGUOI_CHOI_TOI_DA - 1) * SO_CAM_TU_THEM_MOI_NGUOI];
@@ -65,7 +68,7 @@ final class VXLDichVuHaiToaThap {
                 + (soNguoiChoi - 1) * SO_CAM_TU_THEM_MOI_NGUOI;
         int tongSoDich = SO_PHIEN_QUAN + soCamTu;
         if (CHI_SO_DICH_DAU_TIEN + tongSoDich > this.chienBinhs.length) {
-            throw new IllegalStateException("Khong du slot chien binh cho Boss Hai Toa Thap.");
+            throw new IllegalStateException("Khong du slot chien binh cho map Cam Tu.");
         }
         int bacElo = this.layEloCaoNhat() / ELO_MOI_BAC;
         int mauBoss = gioiHanChiSo(MAU_BOSS_MAC_DINH + (long)bacElo * MAU_TANG_MOI_BAC);
@@ -157,11 +160,15 @@ final class VXLDichVuHaiToaThap {
         this.dich[this.soDich++] = chienBinh;
     }
 
+    private int[] viTriCamTu() {
+        return this.baoVay ? VI_TRI_CAM_TU_BAO_VAY : VI_TRI_CAM_TU_HAI_TOA_THAP;
+    }
+
     private short[] layViTriCamTu(int thuTu) {
-        int viTriMap = VI_TRI_CAM_TU[thuTu % VI_TRI_CAM_TU.length];
+        int viTriMap = this.viTriCamTu()[thuTu % this.viTriCamTu().length];
         int xGoc = this.banDo.laySinhX(viTriMap);
         short yGoc = this.banDo.laySinhY(viTriMap);
-        int vongLap = thuTu / VI_TRI_CAM_TU.length;
+        int vongLap = thuTu / this.viTriCamTu().length;
         int huongVaoGiua = xGoc < this.banDo.getWidth() / 2 ? 1 : -1;
         int xBatDau = xGoc + huongVaoGiua * vongLap * BUOC_TIM_SPAWN_CAM_TU;
         for (int lan = 0; lan < SO_LAN_TIM_SPAWN_CAM_TU; lan++) {

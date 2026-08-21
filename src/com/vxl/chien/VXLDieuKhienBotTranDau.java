@@ -247,7 +247,10 @@ final class VXLDieuKhienBotTranDau {
             short xTiepTheo = this.gioiHan((short)(xHienTai + huong * buoc),
                     12, this.banDo.getWidth() - 12);
             short yTiepTheo = this.timViTriDatCamTu(xTiepTheo, yHienTai);
-            if (Math.abs(yTiepTheo - yHienTai) > CHENH_CAO_TOI_DA_MOI_BUOC
+            boolean roiXuongTrongBaoVay = this.banDo.layMaBanDo()
+                    == VXLQuanLyChien.MA_BAN_DO_BAO_VAY && yTiepTheo > yHienTai;
+            if ((!roiXuongTrongBaoVay
+                    && Math.abs(yTiepTheo - yHienTai) > CHENH_CAO_TOI_DA_MOI_BUOC)
                     || !this.viTriCamTuHopLe(camTu, xTiepTheo, yTiepTheo)) {
                 break;
             }

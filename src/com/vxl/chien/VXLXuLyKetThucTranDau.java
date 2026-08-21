@@ -33,7 +33,7 @@ final class VXLXuLyKetThucTranDau {
             } else if (ketQuaDoi == KET_QUA_HOA) {
                 ketQua = KET_QUA_HOA;
             } else {
-                ketQua = chienBinh == nguoiThang ? KET_QUA_THANG : KET_QUA_THUA;
+                ketQua = (nguoiThang != null && this.cungDoi(nguoiThang, chienBinh)) ? KET_QUA_THANG : KET_QUA_THUA;
             }
             this.quyetToan(chienBinh, ketQua, bangKetQua);
         }
@@ -103,5 +103,18 @@ final class VXLXuLyKetThucTranDau {
                     .append(" | ST ").append(chienBinh.tongSatThuong);
         }
         return bang.toString();
+    }
+
+    private boolean cungDoi(VXLChienBinh mot, VXLChienBinh hai) {
+        if (mot == null || hai == null) return false;
+        if (mot == hai) return true;
+        if (this.cheDoBoss) {
+            boolean phe1 = !mot.bot || mot.laBanSaoUltron();
+            boolean phe2 = !hai.bot || hai.laBanSaoUltron();
+            return phe1 == phe2;
+        }
+        int c1 = mot.laBanSaoUltron() ? Byte.toUnsignedInt(mot.chiSoChuBanSaoUltron) : Byte.toUnsignedInt(mot.chiSo);
+        int c2 = hai.laBanSaoUltron() ? Byte.toUnsignedInt(hai.chiSoChuBanSaoUltron) : Byte.toUnsignedInt(hai.chiSo);
+        return c1 % 2 == c2 % 2;
     }
 }

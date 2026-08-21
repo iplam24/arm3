@@ -22,6 +22,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class VXLQuanLyChien {
+    public static final byte MA_BAN_DO_BAO_VAY = 50;
     public static final byte MA_BAN_DO_HAI_TOA_THAP = 51;
     private static final byte KET_QUA_THUA = 0;
     private static final byte KET_QUA_THANG = 1;
@@ -108,7 +109,8 @@ public class VXLQuanLyChien {
     public VXLQuanLyChien(VXLChoDau wait, VXLNguoiChoi[] nguoiChois, byte maBanDo) {
         this.wait = wait;
         this.map = new VXLQuanLyBanDo(maBanDo);
-        this.cheDoCamTu = maBanDo == MA_BAN_DO_HAI_TOA_THAP;
+        this.cheDoCamTu = maBanDo == MA_BAN_DO_BAO_VAY
+                || maBanDo == MA_BAN_DO_HAI_TOA_THAP;
         this.cheDoBoss = VXLDichVuBossBanDo.laBanDoBoss(maBanDo);
         this.xuLyVatPham = new VXLXuLyVatPhamTrongTran(this);
         this.xuLyKetThuc = new VXLXuLyKetThucTranDau(this.cheDoBoss, this.cheDoCamTu, this.chienBinhs);
@@ -117,7 +119,7 @@ public class VXLQuanLyChien {
         this.phatTin = new VXLPhatTinTranDau(this.chienBinhs);
         this.dieuKhienBot = new VXLDieuKhienBotTranDau(this, this.chienBinhs, this.map, this.tinhDuongDan);
         this.dichVuHaiToaThap = this.cheDoCamTu
-                ? new VXLDichVuHaiToaThap(this.map, this.chienBinhs) : null;
+                ? new VXLDichVuHaiToaThap(maBanDo, this.map, this.chienBinhs) : null;
         this.dichVuBossBanDo = this.cheDoBoss && !this.cheDoCamTu
                 ? new VXLDichVuBossBanDo(maBanDo, this.map, this.chienBinhs) : null;
         if (nguoiChois == null) {
@@ -438,7 +440,7 @@ public class VXLQuanLyChien {
         }
         VXLChienBinh mucTieu = this.chienBinhs[chiSoMucTieu];
         if (mucTieu == null || mucTieu == nguoiDung || mucTieu.chet
-                || mucTieu.daRoiTran || this.cungDoi(nguoiDung, mucTieu)) {
+                || mucTieu.daRoiTran) {
             return null;
         }
         return mucTieu;
@@ -463,8 +465,7 @@ public class VXLQuanLyChien {
         int banKinhLan = 140;
         int banKinhLanBinhPhuong = banKinhLan * banKinhLan;
         for (VXLChienBinh cb : this.chienBinhs) {
-            if (cb == null || cb == mucTieu || cb == nguoiDung || cb.chet || cb.daRoiTran
-                    || this.cungDoi(nguoiDung, cb)) {
+            if (cb == null || cb == mucTieu || cb == nguoiDung || cb.chet || cb.daRoiTran) {
                 continue;
             }
             int dx = cb.x - mucTieu.x;
@@ -496,8 +497,7 @@ public class VXLQuanLyChien {
         Map<VXLChienBinh, Integer> satThuongTheoMucTieu = new LinkedHashMap<>();
         for (int i = 0; i < cacX.length; i++) {
             for (VXLChienBinh chienBinh : this.chienBinhs) {
-                if (chienBinh == null || chienBinh.chet || chienBinh.daRoiTran
-                        || this.cungDoi(nguoiDung, chienBinh)) {
+                if (chienBinh == null || chienBinh == nguoiDung || chienBinh.chet || chienBinh.daRoiTran) {
                     continue;
                 }
                 int dx = chienBinh.x - cacX[i];
@@ -670,7 +670,8 @@ public class VXLQuanLyChien {
                 continue;
             }
             VXLChienBinh mucTieu = this.chienBinhs[chiSoMucTieu];
-            if (mucTieu != null && !mucTieu.chet && mucTieu != nguoiBan) {
+            if (mucTieu != null && !mucTieu.chet && !mucTieu.daRoiTran
+                    && mucTieu != nguoiBan) {
                 sieuCaoTrungMucTieu = diemSieuCao.kichHoat();
                 break;
             }
@@ -749,10 +750,7 @@ public class VXLQuanLyChien {
             VXLChienBinh mucTieu = ketQua.mucTieuTheoQuyDao[i];
             int satThuong = i < ketQua.satThuongTheoQuyDao.length
                     ? ketQua.satThuongTheoQuyDao[i] : 0;
-            if (mucTieu != null
-                    && !(nguoiBan.laBanSaoUltron() && this.cungDoi(nguoiBan, mucTieu))
-                    && !(this.cheDoBoss && mucTieu != nguoiBan
-                    && this.cungDoi(nguoiBan, mucTieu))) {
+            if (mucTieu != null && !mucTieu.daRoiTran) {
                 mucTieuTrucTiep.add(mucTieu);
                 if (satThuong > 0) {
                     tongTheoMucTieu.merge(mucTieu, satThuong, Integer::sum);
@@ -765,10 +763,7 @@ public class VXLQuanLyChien {
         boolean danCaptain = Byte.toUnsignedInt(ketQua.avengerDan) == 5;
         for (VXLChienBinh mucTieu : this.chienBinhs) {
             if (mucTieu == null || mucTieu.chet || mucTieu.daRoiTran
-                    || danNhanVatLao && mucTieu == nguoiBan
-                    || nguoiBan.laBanSaoUltron() && this.cungDoi(nguoiBan, mucTieu)
-                    || this.cheDoBoss && mucTieu != nguoiBan
-                    && this.cungDoi(nguoiBan, mucTieu)) {
+                    || danNhanVatLao && mucTieu == nguoiBan) {
                 continue;
             }
             int satThuongNo = VXLCauHinhVatPhamChienDau.tinhSatThuongNoTaiViTri(
@@ -782,7 +777,8 @@ public class VXLQuanLyChien {
         }
         int tongSatThuongThucTe = 0;
         for (VXLChienBinh mucTieu : mucTieuTrucTiep) {
-            if (mucTieu != null && !mucTieu.chet && mucTieu != nguoiBan) {
+            if (mucTieu != null && !mucTieu.chet && !mucTieu.daRoiTran
+                    && mucTieu != nguoiBan) {
                 this.apDungHieuUngDan(nguoiBan, mucTieu, maVatPhamDan);
                 if (nguoiBan.kyNangAvenger != null) {
                     nguoiBan.kyNangAvenger.apDungHieuUngTrungDan(ketQua, mucTieu);
@@ -914,9 +910,7 @@ public class VXLQuanLyChien {
             short[] xNo = new short[]{bom.x};
             short[] yNo = new short[]{bom.y};
             for (VXLChienBinh mucTieu : this.chienBinhs) {
-                if (mucTieu == null || mucTieu.chet || mucTieu.daRoiTran
-                        || this.cheDoBoss && mucTieu != bom.nguoiDat
-                        && this.cungDoi(bom.nguoiDat, mucTieu)) {
+                if (mucTieu == null || mucTieu.chet || mucTieu.daRoiTran) {
                     continue;
                 }
                 int satThuongNo = VXLCauHinhVatPhamChienDau.tinhSatThuongNoTaiViTri(
@@ -943,7 +937,7 @@ public class VXLQuanLyChien {
             this.phatTin.guiKetThucTangHinh(mucTieu);
             VXLQuanLyMayChu.log("[ITEM-STATUS] invisible absorbed target=" + mucTieu.ten);
             if (mucTieu.coPhien()) {
-                mucTieu.nguoiChoi.startOKDlg2("VÃ´ hÃ¬nh Ä‘Ã£ giÃºp báº¡n nÃ© phÃ¡t báº¯n.");
+                mucTieu.nguoiChoi.startOKDlg2("Vô hình đã giúp bạn né phát bắn.");
             }
             return 0;
         }
@@ -961,14 +955,14 @@ public class VXLQuanLyChien {
         mucTieu.hp = Math.max(0, mucTieu.hp - satThuong);
         int satThuongThucTe = mauTruoc - mucTieu.hp;
 
-        System.out.println(String.format("[FIGHT-DAMAGE] %s -> %s | SÃ¡t thÆ°Æ¡ng gá»‘c=%d | GiÃ¡p=%d | SÃ¡t thÆ°Æ¡ng thá»±c=%d | HP: %d -> %d/%d",
-                (nguon != null ? nguon.ten : "MÃ´i trÆ°á»ng"), mucTieu.ten, satThuongGoc, mucTieu.giap,
+        System.out.println(String.format("[FIGHT-DAMAGE] %s -> %s | Sát thương gốc=%d | Giáp=%d | Sát thương thực=%d | HP: %d -> %d/%d",
+                (nguon != null ? nguon.ten : "Môi trường"), mucTieu.ten, satThuongGoc, mucTieu.giap,
                 satThuongThucTe, mauTruoc, mucTieu.hp, mucTieu.mauToiDa));
 
         if (nguon != null && nguon != mucTieu) {
             nguon.tongSatThuong += satThuongThucTe;
             mucTieu.nguoiGaySatThuongCuoi = nguon;
-            if (!nguon.bot && !mucTieu.bot) {
+            if (!nguon.bot && !mucTieu.bot && !this.cungDoi(nguon, mucTieu)) {
                 nguon.nguoiChoi.ghiNhanSatThuongPvp(satThuongThucTe);
             }
         }
@@ -999,12 +993,14 @@ public class VXLQuanLyChien {
         if (nguon == null || nguon == mucTieu) {
             return;
         }
-        nguon.haGucTrongTran++;
-        if (!nguon.bot && !mucTieu.bot) {
-            nguon.nguoiChoi.kill++;
-        }
-        if (!nguon.bot && mucTieu.camTu) {
-            nguon.haCamTuTrongTran++;
+        if (!this.cungDoi(nguon, mucTieu)) {
+            nguon.haGucTrongTran++;
+            if (!nguon.bot && !mucTieu.bot) {
+                nguon.nguoiChoi.kill++;
+            }
+            if (!nguon.bot && mucTieu.camTu) {
+                nguon.haCamTuTrongTran++;
+            }
         }
     }
 
@@ -1096,10 +1092,15 @@ public class VXLQuanLyChien {
         int conSong = 0;
         int nguoiChoiSong = 0;
         VXLChienBinh nguoiThang = null;
+        boolean cungPheTatCa = true;
         for (VXLChienBinh chienBinh : this.chienBinhs) {
             if (chienBinh != null && !chienBinh.chet && !chienBinh.laBanSaoUltron()) {
                 conSong++;
-                nguoiThang = chienBinh;
+                if (nguoiThang == null) {
+                    nguoiThang = chienBinh;
+                } else if (!this.cungDoi(nguoiThang, chienBinh)) {
+                    cungPheTatCa = false;
+                }
                 if (!chienBinh.bot) {
                     nguoiChoiSong++;
                 }
@@ -1109,7 +1110,7 @@ public class VXLQuanLyChien {
             this.ketThucTran(nguoiThang, conSong == 0 ? KET_QUA_HOA : KET_QUA_THUA);
             return true;
         }
-        if (conSong > 1) {
+        if (conSong > 1 && !cungPheTatCa) {
             return false;
         }
         this.ketThucTran(nguoiThang, conSong == 0 ? KET_QUA_HOA : KET_QUA_THANG);

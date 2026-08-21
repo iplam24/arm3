@@ -132,7 +132,7 @@ final class VXLTinhDuongDan {
             }
             if (x >= mucTieu.x - nuaRong && x < mucTieu.x + nuaRong
                     && y >= mucTieu.y - CHIEU_CAO_HITBOX_NHAN_VAT - le
-                    && y < mucTieu.y + le) {
+                    && y <= mucTieu.y + le) {
                 return i;
             }
         }

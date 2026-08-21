@@ -117,7 +117,7 @@ public final class VXLBoLenhQuanTri {
                     docInt(lay(thamSo, 2, "item ID"), "item ID"),
                     thamSo.length >= 4 ? docInt(thamSo[3], "số lượng") : 1);
             case "save", "luu" -> VXLKhoQuanTri.luuNguoiChoi(thamSo.length >= 2 ? thamSo[1] : "all");
-            case "announce", "thongbao" -> thongBao(phanConLai);
+            case "announce", "thongbao" -> thongBao(quanTri, phanConLai);
             case "fly", "maybay" -> {
                 String noiDungFly = layNoiDungSauThamSo(phanConLai, 1);
                 if (noiDungFly.isBlank()) {
@@ -147,13 +147,15 @@ public final class VXLBoLenhQuanTri {
         }
     }
 
-    private static String thongBao(String phanConLai) {
+    private static String thongBao(VXLNguoiChoi quanTri, String phanConLai) {
         int viTri = phanConLai.indexOf(' ');
         if (viTri < 0 || phanConLai.substring(viTri + 1).isBlank()) {
             throw new IllegalArgumentException("Thiếu nội dung thông báo.");
         }
         String noiDung = phanConLai.substring(viTri + 1).trim();
-        VXLNguoiChoi.onChatFromToAllPlayer("HỆ THỐNG", noiDung);
+        if (!VXLThongBaoServer.guiThongBaoAdmin(quanTri.ten, noiDung)) {
+            throw new IllegalArgumentException("Bạn cần chờ ít nhất 10 giây giữa các thông báo.");
+        }
         return "Đã gửi thông báo tới toàn máy chủ.";
     }
 
