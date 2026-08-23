@@ -732,6 +732,10 @@ public class VXLQuanLyChien {
 
     void ghiNhanDiaHinhPhatBan(VXLKetQuaDan ketQua) {
         int loaiDan = ketQua == null ? -1 : Byte.toUnsignedInt(ketQua.loaiDan);
+        if (loaiDan == 83 && (this.map.layMaBanDo() == MA_BAN_DO_BAO_VAY
+                || this.map.layMaBanDo() == MA_BAN_DO_HAI_TOA_THAP)) {
+            return;
+        }
         if (loaiDan == 5 || loaiDan == 13 || loaiDan == 51 || loaiDan == 53
                 || loaiDan == 54 || loaiDan == 55 || loaiDan == 57 || loaiDan == 58) {
             return;

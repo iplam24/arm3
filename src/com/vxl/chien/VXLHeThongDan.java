@@ -136,21 +136,34 @@ public final class VXLHeThongDan {
         }
         int soQuyDao = Math.min(ketQua.duongX.length, ketQua.duongY.length);
         for (int i = 0; i < soQuyDao; ++i) {
-            boolean danMeApacheChuaTach = Byte.toUnsignedInt(hoSoDan.loaiClient()) == 17
-                    && i == 0 && ketQua.chiSoTach > 0 && ketQua.duongX.length > 1
-                    && ketQua.duongX[0] != null
-                    && ketQua.chiSoTach - 1 < ketQua.duongX[0].length - 1;
-            boolean daCoDiemNo = ketQua.vaChamDiaHinhX[i] != Short.MIN_VALUE
-                    && ketQua.vaChamDiaHinhY[i] != Short.MIN_VALUE;
-            if (danMeApacheChuaTach || daCoDiemNo) {
-                continue;
-            }
             short[] duongX = ketQua.duongX[i];
             short[] duongY = ketQua.duongY[i];
             if (duongX == null || duongY == null) {
                 continue;
             }
             int soDiem = Math.min(duongX.length, duongY.length);
+            boolean danMeApacheChuaTach = Byte.toUnsignedInt(hoSoDan.loaiClient()) == 17
+                    && i == 0 && ketQua.chiSoTach > 0 && ketQua.duongX.length > 1
+                    && ketQua.duongX[0] != null
+                    && ketQua.chiSoTach - 1 < ketQua.duongX[0].length - 1;
+            boolean daCoDiemNo = ketQua.vaChamDiaHinhX[i] != Short.MIN_VALUE
+                    && ketQua.vaChamDiaHinhY[i] != Short.MIN_VALUE;
+            boolean laDanCaptain = Byte.toUnsignedInt(hoSoDan.loaiClient()) == 83;
+            boolean coMucTieuTrucTiep = i < ketQua.cacMucTieuTheoQuyDao.length
+                    && ketQua.cacMucTieuTheoQuyDao[i] != null
+                    && ketQua.cacMucTieuTheoQuyDao[i].length > 0;
+            if (laDanCaptain && coMucTieuTrucTiep) {
+                short[] diemNoCaptain = this.timDiemTrungMucTieuDauTien(duongX, duongY,
+                        ketQua.cacMucTieuTheoQuyDao[i]);
+                if (diemNoCaptain != null) {
+                    ketQua.vaChamDiaHinhX[i] = diemNoCaptain[0];
+                    ketQua.vaChamDiaHinhY[i] = diemNoCaptain[1];
+                    continue;
+                }
+            }
+            if (daCoDiemNo) {
+                continue;
+            }
             boolean chamDiaHinh = false;
             if (!hoSoDan.xuyenDiaHinh()) {
                 for (int j = 1; j < soDiem; ++j) {
@@ -166,20 +179,11 @@ public final class VXLHeThongDan {
                     break;
                 }
             }
-            boolean coMucTieuTrucTiep = i < ketQua.cacMucTieuTheoQuyDao.length
-                    && ketQua.cacMucTieuTheoQuyDao[i] != null
-                    && ketQua.cacMucTieuTheoQuyDao[i].length > 0;
             if (!coMucTieuTrucTiep || hoSoDan.kieuBan() == VXLHoSoDan.KieuBan.LASER) {
                 continue;
             }
-            if (Byte.toUnsignedInt(hoSoDan.loaiClient()) == 83) {
-                short[] diemNoCaptain = this.timDiemTrungMucTieuDauTien(duongX, duongY,
-                        ketQua.cacMucTieuTheoQuyDao[i]);
-                if (diemNoCaptain != null) {
-                    ketQua.vaChamDiaHinhX[i] = diemNoCaptain[0];
-                    ketQua.vaChamDiaHinhY[i] = diemNoCaptain[1];
-                }
-            } else if (!chamDiaHinh && !hoSoDan.xuyenNguoi() && soDiem > 0) {
+            if (Byte.toUnsignedInt(hoSoDan.loaiClient()) != 83
+                    && !chamDiaHinh && !hoSoDan.xuyenNguoi() && soDiem > 0) {
                 ketQua.vaChamDiaHinhX[i] = duongX[soDiem - 1];
                 ketQua.vaChamDiaHinhY[i] = duongY[soDiem - 1];
             }

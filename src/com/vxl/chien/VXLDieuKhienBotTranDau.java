@@ -164,13 +164,23 @@ final class VXLDieuKhienBotTranDau {
                     }
                 }
             }
-            luc = cachBan.luc();
-            goc = cachBan.goc();
-            ketQua = this.tranDau.xuLyPhatBan(bot, loaiDan, goc, luc, -1);
-            this.tranDau.ghiNhanDiaHinhPhatBan(ketQua);
-            this.tranDau.phatBan(bot, ketQua, (byte)1);
-            this.tranDau.apDungSatThuongPhatBan(bot, ketQua, -1);
-            this.tranDau.ghiNhanNapDanSauPhatBan(bot);
+            if (cachBan.satThuongDuKien() <= 0) {
+                luc = this.tinhDuongDan.lucCanThietToiMucTieu(bot, mucTieu);
+                goc = this.tinhDuongDan.gocDanDaoToiMucTieu(bot, mucTieu, luc);
+                ketQua = this.tranDau.xuLyPhatBan(bot, loaiDan, goc, luc, -1);
+                this.tranDau.ghiNhanDiaHinhPhatBan(ketQua);
+                this.tranDau.phatBan(bot, ketQua, (byte)1);
+                this.tranDau.apDungSatThuongPhatBan(bot, ketQua, -1);
+                this.tranDau.ghiNhanNapDanSauPhatBan(bot);
+            } else {
+                luc = cachBan.luc();
+                goc = cachBan.goc();
+                ketQua = this.tranDau.xuLyPhatBan(bot, loaiDan, goc, luc, -1);
+                this.tranDau.ghiNhanDiaHinhPhatBan(ketQua);
+                this.tranDau.phatBan(bot, ketQua, (byte)1);
+                this.tranDau.apDungSatThuongPhatBan(bot, ketQua, -1);
+                this.tranDau.ghiNhanNapDanSauPhatBan(bot);
+            }
         }
         if (!this.tranDau.kiemTraKetThuc()) {
             if (ketQua == null) {

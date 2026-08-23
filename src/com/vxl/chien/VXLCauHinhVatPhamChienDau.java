@@ -9,12 +9,12 @@ public final class VXLCauHinhVatPhamChienDau {
     private static final int HE_SO_SAT_THUONG_KY_NANG_DAC_BIET = 150;
     private static final int NUA_RONG_THAN_NHAN_VAT = 10;
     private static final int CHIEU_CAO_THAN_NHAN_VAT = 35;
-    private static final VXLHoSoDan.VatLy VAT_LY_NANG_IT_GIO = vatLy(2.15D, 0.56D, 0.16D);
-    private static final VXLHoSoDan.VatLy VAT_LY_THANG_IT_ROI = vatLy(1.80D, 0.25D, 0.10D);
-    private static final VXLHoSoDan.VatLy VAT_LY_NHE_TAN_XA = vatLy(0.65D, 0.55D, 0.45D);
+    private static final VXLHoSoDan.VatLy VAT_LY_NANG_IT_GIO = vatLy(1.00D, 0.40D, 0.16D);
+    private static final VXLHoSoDan.VatLy VAT_LY_THANG_IT_ROI = vatLy(0.50D, 0.25D, 0.10D);
+    private static final VXLHoSoDan.VatLy VAT_LY_NHE_TAN_XA = vatLy(0.60D, 0.55D, 0.45D);
     private static final VXLHoSoDan.VatLy VAT_LY_NHE_CONG = vatLy(1.40D, 0.82D, 0.55D);
-    private static final VXLHoSoDan.VatLy VAT_LY_TRUNG_BINH_CONG = vatLy(1.35D, 1D, 1D);
-    private static final VXLHoSoDan.VatLy VAT_LY_LIEN_THANH = vatLy(0.55D, 1D, 1D);
+    private static final VXLHoSoDan.VatLy VAT_LY_TRUNG_BINH_CONG = vatLy(0.80D, 1D, 1D);
+    private static final VXLHoSoDan.VatLy VAT_LY_LIEN_THANH = vatLy(0.90D, 1D, 1D);
     private static final VXLHoSoDan.VatLy VAT_LY_SINH_VAT = vatLy(1.20D, 0.90D, 0.65D);
     private static final VXLHoSoDan.VatLy VAT_LY_QUAY_VE = vatLy(0.95D, 0.20D, 0.06D);
     private static final VXLHoSoDan.VatLy VAT_LY_TARZAN = vatLy(0.72D, 0.90D, 0.10D);
@@ -26,17 +26,17 @@ public final class VXLCauHinhVatPhamChienDau {
     private static final VXLHoSoDan.VatLy VAT_LY_XUYEN_NANG = vatLy(2D, 0.65D, 0.25D);
     private static final VXLHoSoDan.VatLy VAT_LY_TEN_NHE = vatLy(0.80D, 1.10D, 0.80D);
     private static final VXLHoSoDan.VatLy VAT_LY_3_TIA =
-            vatLyTheoKhung(0.65D, 0.60D, 0.008D);
+            vatLyTheoKhung(0.60D, 0.60D, 0.008D);
     private static final VXLHoSoDan.VatLy VAT_LY_CHUOI =
-            vatLyTheoKhung(1.40D, 0.90D, 0.004D);
+            vatLyTheoKhung(0.90D, 0.90D, 0.004D);
     private static final VXLHoSoDan.VatLy VAT_LY_APACHE =
-            vatLyTheoKhung(0.95D, 1.00D, 0.003D);
+            vatLyTheoKhung(1.00D, 1.00D, 0.003D);
     private static final VXLHoSoDan.VatLy VAT_LY_CHICKY =
-            vatLyTheoKhung(1.20D, 0.50D, 0.002D);
+            vatLyTheoKhung(0.50D, 0.50D, 0.002D);
     private static final VXLHoSoDan.VatLy VAT_LY_TRUNG_CHICKY =
             vatLyTheoKhung(0.60D, 0.30D, 0.001D);
     private static final VXLHoSoDan.VatLy VAT_LY_MAGENTA =
-            vatLyTheoKhung(1.10D, 0.70D, 0.004D);
+            vatLyTheoKhung(0.70D, 0.70D, 0.004D);
     private static final VXLHoSoDan.Tarzan VONG_TARZAN = tarzan(1D, 2D, 90);
 
     public record DiemSieuCao(boolean kichHoat, short x, short y) {
@@ -322,7 +322,7 @@ public final class VXLCauHinhVatPhamChienDau {
             case 10 -> 40;
             case 11, 17, 19 -> 30;
             case 21 -> 28;
-            case 83 -> 50;
+            case 83 -> 72;
             case 79 -> 40;
             case 33, 80, 82 -> 35;
             case 49 -> 30;

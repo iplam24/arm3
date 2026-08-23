@@ -86,15 +86,15 @@ final class VXLDichVuBossBanDo {
         short y = this.banDo.laySinhY(CHI_SO_BOSS_DAU_TIEN);
         int hpThan = this.tinhMau(5200, soNguoiChoi, bacElo, 36);
         int hpSung = this.tinhMau(1700, soNguoiChoi, bacElo, 28);
-        this.themBoss(8, "Boss KhÃ­ cáº§u", 0, (short)17, false,
+        this.themBoss(8, "Boss Khí cầu", 0, (short)17, false,
                 VXLChienBinh.LOAI_BOSS_KHONG_CO, hpThan,
                 this.tinhTanCong(58, soNguoiChoi, bacElo), 24,
                 true, LOAI_BOSS_KHI_CAU, new short[]{x, y});
-        this.themBoss(9, "PhÃ¡o trÃ¡i KhÃ­ cáº§u", 0, (short)18, false,
+        this.themBoss(9, "Pháo trái Khí cầu", 0, (short)18, false,
                 VXLChienBinh.LOAI_BOSS_KHONG_CO, hpSung,
                 this.tinhTanCong(48, soNguoiChoi, bacElo), 16,
                 true, LOAI_SUNG_KHI_CAU, new short[]{(short)(x - 70), y});
-        this.themBoss(10, "PhÃ¡o pháº£i KhÃ­ cáº§u", 0, (short)19, false,
+        this.themBoss(10, "Pháo phải Khí cầu", 0, (short)19, false,
                 VXLChienBinh.LOAI_BOSS_KHONG_CO, hpSung,
                 this.tinhTanCong(48, soNguoiChoi, bacElo), 16,
                 true, LOAI_SUNG_KHI_CAU, new short[]{(short)(x + 70), y});
@@ -116,7 +116,7 @@ final class VXLDichVuBossBanDo {
     }
 
     private void taoBossRua(int soNguoiChoi, int bacElo) {
-        this.themBoss(8, "Boss RÃ¹a", -54, (short)57, false,
+        this.themBoss(8, "Boss Rùa", -54, (short)57, false,
                 VXLChienBinh.LOAI_BOSS_RUA,
                 this.tinhMau(5600, soNguoiChoi, bacElo, 38),
                 this.tinhTanCong(68, soNguoiChoi, bacElo), 32,
@@ -124,7 +124,7 @@ final class VXLDichVuBossBanDo {
     }
 
     private void taoBossRong(int soNguoiChoi, int bacElo) {
-        this.themBoss(8, "Boss Rá»“ng", -55, (short)55, false,
+        this.themBoss(8, "Boss Rồng", -55, (short)55, false,
                 VXLChienBinh.LOAI_BOSS_RONG,
                 this.tinhMau(6800, soNguoiChoi, bacElo, 42),
                 this.tinhTanCong(76, soNguoiChoi, bacElo), 28,
@@ -138,8 +138,10 @@ final class VXLDichVuBossBanDo {
                 || this.soBoss >= this.hienThis.length) {
             return;
         }
-        short x = toaDo != null ? toaDo[0] : this.banDo.laySinhX(chiSo);
-        short y = toaDo != null ? this.banDo.timViTriDat(toaDo[0], toaDo[1]) : this.banDo.laySinhY(chiSo);
+        short x = toaDo != null ? this.gioiHanX(toaDo[0]) : this.banDo.laySinhX(chiSo);
+        short y = toaDo != null
+                ? (coDinh ? this.gioiHanY(toaDo[1]) : this.banDo.timViTriDat(x, toaDo[1]))
+                : this.banDo.laySinhY(chiSo);
         int maHieuLuc = ma != 0 ? ma : -9000 - chiSo;
         VXLChienBinh boss = new VXLChienBinh((byte)chiSo, x, y, ten, maHieuLuc,
                 maVuKhi, (byte)0, camTu, loaiBossDacBiet,
@@ -175,6 +177,14 @@ final class VXLDichVuBossBanDo {
     private int tinhMau(int coBan, int soNguoiChoi, int bacElo, int phanTramMoiNguoi) {
         long heSoNguoi = 100L + Math.max(0, soNguoiChoi - 1) * phanTramMoiNguoi;
         return gioiHanChiSo(coBan * heSoNguoi / 100L + (long)bacElo * 90L);
+    }
+
+    private short gioiHanX(short x) {
+        return (short)Math.max(24, Math.min(this.banDo.getWidth() - 24, x));
+    }
+
+    private short gioiHanY(short y) {
+        return (short)Math.max(24, Math.min(this.banDo.getHeight() - 24, y));
     }
 
     private int tinhTanCong(int coBan, int soNguoiChoi, int bacElo) {
