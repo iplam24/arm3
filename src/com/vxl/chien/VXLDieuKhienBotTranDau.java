@@ -169,6 +169,10 @@ final class VXLDieuKhienBotTranDau {
             }
             luc = cachBan.luc();
             goc = cachBan.goc();
+            if (cachBan.satThuongDuKien() <= 0) {
+                luc = this.tinhDuongDan.lucCanThietToiMucTieu(bot, mucTieu);
+                goc = this.tinhDuongDan.gocDanDaoToiMucTieu(bot, mucTieu, luc);
+            }
             ketQua = this.tranDau.xuLyPhatBan(bot, loaiDan, goc, luc, -1);
             this.tranDau.ghiNhanDiaHinhPhatBan(ketQua);
             this.tranDau.phatBan(bot, ketQua, (byte)1);

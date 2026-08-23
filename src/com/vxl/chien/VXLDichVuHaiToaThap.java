@@ -84,10 +84,12 @@ final class VXLDichVuHaiToaThap {
         for (int i = 0; i < SO_PHIEN_QUAN; i++) {
             int chiSo = CHI_SO_DICH_DAU_TIEN + this.soDich;
             int viTriMap = VI_TRI_PHIEN_QUAN[i];
-            this.themDich(new VXLChienBinh((byte)chiSo,
+            VXLChienBinh phienQuan = new VXLChienBinh((byte)chiSo,
                     this.banDo.laySinhX(viTriMap), this.banDo.laySinhY(viTriMap),
                     "Phi\u1ebfn qu\u00e2n " + (i + 1), VU_KHI_PHIEN_QUAN, (byte)0,
-                    false, mauBoss, tanCongPhienQuan, giapPhienQuan));
+                    false, mauBoss, tanCongPhienQuan, giapPhienQuan);
+            phienQuan.heSoSatThuongBot = Math.min(300, 100 + bacElo * 6);
+            this.themDich(phienQuan);
         }
         for (int i = 0; i < soCamTu; i++) {
             int chiSo = CHI_SO_DICH_DAU_TIEN + this.soDich;

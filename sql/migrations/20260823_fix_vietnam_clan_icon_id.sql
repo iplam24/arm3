@@ -1,0 +1,7 @@
+START TRANSACTION;
+
+UPDATE `clans`
+SET `icon_id` = 2129
+WHERE `icon_id` IN (0, 1694, 2128);
+
+COMMIT;

@@ -30,6 +30,9 @@ public final class VXLDiaHinhPhatBan {
             return;
         }
         VXLHoSoDan hoSoDan = VXLCauHinhVatPhamChienDau.layHoSoDan(loaiDan, avenger);
+        if (hoSoDan == null) {
+            return;
+        }
         int loaiDanClient = Byte.toUnsignedInt(hoSoDan.loaiClient());
         if (loaiDanClient == 8 || loaiDanClient == 56) {
             ghiNhanToNhen(banDo, vaChamDiaHinhX, vaChamDiaHinhY);

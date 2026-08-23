@@ -9,7 +9,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import javax.imageio.ImageIO;
 
 public class VXLQuanLyBanDo {
-    private static final int SO_LO_TOI_DA = 512;
     private static final int SO_VAT_CAN_TAM_THOI_TOI_DA = 96;
     private static final int LECH_X_TO_NHEN = 21;
     private static final int LECH_Y_TO_NHEN = 20;
@@ -33,7 +32,7 @@ public class VXLQuanLyBanDo {
         this.setMapId(mapID);
     }
 
-    public void setMapId(int mapID) {
+    public synchronized void setMapId(int mapID) {
         this.maBanDo = (byte)mapID;
         this.maNen = 0;
         this.chieuRong = 1200;
@@ -104,7 +103,7 @@ public class VXLQuanLyBanDo {
         }
     }
 
-    public boolean coVaCham(short x, short y) {
+    public synchronized boolean coVaCham(short x, short y) {
         if (x < 0 || y < 0 || x >= this.chieuRong || y >= this.chieuCao) {
             return true;
         }
@@ -165,11 +164,9 @@ public class VXLQuanLyBanDo {
 
     private void themLo(VungLo loMoi) {
         VungLo[] hienTai = this.cacLoDaPha;
-        int viTriBatDau = hienTai.length >= SO_LO_TOI_DA
-                ? hienTai.length - SO_LO_TOI_DA + 1 : 0;
-        VungLo[] capNhat = new VungLo[hienTai.length - viTriBatDau + 1];
-        System.arraycopy(hienTai, viTriBatDau, capNhat, 0, hienTai.length - viTriBatDau);
-        capNhat[capNhat.length - 1] = loMoi;
+        VungLo[] capNhat = new VungLo[hienTai.length + 1];
+        System.arraycopy(hienTai, 0, capNhat, 0, hienTai.length);
+        capNhat[hienTai.length] = loMoi;
         this.cacLoDaPha = capNhat;
     }
 

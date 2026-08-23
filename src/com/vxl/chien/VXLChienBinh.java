@@ -39,6 +39,7 @@ public class VXLChienBinh {
     public int satThuongTieuLien;
     public int satThuongChuoi;
     public int satThuongHoaCai;
+    public int satThuongSungCoi;
     public short x;
     public short y;
     public int hp;
@@ -58,6 +59,7 @@ public class VXLChienBinh {
     public int luotMaCaRong;
     public int vatPhamDanDacBiet = -1;
     public int heSoPhatBan = 100;
+    public int heSoSatThuongBot = 100;
     public int heSoDiChuyen = 100;
     public int heSoTangNo = 100;
     public int luotNgungGio;
@@ -124,6 +126,7 @@ public class VXLChienBinh {
         long chongTangPhanTram = 0;
         long sungTruongPhanTram = 0;
         long tieuLienPhanTram = 0;
+        long sungCoiPhanTram = 0;
         long chuoiPhanTram = 0;
         long hoaCaiPhanTram = 0;
 
@@ -172,6 +175,7 @@ public class VXLChienBinh {
                 tieuLienPhanTram += vatPham.tongThamSoHieuLucTheoMa(23);
                 chuoiPhanTram += vatPham.tongThamSoHieuLucTheoMa(24);
                 hoaCaiPhanTram += vatPham.tongThamSoHieuLucTheoMa(25);
+                sungCoiPhanTram += vatPham.tongThamSoHieuLucTheoMa(20);
             }
         }
 
@@ -234,6 +238,7 @@ public class VXLChienBinh {
         this.satThuongChongTang = (int)chongTangPhanTram;
         this.satThuongSungTruong = (int)sungTruongPhanTram;
         this.satThuongTieuLien = (int)tieuLienPhanTram;
+        this.satThuongSungCoi = (int)sungCoiPhanTram;
         this.satThuongChuoi = (int)chuoiPhanTram;
         this.satThuongHoaCai = (int)hoaCaiPhanTram;
 
@@ -424,6 +429,7 @@ public class VXLChienBinh {
             case 1 -> this.satThuongSungTruong;
             case 2 -> this.satThuongHoaCai;
             case 3 -> this.satThuongChuoi;
+            case 4 -> this.satThuongSungCoi;
             case 5 -> this.satThuongTieuLien;
             default -> 0;
         };

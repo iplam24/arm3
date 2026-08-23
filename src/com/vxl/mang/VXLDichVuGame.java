@@ -239,10 +239,9 @@ implements IVXLDichVuGame {
     }
 
     public void yeuCauNguyenLieu(short ma) throws IOException {
-        byte[] ab;
         VXLTinNhan mss = new VXLTinNhan(126);
         DataOutputStream ds = mss.boGhi();
-        ab = VXLTienIch.layTep("res/icon/map/" + ma + ".png");
+        byte[] ab = layAnhGachBanDo(ma);
         if (ab == null) {
             ab = new byte[0];
         }
@@ -251,6 +250,31 @@ implements IVXLDichVuGame {
         ds.write(ab);
         ds.flush();
         this.guiTin(mss);
+    }
+
+    private static byte[] layAnhGachBanDo(short ma) {
+        int resourceId = switch (ma) {
+            case 166 -> 161;
+            case 167 -> 168;
+            default -> ma;
+        };
+        String[] paths = new String[]{
+            "res/icon/map/" + ma + ".png",
+            "res/icon/map/" + resourceId + ".png",
+            "res/icon/map/b" + ma + ".png",
+            "res/data/1/b" + ma + ".png",
+            "res/data/2/b" + ma + ".png",
+            "res/data/3/b" + ma + ".png",
+            "res/data/4/b" + ma + ".png",
+            "res/map/b" + ma + ".png"
+        };
+        for (String path : paths) {
+            byte[] ab = VXLTienIch.layTep(path);
+            if (ab != null && ab.length > 0) {
+                return ab;
+            }
+        }
+        return null;
     }
 
     public void xemCuaHang(VXLCuaHang store) throws IOException {

@@ -134,6 +134,11 @@ public final class VXLHeThongDan {
         if (ketQua == null) {
             return ketQua;
         }
+        if (ketQua.duongX == null || ketQua.duongY == null
+                || ketQua.vaChamDiaHinhX == null || ketQua.vaChamDiaHinhY == null
+                || ketQua.cacMucTieuTheoQuyDao == null) {
+            return ketQua;
+        }
         int soQuyDao = Math.min(ketQua.duongX.length, ketQua.duongY.length);
         for (int i = 0; i < soQuyDao; ++i) {
             short[] duongX = ketQua.duongX[i];
@@ -142,11 +147,16 @@ public final class VXLHeThongDan {
                 continue;
             }
             int soDiem = Math.min(duongX.length, duongY.length);
+            if (i >= ketQua.vaChamDiaHinhX.length || i >= ketQua.vaChamDiaHinhY.length) {
+                continue;
+            }
             boolean danMeApacheChuaTach = Byte.toUnsignedInt(hoSoDan.loaiClient()) == 17
                     && i == 0 && ketQua.chiSoTach > 0 && ketQua.duongX.length > 1
                     && ketQua.duongX[0] != null
                     && ketQua.chiSoTach - 1 < ketQua.duongX[0].length - 1;
-            boolean daCoDiemNo = ketQua.vaChamDiaHinhX[i] != Short.MIN_VALUE
+            boolean daCoDiemNo = i < ketQua.vaChamDiaHinhX.length
+                    && i < ketQua.vaChamDiaHinhY.length
+                    && ketQua.vaChamDiaHinhX[i] != Short.MIN_VALUE
                     && ketQua.vaChamDiaHinhY[i] != Short.MIN_VALUE;
             boolean laDanCaptain = Byte.toUnsignedInt(hoSoDan.loaiClient()) == 83;
             boolean coMucTieuTrucTiep = i < ketQua.cacMucTieuTheoQuyDao.length
@@ -155,7 +165,8 @@ public final class VXLHeThongDan {
             if (laDanCaptain && coMucTieuTrucTiep) {
                 short[] diemNoCaptain = this.timDiemTrungMucTieuDauTien(duongX, duongY,
                         ketQua.cacMucTieuTheoQuyDao[i]);
-                if (diemNoCaptain != null) {
+                if (diemNoCaptain != null && i < ketQua.vaChamDiaHinhX.length
+                        && i < ketQua.vaChamDiaHinhY.length) {
                     ketQua.vaChamDiaHinhX[i] = diemNoCaptain[0];
                     ketQua.vaChamDiaHinhY[i] = diemNoCaptain[1];
                     continue;

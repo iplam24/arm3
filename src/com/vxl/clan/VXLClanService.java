@@ -26,7 +26,7 @@ public final class VXLClanService {
     private static final byte MA_THUOC_TINH_TRANG_THAI = 31;
     private static final int CLAN_LOGO_FIRST_IMAGE = 1617;
     private static final int CLAN_LOGO_LAST_IMAGE = 1693;
-    private static final short CLAN_VIETNAM_IMAGE = 0;
+    private static final short CLAN_VIETNAM_IMAGE = 2129;
     private static final VXLBieuTuongClan[] BIEU_TUONG_CLAN = taoDanhSachBieuTuongClan();
     private static final VXLVatPhamClan[] VAT_PHAM_CLAN = new VXLVatPhamClan[]{
         new VXLVatPhamClan((short)364, (byte)0, (byte)1, 100_000, 10, (byte)6, (short)5),
@@ -1352,11 +1352,11 @@ public final class VXLClanService {
     }
 
     private static short chuanHoaBieuTuong(short bieuTuong) {
-        if (bieuTuong == 1694 || bieuTuong == 2128 || bieuTuong == 2129) {
-            return 0;
+        if (bieuTuong == 0 || bieuTuong == 1694 || bieuTuong == 2128 || bieuTuong == 2129) {
+            return CLAN_VIETNAM_IMAGE;
         }
         int chiSo = chiSoBieuTuong(bieuTuong);
-        return chiSo < 0 ? bieuTuong : BIEU_TUONG_CLAN[chiSo].ma();
+        return chiSo < 0 ? CLAN_VIETNAM_IMAGE : BIEU_TUONG_CLAN[chiSo].ma();
     }
 
     private static int chiSoBieuTuong(short bieuTuong) {

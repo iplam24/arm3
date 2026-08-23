@@ -103,7 +103,7 @@ final class VXLTinhDuongDan {
             VXLChienBinh ganNhat = null;
             int khoangCachGanNhat = Integer.MAX_VALUE;
             for (VXLChienBinh mucTieu : this.chienBinhs) {
-                if (mucTieu == null || mucTieu == nguoiBan || mucTieu.chet || mucTieu.luotVoHinh > 0) {
+                if (mucTieu == null || mucTieu == nguoiBan || mucTieu.chet || mucTieu.daRoiTran) {
                     continue;
                 }
                 int dx = xs[i] - mucTieu.x;
@@ -126,8 +126,7 @@ final class VXLTinhDuongDan {
         int le = Math.max(0, leTrung);
         for (int i = 0; i < this.chienBinhs.length; i++) {
             VXLChienBinh mucTieu = this.chienBinhs[i];
-            if (i == mucTieuBoQua || mucTieu == null || mucTieu.chet || mucTieu.daRoiTran
-                    || mucTieu.luotVoHinh > 0) {
+            if (i == mucTieuBoQua || mucTieu == null || mucTieu.chet || mucTieu.daRoiTran) {
                 continue;
             }
             if (x >= mucTieu.x - nuaRong && x < mucTieu.x + nuaRong
