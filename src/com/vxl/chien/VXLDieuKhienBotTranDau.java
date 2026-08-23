@@ -146,7 +146,10 @@ final class VXLDieuKhienBotTranDau {
                             bot.maVuKhi, (byte)0);
             byte luc;
             short goc;
-            boolean banGocCao = ThreadLocalRandom.current().nextInt(100) < TI_LE_PHIEN_QUAN_BAN_GOC_CAO;
+            boolean laPhienQuan = bot.ten != null && bot.ten.startsWith("Phiến quân");
+            boolean batBuocGocCao = laPhienQuan && this.tranDau.laCheDoCamTu();
+            boolean banGocCao = batBuocGocCao
+                    || ThreadLocalRandom.current().nextInt(100) < TI_LE_PHIEN_QUAN_BAN_GOC_CAO;
             VXLTinhDuongDan.CachBanBot cachBan = this.tinhDuongDan.timCachBanBot(
                     bot, mucTieu, loaiDan, this.tranDau.layGioX(),
                     this.tranDau.layGioY(), banGocCao);
@@ -164,23 +167,13 @@ final class VXLDieuKhienBotTranDau {
                     }
                 }
             }
-            if (cachBan.satThuongDuKien() <= 0) {
-                luc = this.tinhDuongDan.lucCanThietToiMucTieu(bot, mucTieu);
-                goc = this.tinhDuongDan.gocDanDaoToiMucTieu(bot, mucTieu, luc);
-                ketQua = this.tranDau.xuLyPhatBan(bot, loaiDan, goc, luc, -1);
-                this.tranDau.ghiNhanDiaHinhPhatBan(ketQua);
-                this.tranDau.phatBan(bot, ketQua, (byte)1);
-                this.tranDau.apDungSatThuongPhatBan(bot, ketQua, -1);
-                this.tranDau.ghiNhanNapDanSauPhatBan(bot);
-            } else {
-                luc = cachBan.luc();
-                goc = cachBan.goc();
-                ketQua = this.tranDau.xuLyPhatBan(bot, loaiDan, goc, luc, -1);
-                this.tranDau.ghiNhanDiaHinhPhatBan(ketQua);
-                this.tranDau.phatBan(bot, ketQua, (byte)1);
-                this.tranDau.apDungSatThuongPhatBan(bot, ketQua, -1);
-                this.tranDau.ghiNhanNapDanSauPhatBan(bot);
-            }
+            luc = cachBan.luc();
+            goc = cachBan.goc();
+            ketQua = this.tranDau.xuLyPhatBan(bot, loaiDan, goc, luc, -1);
+            this.tranDau.ghiNhanDiaHinhPhatBan(ketQua);
+            this.tranDau.phatBan(bot, ketQua, (byte)1);
+            this.tranDau.apDungSatThuongPhatBan(bot, ketQua, -1);
+            this.tranDau.ghiNhanNapDanSauPhatBan(bot);
         }
         if (!this.tranDau.kiemTraKetThuc()) {
             if (ketQua == null) {
